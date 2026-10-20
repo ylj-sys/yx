@@ -1,786 +1,3100 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ylj测试教材 - 教材目录 - 九学王内容中台</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/element-plus/dist/index.css"
-    />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
-    <script src="https://unpkg.com/sortablejs@1.15.2/Sortable.min.js"></script>
-    <style>
-      html,
-      body,
-      #app {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
-          sans-serif;
-        background: linear-gradient(
-          135deg,
-          #e8eaff 0%,
-          #f0eaff 50%,
-          #ffeef5 100%
-        );
-        color: #333;
-        font-size: 14px;
-      }
-
-      .el-container {
-        height: 100vh;
-      }
-
-      /* 顶部导航 */
-      .top-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #fff;
-        border-bottom: 1px solid #e8eaf6;
-        padding: 0 20px;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #222;
-      }
-
-      .brand-logo {
-        width: 28px;
-        height: 28px;
-        background: #5b8ff9;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .top-header .el-menu.el-menu--horizontal {
-        border-bottom: none;
-        background: transparent;
-      }
-
-      .header-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      /* 侧边栏 */
-      .sidebar {
-        background: #f7f8ff;
-        border-right: 1px solid #e8eaf6;
-      }
-
-      .sidebar .el-menu {
-        border-right: none;
-        background: transparent;
-      }
-
-      /* 主内容 */
-      .main {
-        padding: 20px;
-      }
-
-      .content-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(100, 100, 200, 0.08);
-        padding: 24px 32px;
-        min-height: calc(100vh - 120px);
-      }
-
-      .title-row {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-
-      .main-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: #222;
-      }
-
-      .meta {
-        color: #888;
-        font-size: 13px;
-      }
-
-      .meta .label {
-        color: #aaa;
-      }
-
-      .filter-section {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        margin: 20px 0 16px;
-      }
-
-      .delete-body {
-        padding: 0;
-      }
-
-      .delete-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 16px;
-      }
-
-      .delete-options {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .delete-options .el-radio {
-        margin-left: 0;
-        padding-left: 0;
-      }
-
-      .delete-options .el-radio__input {
-        margin-left: 0;
-      }
-
-      .filter-left {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .filter-label {
-        color: #666;
-        font-size: 14px;
-        margin-right: 4px;
-      }
-
-      .scene-filter .el-radio {
-        margin-right: 16px;
-      }
-
-      .scene-filter .el-radio__input {
-        display: none;
-      }
-
-      .scene-filter .el-radio__label {
-        padding-left: 0 !important;
-        font-size: 14px;
-        color: #666;
-      }
-
-      .scene-filter .el-radio.is-checked .el-radio__label {
-        color: #5b8ff9;
-        font-weight: 600;
-      }
-
-      .scene-filter .el-radio:hover .el-radio__label {
-        color: #5b8ff9;
-      }
-
-      .action-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .action-bar .action-left,
-      .action-bar .action-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .action-bar .btn-icon {
-        display: inline-flex;
-        vertical-align: middle;
-      }
-
-      /* 树状目录：去除表格外框 / 斑马纹 / 行分隔线，但保留表头 */
-      .el-table {
-        --el-table-row-hover-bg-color: #f5f7fa;
-        --el-table-border-color: transparent;
-        --el-table-bg-color: transparent;
-        font-size: 14px;
-        color: #333;
-        background: transparent;
-      }
-
-      /* 表头：浅灰蓝底色块 + 灰字，底部一条浅色分隔线（参考目标图） */
-      .el-table th.el-table__cell {
-        font-weight: 500;
-        color: #606266;
-        height: 44px;
-        padding: 0 12px;
-        background: #f5f7fa;
-        border-top: none;
-        border-bottom: 1px solid #e8eaf0;
-      }
-
-      /* 去掉 el-table 自带的外框线与顶部底线 */
-      .el-table::before,
-      .el-table::after,
-      .el-table__inner-wrapper::before,
-      .el-table__inner-wrapper::after {
-        display: none;
-      }
-
-      .el-table tr {
-        background: transparent;
-      }
-
-      .el-table td.el-table__cell {
-        padding: 8px;
-        background: transparent;
-        /* 行与行之间仅保留一条极浅分隔线（参考目标样式） */
-        border-bottom: 1px solid #f2f4f7;
-      }
-
-      .el-table .el-table__row:hover > td.el-table__cell {
-        background: #f5f7fa;
-      }
-
-      /* 层级缩进引导线（虚线）：对齐上级展开图标中心，呈现树的层级关系 */
-      .el-table td.el-table__cell:first-child .cell {
-        overflow: visible;
-      }
-
-      .el-table .el-table__indent {
-        position: relative;
-        flex: none;
-      }
-
-      .el-table .el-table__indent::before {
-        content: "";
-        position: absolute;
-        left: 8px;
-        top: -10px;
-        bottom: -10px;
-        border-left: 1px dashed #d0d3dc;
-      }
-
-      /* 展开/收起图标：蓝色圆形 + / − */
-      .el-table .el-table__expand-icon {
-        position: relative;
-        width: 20px;
-        height: 20px;
-        margin-right: 6px;
-        border-radius: 50%;
-        background: #3f7ef7;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        /* 覆盖默认箭头的旋转动画 */
-        transform: none;
-        transition: none;
-      }
-
-      .el-table .el-table__expand-icon:hover {
-        background: #5b8ff9;
-      }
-
-      /* 隐藏默认箭头，用伪元素绘制 + / − */
-      .el-table .el-table__expand-icon .el-icon {
-        display: none;
-      }
-
-      /* 横线：始终显示，展开后即为 − */
-      .el-table .el-table__expand-icon::before {
-        content: "";
-        position: absolute;
-        left: 4px;
-        right: 4px;
-        top: 50%;
-        height: 1.6px;
-        border-radius: 1px;
-        transform: translateY(-50%);
-        background: #fff;
-      }
-
-      /* 竖线：收起时与横线组成 + */
-      .el-table .el-table__expand-icon::after {
-        content: "";
-        position: absolute;
-        top: 4px;
-        bottom: 4px;
-        left: 50%;
-        width: 1.6px;
-        border-radius: 1px;
-        transform: translateX(-50%);
-        background: #fff;
-      }
-
-      .el-table .el-table__expand-icon--expanded::after {
-        display: none;
-      }
-
-      /* 操作列 */
-      .el-table .el-button.is-link {
-        padding: 0;
-        height: auto;
-        font-size: 14px;
-      }
-
-      /* 操作列：按钮横向排列并用 gap 控制间距（tooltip 包裹的删除按钮也能生效） */
-      .el-table td.el-table__cell:last-child .cell {
-        display: inline-flex;
-        align-items: center;
-        gap: 16px;
-      }
-
-      .el-table .el-button.is-link.el-button--primary {
-        color: #5b8ff9;
-      }
-
-      .el-table .el-button.is-link.el-button--danger {
-        color: #ff4d4f;
-      }
-
-      .el-table .el-button.is-link.el-button--danger.is-disabled,
-      .el-table .el-button.is-link.el-button--danger:disabled {
-        color: #c0c4cc;
-        cursor: not-allowed;
-        /* 禁用态不再接收鼠标事件，交由外层包裹元素触发 tooltip */
-        pointer-events: none;
-      }
-
-      .op-disabled-wrap {
-        display: inline-flex;
-        align-items: center;
-        cursor: not-allowed;
-      }
-
-      .el-table .cell {
-        line-height: 22px;
-      }
-
-      /* 名称列：展开/收起图标与章节名称保持在同一行 */
-      .el-table td.el-table__cell:first-child .cell {
-        display: flex;
-        align-items: center;
-      }
-
-      .el-table td.el-table__cell:first-child .cell .el-input {
-        flex: 1;
-        min-width: 0;
-        width: auto;
-      }
-
-      /* 名称列行内编辑输入框：占满单元格；默认无边框，呈现为纯文本节点 */
-      .el-table .cell .el-input {
-        width: 100%;
-      }
-
-      /* 名称输入框常显：浅灰边框 + 白底，无需 hover 即呈现 */
-      .el-table .cell .el-input .el-input__wrapper {
-        box-shadow: 0 0 0 1px #dcdfe6 inset;
-        background: #fff;
-        padding: 1px 10px;
-        border-radius: 4px;
-        transition: box-shadow 0.15s;
-      }
-
-      .el-table .cell .el-input .el-input__inner {
-        height: 28px;
-        line-height: 28px;
-      }
-
-      /* hover / 聚焦时边框转为蓝色 */
-      .el-table .cell .el-input:hover .el-input__wrapper,
-      .el-table .cell .el-input.is-focus .el-input__wrapper {
-        box-shadow: 0 0 0 1px #a0cfff inset;
-        background: #fff;
-      }
-
-      /* 层级区分：父级（含子章节）加粗深色，子级常规色 */
-      .el-table .el-table__row.is-branch .cell .el-input .el-input__inner,
-      .el-table .el-table__row.is-branch .cell .tree-node-name {
-        font-weight: 600;
-        color: #303133;
-      }
-
-      .el-table .el-table__row.is-leaf .cell .el-input .el-input__inner,
-      .el-table .el-table__row.is-leaf .cell .tree-node-name {
-        font-weight: 400;
-        color: #606266;
-      }
-
-      /* 只读目录（题库目录 / 教材知识树目录）的名称：纯文本节点 */
-      .el-table td.el-table__cell:first-child .cell .tree-node-name {
-        flex: 1;
-        min-width: 0;
-        height: 28px;
-        line-height: 28px;
-        padding-left: 10px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      /* 拖拽手柄 */
-      .drag-handle {
-        cursor: grab !important;
-        padding: 0 4px;
-      }
-
-      .drag-handle:hover span {
-        color: #5b8ff9 !important;
-      }
-
-      .drag-handle:active {
-        cursor: grabbing !important;
-      }
-
-      /* 拖拽视觉（参考 course-list）：蓝色插入参考线（上/下）+ 拖拽原位半透明 */
-      .el-table__row.drop-prev > td {
-        box-shadow: inset 0 2px 0 0 #1890ff;
-      }
-
-      .el-table__row.drop-next > td {
-        box-shadow: inset 0 -2px 0 0 #1890ff;
-      }
-
-      /* 放到目标目录子级下：整行浅蓝高亮 */
-      .el-table__row.drop-target > td.el-table__cell {
-        background-color: #ecf5ff !important;
-      }
-
-      .el-table__row.drag-ghost {
-        opacity: 0.35;
-      }
-
-      /* 拖拽残影：只显示源目录名称，无边框无底色 */
-      .drag-float-ghost {
-        position: fixed;
-        left: 0;
-        top: 0;
-        z-index: 3000;
-        pointer-events: none;
-        max-width: 320px;
-        padding: 0 6px;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 28px;
-        color: #303133;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        opacity: 0.55;
-      }
-
-      /* 拖拽进行中：禁止选中文本，光标保持抓手 */
-      body.tree-dragging {
-        user-select: none;
-        cursor: grabbing;
-      }
-
-      body.tree-dragging .el-table__row:hover > td.el-table__cell {
-        background: transparent;
-      }
-
-      /* 抽屉树中禁用勾选的节点（已挂载试题 / 知识点） */
-      .el-tree-node.is-disabled .el-tree-node__label,
-      .el-tree .el-tree-node__content.is-disabled .el-tree-node__label {
-        color: #a8abb2;
-        cursor: not-allowed;
-      }
-
-      /* 题库目录关联区 */
-      .panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-      }
-
-      .panel-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #303133;
-      }
-
-      .qb-block {
-        margin-top: 4px;
-      }
-
-      .drawer-custom-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #ebeef5;
-        margin-bottom: 16px;
-      }
-
-      .drawer-header-main {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .drawer-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #303133;
-        line-height: 1.4;
-        padding-right: 12px;
-        white-space: nowrap;
-      }
-
-      .drawer-tip {
-        color: #888;
-        font-size: 13px;
-        line-height: 1.4;
-      }
-
-      .drawer-close {
-        padding: 0;
-        height: auto;
-        color: #606266;
-      }
-
-      .drawer-close:hover {
-        color: #5b8ff9;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="app">
-      <el-container>
-        <!-- 顶部导航 -->
-        <el-header class="top-header" height="56px">
-          <div class="brand">
-            <span class="brand-logo">九</span>
-            <span>九学王内容中台</span>
-          </div>
-          <el-menu mode="horizontal" :default-active="'1'">
-            <el-menu-item index="1">知识体系</el-menu-item>
-            <el-menu-item index="2">属性与...</el-menu-item>
-            <el-menu-item index="3">映射...</el-menu-item>
-            <el-menu-item index="4">内容资...</el-menu-item>
-            <el-menu-item index="5">开放...</el-menu-item>
-          </el-menu>
-          <div class="header-right">
-            <el-button text>接口文档</el-button>
-            <el-button text>工作台</el-button>
-            <el-avatar style="background: #d9e6ff; color: #5b8ff9"
-              >易</el-avatar
-            >
-          </div>
-        </el-header>
-
-        <el-container>
-          <!-- 侧边栏 -->
-          <el-aside width="200px" class="sidebar">
-            <el-menu :default-active="'1-1'">
-              <el-sub-menu index="1">
-                <template #title>教材管理</template>
-                <el-menu-item index="1-1">教材列表</el-menu-item>
-              </el-sub-menu>
-              <el-sub-menu index="2">
-                <template #title>学科知识体系</template>
-              </el-sub-menu>
-              <el-sub-menu index="3">
-                <template #title>考点知识体系</template>
-              </el-sub-menu>
-              <el-sub-menu index="4">
-                <template #title>教材知识体系</template>
-              </el-sub-menu>
-            </el-menu>
-          </el-aside>
-
-          <!-- 主内容 -->
-          <el-main class="main">
-            <div class="content-card">
-              <!-- 面包屑 -->
-              <el-breadcrumb separator="/">
-                <el-breadcrumb-item>教材管理</el-breadcrumb-item>
-                <el-breadcrumb-item>教材列表</el-breadcrumb-item>
-                <el-breadcrumb-item>ylj测试教材</el-breadcrumb-item>
-                <el-breadcrumb-item>教材目录</el-breadcrumb-item>
-              </el-breadcrumb>
-
-              <!-- 标题区 -->
-              <div style="margin-top: 16px">
-                <div class="title-row">
-                  <h1 class="main-title">ylj测试教材</h1>
-                  <span class="meta"
-                    ><span class="label">ID：</span>2100403436108382210</span
-                  >
-                  <span class="meta"
-                    ><span class="label">中台版本：</span>1.3</span
-                  >
-                </div>
-                <el-tabs v-model="activeTab">
-                  <el-tab-pane label="基本信息" name="basic"></el-tab-pane>
-                  <el-tab-pane label="教材目录" name="catalog"></el-tab-pane>
-                  <el-tab-pane
-                    label="题库目录"
-                    name="questionbank"
-                  ></el-tab-pane>
-                  <el-tab-pane
-                    label="教材知识树目录"
-                    name="knowledge"
-                  ></el-tab-pane>
-                </el-tabs>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>九学王内容中台 - 查看视频 - 切片与标注</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/@element-plus/icons-vue"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 13px; color: #333; background: #eef1f6; }
+
+  .topbar { height: 46px; background: #fff; display: flex; align-items: center; padding: 0 18px; }
+  .logo { display: flex; align-items: center; font-size: 15px; font-weight: 700; margin-right: 36px; white-space: nowrap; }
+  .logo .mark { width: 22px; height: 22px; margin-right: 6px; border-radius: 5px;
+    background: conic-gradient(from 200deg, #2b7cff, #35c3f0, #7a5fd0, #2b7cff); }
+  .topnav { display: flex; gap: 26px; flex: 1; }
+  .topnav a { color: #444; display: flex; align-items: center; gap: 5px; cursor: pointer; height: 46px; }
+  .topnav a .ico { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  .topnav a.active { color: #2b7cff; font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .pill-btn { border: 1px solid #dcdfe6; border-radius: 15px; padding: 3px 14px; background: #fff; cursor: pointer; font-size: 12px; color: #444; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; background: #f7c9a8; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #9a5b1f; }
+  .username { color: #444; }
+
+  .layout { display: flex; min-height: calc(100vh - 46px); }
+  .sidebar { width: 168px; flex-shrink: 0; background: #fbfcfe; padding: 6px 0 20px; }
+  .menu-item { padding: 9px 16px 9px 20px; color: #333; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .menu-item:hover { color: #2b7cff; }
+  .menu-item .arr { color: #b9c0cc; font-size: 10px; }
+  .menu-sub { padding: 7px 16px 7px 36px; color: #555; cursor: pointer; }
+  .menu-sub:hover { color: #2b7cff; }
+  .menu-group-open { font-weight: 500; }
+
+  .main { flex: 1; min-width: 0; padding: 12px 16px 24px; }
+  .breadcrumb { color: #999; font-size: 12px; margin-bottom: 8px; }
+  .back { display: inline-flex; align-items: center; gap: 4px; color: #333; font-size: 13px; margin-bottom: 10px; cursor: pointer; }
+
+  .page-card { background: #fff; border-radius: 8px; padding: 4px 18px 18px; }
+  .page-tabs { display: flex; gap: 28px; border-bottom: 1px solid #f0f0f0; }
+  .page-tabs .tab { padding: 12px 2px 10px; cursor: pointer; color: #555; font-size: 13px; position: relative; }
+  .page-tabs .tab.active { color: #2b7cff; font-weight: 600; }
+  .page-tabs .tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: #2b7cff; border-radius: 2px; }
+
+  .edit-row { display: flex; flex-wrap: nowrap; gap: 20px; padding-top: 14px; }
+  .video-col { flex: 0 0 584px; width: 584px; min-width: 0; }
+  .panel-col { flex: 1 1 420px; min-width: 320px; }
+  .panel-empty { display: flex; }
+  .panel-empty .slice-empty { width: 100%; }
+
+  /* 视频区域：上（视频）+ 下（黑色进度条）两块，拼成同一张圆角卡片 */
+  .video-box { background: #000; border-radius: 12px 12px 0 0; overflow: hidden; position: relative; width: 584px; height: 328px; }
+  .video-poster { width: 100%; height: 328px;
+    background: linear-gradient(180deg,#8a5a2a 0%, #b07a3a 30%, #6e4520 70%, #3c2410 100%); position: relative;
+    display: flex; align-items: center; justify-content: center; }
+  .video-poster .hint { color: rgba(255,255,255,.5); font-size: 18px; letter-spacing: 3px; }
+  .vreal { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; z-index: 1; }
+  /* 进度条区域：视频下方的黑色块（非浮层） */
+  .vprog-wrap { position: relative; display: flex; align-items: center;
+    gap: 10px; padding: 10px 14px; background: #000; border-radius: 0 0 12px 12px; }
+  .vplay-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 50%; color: #fff; cursor: default; flex-shrink: 0; }
+  .vplay-btn:hover { background: rgba(0,0,0,.4); }
+  .vctl-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border-radius: 50%; color: #fff; cursor: default; flex-shrink: 0; }
+  .vctl-btn:hover { background: rgba(0,0,0,.4); }
+  .vtime { font-size: 11px; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .vprog { position: relative; flex: 1; height: 22px; background: #fff; border-radius: 6px; }
+  .vprog-seg { position: absolute; top: 0; bottom: 0; border-radius: 0; display: flex; align-items: center;
+    justify-content: center; overflow: hidden; }
+  .vprog-inner { position: absolute; inset: 0; border-radius: 6px; overflow: hidden; }
+  .vprog-seg-name { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: clip; padding: 0 10px; }
+  .vprog-head { position: absolute; top: 0; bottom: 0; width: 2px; border-radius: 1px; background: #2b7cff;
+    transform: translateX(-50%); z-index: 8; }
+  .vprog-head::before { content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #2b7cff; }
+  .vprog-head::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+    border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid #2b7cff; }
+  .vprog-mark { position: absolute; top: 50%; transform: translate(-50%, -50%); z-index: 7; cursor: default;
+    display: flex; flex-direction: column; align-items: center; }
+  .vprog-mark-dot { width: 7px; height: 7px; border-radius: 50%; background: #2b7cff;
+    border: 1.5px solid #fff; box-shadow: 0 0 3px rgba(0,0,0,.35); flex-shrink: 0; }
+  .vprog-mark-name { position: absolute; bottom: calc(100% + 18px); left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: #fff; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    opacity: 0; transition: opacity .12s ease; pointer-events: none; }
+  .vprog-mark:hover .vprog-mark-name,
+  .vprog-mark.active .vprog-mark-name { opacity: 1; }
+  .vprog-mark-name::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    width: 1.5px; height: 18px; background: #2b7cff; }
+  .vprog-mark.active .vprog-mark-dot { width: 9px; height: 9px; box-shadow: 0 0 6px rgba(43,124,255,.85); }
+  .video-poster .subtitle { position: absolute; bottom: 46px; width: 100%; text-align: center; color: #fff;
+    font-size: 17px; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 6px #000, 0 2px 3px #000; }
+  .video-controls { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: rgba(0,0,0,.55);
+    display: flex; align-items: center; padding: 0 12px; gap: 10px; color: #fff; font-size: 12px; z-index: 2; }
+  .play-btn { width: 0; height: 0; border-left: 9px solid #fff; border-top: 5.5px solid transparent; border-bottom: 5.5px solid transparent; cursor: pointer; }
+  .progress { flex: 1; height: 4px; background: rgba(255,255,255,.35); border-radius: 2px; position: relative; cursor: pointer; transition: height .15s ease; }
+  .progress:hover { height: 10px; }
+  .progress .played { position: absolute; left: 0; top: 0; bottom: 0; width: 2%; background: #7cb53e; border-radius: 2px; }
+  .progress .locator { position: absolute; left: calc(2% - 4px); top: 50%; transform: translateY(-50%); width: 8px; height: 8px; border-radius: 50%; background: #fff; z-index: 4; display: none; }
+  .progress:hover .locator { display: block; }
+  .progress .pmark { position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%; background: #fff; transform: translate(-50%, -50%); z-index: 3; transition: width .15s ease, height .15s ease, border-radius .15s ease; }
+  .progress:hover .pmark { width: 3px; height: 13px; border-radius: 1px; top: 50%; }
+  .pmark-tip { display: none; position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: 192px; background: #101d2c; border-radius: 6px; padding: 8px; text-align: center; z-index: 20; }
+  .pmark:hover .pmark-tip { display: block; }
+  .pmark-thumb { width: 176px; height: 99px; margin: 0 auto; border-radius: 4px; background: linear-gradient(160deg, #4a90d9 0%, #9bd4f5 45%, #3a7d44 65%, #6ab04c 100%); position: relative; overflow: hidden; }
+  .pmark-thumb::after { content: ''; position: absolute; left: 0; right: 0; bottom: 10px; height: 12px; background: rgba(0,0,0,.4); }
+  .pmark-time { color: #fff; font-size: 13px; font-weight: 600; margin-top: 6px; }
+
+  .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .panel-head .el-button.is-plain:hover { color: #409eff; background: #ecf5ff; border-color: #c6e2ff; }
+  .panel-head .el-button.is-plain:active { color: #409eff; background: #ecf5ff; border-color: #337ecc; }
+  .panel-title { font-size: 14px; font-weight: 700; }
+  .req { color: #f56c6c; margin-right: 2px; }
+
+  .frow { display: flex; align-items: center; margin-bottom: 15px; }
+  .frow-top { align-items: flex-start; }
+  .flabel { width: 96px; text-align: left; color: #333; flex-shrink: 0; }
+  .flabel-narrow { width: 78px; }
+  .fctrl { flex: 1; display: flex; align-items: center; min-width: 0; }
+
+  .name-inp { width: 100%; }
+  .name-inp.range-name { width: 240px; }
+  .color-label { margin-left: 18px; color: #333; }
+  .color-swatch { width: 22px; height: 22px; border-radius: 3px; border: 1px solid #e4e7ed; background: #fbd9e0; cursor: pointer; }
+
+  .time-wrap { display: flex; align-items: center; flex-wrap: wrap; row-gap: 6px; white-space: nowrap; }
+  .time-wrap .t-inp { width: 44px; flex-shrink: 0; }
+  .time-wrap .t-inp .el-input__wrapper { padding: 0 4px; }
+  .time-wrap .t-inp .el-input__inner { text-align: center; }
+  .time-wrap .unit { color: #666; margin-left: 4px; margin-right: 8px; flex-shrink: 0; }
+  .time-wrap .dash { color: #999; margin: 0 10px; flex-shrink: 0; }
+
+  .know-text { color: #333; }
+  .know-link { color: #2b7cff; margin-left: 14px; cursor: pointer; }
+
+  /* 互动类型分类（需求1：测练类/语音类/其他类） */
+  .cat-checks { display: flex; gap: 4px; }
+  .cat-panel { margin-top: 8px; padding: 12px 14px 2px; background: #f5f7fa; border-radius: 4px; }
+  .cat-panel .el-radio { margin-right: 32px; margin-bottom: 12px; height: 24px; }
+  .info-ico { color: #a8abb2; font-size: 13px; cursor: help; }
+  .group-count-inp { width: 280px; }
+  .migrate-badge { font-size: 11px; color: #fa8c16; background: #fff7e6; border: 1px solid #ffd591; border-radius: 3px; padding: 0 4px; margin-left: 5px; }
+
+  .picked-wrap { position: relative; margin-top: 10px; }
+  .picked-area { background: #f7f8fa; border-radius: 8px; padding: 12px 10px; max-height: 220px; overflow-y: scroll; scrollbar-width: none; }
+  .picked-area::-webkit-scrollbar { width: 0; height: 0; }
+  /* JS 模拟滚动条（常显，位于滚动容器外侧，不随内容滚动） */
+  .pick-sb { position: absolute; right: 1px; top: 4px; bottom: 4px; width: 6px; border-radius: 4px; background: #f1f2f4; }
+  .pick-sb-thumb { position: absolute; left: 0; right: 0; background: #c9ccd2; border-radius: 5px; cursor: pointer; }
+  .pick-sb-thumb:hover { background: #b4b8bf; }
+  .picked-list { display: flex; flex-direction: column; }
+  /* 交换位置 FLIP 动画 */
+  .flip-move, .picked-item { transition: transform .35s cubic-bezier(.55, 0, .1, 1); }
+  .picked-item { transition: transform .35s cubic-bezier(.55, 0, .1, 1), background .2s ease, border-color .2s ease; }
+  .picked-item { border: 1px solid #e4e7ed; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; background: #fff; position: relative; cursor: grab; }
+  .picked-item.dragging { opacity: 0.45; background: #d3ecd9; border-color: #b2dcbc; transition: none; }
+  .picked-item.grab { background: #e8f1fd; border-color: #000; }
+  .drag-handle { position: absolute; top: 10px; right: 12px; color: #c0c4cc; font-size: 15px; cursor: grab; user-select: none; line-height: 1; opacity: 0; transition: opacity .2s; }
+  .picked-item:hover .drag-handle { opacity: 1; }
+  .drag-handle:hover { color: #909399; }
+  /* 题目详情弹窗 */
+  .qd-cards { display: flex; gap: 14px; margin-bottom: 14px; }
+  .qd-card { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: #f5f7fa; border: 1px solid #ebeef5; border-radius: 6px; padding: 13px 16px; }
+  .qd-label { color: #909399; font-size: 13px; }
+  .qd-val { color: #303133; font-weight: 600; font-size: 15px; text-align: right; }
+  .qd-diff.d-简单 { color: #67c23a; }
+  .qd-diff.d-中等 { color: #e6a23c; }
+  .qd-diff.d-困难 { color: #f56c6c; }
+  .qd-body { background: #f5f7fa; border: 1px solid #ebeef5; border-radius: 6px; padding: 16px 18px;
+    color: #303133; font-size: 14px; line-height: 1.9; }
+  .qd-stem { font-weight: 600; margin-bottom: 10px; }
+  .qd-opt { white-space: pre-wrap; line-height: 2; }
+  .qd-split { border: none; border-top: 1px dashed #dcdfe6; margin: 14px 0; }
+  .qd-kv { margin-top: 4px; }
+  .qd-key { color: #409eff; font-weight: 600; margin-right: 8px; }
+  .qd-val2 { color: #303133; }
+  .q-head { display: flex; align-items: center; gap: 10px; }
+  .q-no { color: #409eff; font-weight: 600; }
+  .q-id { color: #303133; }
+  .q-diff { font-size: 12px; border-radius: 4px; padding: 1px 8px; }
+  .q-diff.d-简单 { color: #67c23a; background: #f0f9eb; }
+  .q-diff.d-中等 { color: #e6a23c; background: #fdf6ec; }
+  .q-diff.d-困难 { color: #f56c6c; background: #fef0f0; }
+  .q-stem { margin-top: 10px; color: #303133; line-height: 1.6; }
+  .q-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: #606266; }
+  .clock-ico { color: #909399; flex-shrink: 0; }
+  .q-dur-label { color: #606266; white-space: nowrap; flex-shrink: 0; }
+  .q-dur-radio { margin: 0 2px; flex-wrap: nowrap; flex-shrink: 0; }
+  .q-dur-radio .el-radio { margin-right: 10px; white-space: nowrap; }
+  .q-foot .unit { color: #606266; white-space: nowrap; flex-shrink: 0; }
+  .q-foot .el-button + .el-button { margin-left: 2px; }
+  .dur-inp { width: 46px; flex-shrink: 0; }
+  .stem-formula { font-family: "Times New Roman", serif; font-style: italic; }
+
+  /* 底部 */
+  .bottom { margin-top: 20px; border: 1px solid #e4e7ed; border-radius: 8px; background: #fff; padding: 14px 16px 16px; }
+  .bottom-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bottom-head .title { font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .bottom-head .spacer { flex: 1; }
+  .val-text { font-size: 13px; color: #333; }
+
+  .range-tabs { display: flex; gap: 10px; margin-bottom: 12px; }
+  .range-tab { height: 26px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; cursor: pointer; color: #333; padding: 0 10px; }
+  .range-tab.r1 { background: #fde3e9; border: 1px solid #f7a8bc; min-width: 88px; }
+  .range-tab.r2 { background: #dcf2d0; min-width: 168px; }
+  .range-tab.active { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  .type-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .type-row .row-label { width: 60px; color: #333; flex-shrink: 0; }
+  .type-seg { display: flex; width: 46%; min-width: 360px; border-radius: 3px; overflow: hidden; }
+  .type-seg .seg { flex: 1; text-align: center; height: 24px; line-height: 24px; font-size: 12px; cursor: pointer;
+    color: #333; border-right: 2px solid #fff; }
+  .type-seg .seg:last-child { border-right: none; }
+  .type-seg .seg.active { box-shadow: inset 0 0 0 1px #7f97d9; font-weight: 600; }
+
+  /* ===== 剪映式时间轴（白底） ===== */
+  .tl-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .tl-toolbar .spacer { flex: 1; }
+  .tl-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tl-zoom { display: flex; align-items: center; gap: 8px; margin-left: 14px; flex-shrink: 0; }
+  .tl-zoom .el-slider__runway { height: 3px; margin: 10px 0; }
+  .tl-zoom .el-slider__bar { height: 3px; }
+  .tl-zoom .el-slider__button { width: 12px; height: 12px; border: none; box-shadow: 0 0 2px rgba(0,0,0,.25); }
+  .tl-zoom-btn { display: inline-flex; align-items: center; justify-content: center; line-height: 0;
+    cursor: default; color: #606266; border-radius: 50%; flex-shrink: 0; }
+  .tl-zoom-btn:hover { color: #2b7cff; }
+  .timeline { background: #f7f8fa; border-radius: 8px; padding: 8px 0 8px; }
+  .tl-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 14px; }
+  .tl-scroll::-webkit-scrollbar { height: 8px; }
+  .tl-scroll::-webkit-scrollbar-thumb { background: #c8ccd4; border-radius: 4px; }
+  .tl-scroll::-webkit-scrollbar-track { background: #eceef1; }
+  .tl-body { position: relative; margin: 0 14px; }
+  .tl-space { width: 14px; height: 1px; }
+  .tl-ruler { position: relative; height: 70px; margin-bottom: 0; z-index: 7; }
+  .tl-tick { position: absolute; top: 3px; font-size: 11px; color: #555; line-height: 12px;
+    padding-left: 5px; white-space: nowrap; }
+  .tl-tick::before { content: ''; position: absolute; left: 0; top: 0; bottom: -8px; width: 1px; background: #999; }
+  .tl-tick.minor::before { bottom: auto; height: 6px; background: #c9c9c9; }
+  .tl-tick-last { transform: translateX(-100%); padding-left: 0; padding-right: 5px; }
+  .tl-track { position: relative; height: 34px; background: #f7f8fa; border-radius: 4px; margin-bottom: 6px; }
+  .tl-clip { position: absolute; left: 3px; right: 3px; top: 3px; bottom: 3px; border-radius: 4px;
+    background: #eef1f5; overflow: hidden; }
+  .tl-video-card { display: flex; align-items: center; justify-content: flex-start; padding: 0 12px; background: #eef1f5; }
+  .tl-card-name { font-size: 13px; font-weight: 600; color: #303133; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-track.tl-video { height: auto; }
+  .tl-track.tl-video .tl-clip { position: relative; inset: auto; height: 40px; }
+  .tl-clip-wrap { position: relative; }
+  .tl-marks { position: absolute; inset: 0; pointer-events: none; z-index: 11; }
+  .tl-mark { position: absolute; top: -19px; transform: translateX(-50%); cursor: pointer; pointer-events: auto;
+    line-height: 1; color: var(--mc, #999); }
+  .tl-mark-ico { font-size: 19px; }
+  .tl-mark.active { color: #2b7cff; }
+  .tl-mark.active .tl-mark-name { color: #2b7cff; font-weight: 700; }
+  .tl-mark:hover .tl-mark-ico { filter: brightness(1.15); }
+  .tl-mark-name { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: #333; white-space: nowrap; pointer-events: auto; cursor: pointer; }
+  .tl-ranges { position: absolute; top: 0; bottom: 0; left: 0; right: 0; pointer-events: none; z-index: 5; }
+  /* 拖拽区间期间强制全手掌手势，覆盖子元素自带的 pointer/ew-resize */
+  body.dragging, body.dragging * { cursor: grabbing !important; }
+  /* 整体拖拽区间时隐藏进度条区域，避免遮挡视频字幕 */
+  body.dragging .vprog-wrap { display: none; }
+  .tl-range-seg { position: absolute; top: 0; bottom: 0; cursor: pointer; pointer-events: auto;
+    background: var(--rc, #ccc); border: 2px solid transparent; border-radius: 8px; }
+  .tl-range-edge { position: absolute; top: -2px; bottom: -2px; width: 14px; cursor: ew-resize; pointer-events: none;
+    z-index: 3; }
+  .tl-range-edge.left { left: -2px; }
+  .tl-range-edge.right { right: -2px; }
+  .tl-range-seg.active .tl-range-edge { pointer-events: auto; }
+  .tl-range-head { position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: inherit;
+    display: flex; align-items: center; justify-content: center; padding: 0 14px; overflow: hidden; }
+  .tl-range-name { font-size: 13px; font-weight: 600; color: #333; white-space: nowrap;
+    overflow: hidden; text-overflow: clip; }
+  .tl-range-seg.active { border-color: #4d7bf3; box-shadow: 0 2px 8px rgba(0,0,0,.2); z-index: 2; }
+  .tl-src { color: #666; font-size: 13px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tl-seg { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #333; cursor: pointer; overflow: hidden; white-space: nowrap; padding: 0 6px; }
+  .tl-seg.r1 { background: #fde3e9; border: 1px solid #f7a8bc; }
+  .tl-seg.r2 { background: #dcf2d0; }
+  .tl-seg.r3 { background: #f8ecd0; }
+  .tl-seg.active { box-shadow: inset 0 0 0 2px #337ecc; font-weight: 600; }
+  .tl-playhead { position: absolute; top: -6px; bottom: -6px; width: 2px; background: #4d7bf3; z-index: 10; cursor: ew-resize; }
+  .tl-playhead:hover { width: 2px; }
+
+  .ques-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .ques-row .row-label { width: 60px; color: #333; flex-shrink: 0; }
+  .ques-block { width: 108px; height: 24px; background: #3f7ef7; border-radius: 3px; cursor: pointer; }
+
+  .req-note { margin-top: 12px; padding: 8px 12px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; color: #8c6d1f; font-size: 12px; line-height: 1.7; }
+  .req-note b { color: #d48806; }
+
+  /* ===== 课件详情页（课件资源路由） ===== */
+  .menu-sub.active { color: #2b7cff; font-weight: 600; }
+  .course-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .course-basic { padding-top: 14px; }
+  .course-body { display: flex; gap: 16px; padding-top: 14px; align-items: flex-start; }
+  .course-left { flex: 0 0 46%; min-width: 0; border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px 16px; }
+  .course-right { flex: 1; min-width: 0; border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px 16px; }
+  .pv-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .pv-title { font-size: 14px; font-weight: 700; }
+  .pv-file { color: #666; margin-top: 8px; }
+  .pv-pageinfo { color: #999; font-size: 12px; text-align: right; margin-top: 6px; }
+  .pv-label { font-weight: 600; margin: 14px 0 8px; }
+  .pv-pages { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pv-page { position: relative; width: 30px; height: 30px; border: 1px solid #dcdfe6; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; background: #fff; }
+  .pv-page:hover { border-color: #2b7cff; color: #2b7cff; }
+  .pv-page.active { background: #2b7cff; border-color: #2b7cff; color: #fff; }
+  .pv-badge { position: absolute; top: -5px; right: -5px; min-width: 13px; height: 13px; border-radius: 7px;
+    background: #2b7cff; color: #fff; font-size: 10px; line-height: 13px; text-align: center; padding: 0 2px; }
+  .pv-shot { border: 1px solid #ebeef5; border-radius: 6px; overflow: hidden; }
+  .pv-cover { height: 260px; background: linear-gradient(180deg, #a8ddf5 0%, #d3eff9 45%, #9ed482 78%, #7cbf5e 100%);
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .pv-cover-title { font-size: 32px; letter-spacing: 14px; text-indent: 14px; color: #333; font-weight: 600; }
+  .pv-cover-sub { font-size: 24px; color: #333; font-weight: 600; margin-top: 8px; letter-spacing: 4px; }
+  .pv-cover-speaker { position: absolute; bottom: 24px; font-size: 13px; color: #444; }
+  .pv-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; border-top: 1px solid #ebeef5; padding-top: 12px; }
+  .pv-foot-title { font-weight: 600; }
+  .pv-foot-right { display: flex; align-items: center; gap: 8px; }
+  .pv-count { color: #999; font-size: 12px; border: 1px solid #ebeef5; border-radius: 3px; padding: 1px 6px; }
+  .pv-tag { background: #e8f1fd; color: #2b7cff; border-radius: 3px; padding: 2px 8px; font-size: 12px; }
+  .cfg-head { display: flex; justify-content: space-between; align-items: center; }
+  .cfg-title { font-size: 14px; font-weight: 700; }
+  .cfg-tools { display: flex; align-items: center; gap: 12px; }
+  .cfg-chosen { color: #666; font-size: 12px; }
+  .cfg-reset { color: #2b7cff; font-size: 12px; cursor: pointer; }
+  .cfg-sub { color: #999; font-size: 12px; margin: 6px 0 12px; }
+  .cfg-sec { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .cfg-sec-label { font-weight: 600; }
+  .cfg-sec-tip { color: #bbb; font-size: 12px; }
+  .cfg-select { width: 100%; margin-bottom: 14px; }
+  .cfg-select .el-select-group__title { color: #999; font-size: 12px; }
+  .cfg-hero { display: flex; gap: 12px; align-items: flex-start; background: linear-gradient(90deg, #e9f2fd, #f7fbff); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
+  .cfg-icon { width: 36px; height: 36px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 17px; }
+  .cfg-card-name { font-weight: 700; font-size: 14px; }
+  .cfg-card-desc { color: #999; font-size: 12px; margin-top: 4px; line-height: 1.6; }
+  .cfg-block { margin-top: 14px; }
+  .cfg-block + .cfg-block { border-top: 1px solid #ebeef5; padding-top: 14px; }
+  .cfg-qsec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cfg-qsec-label { color: #333; font-weight: 700; font-size: 14px; }
+  .cfg-extra { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .cfg-extra-label { color: #333; }
+  .cfg-extra-inp { width: 90px; }
+  .cfg-content { display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; }
+  .cfg-content-label { color: #333; flex-shrink: 0; line-height: 32px; }
+  .cfg-content-label .req { color: #f56c6c; margin-right: 2px; }
+  .cfg-content-form { flex: 1; }
+  .cfg-content-form .el-form-item { margin-bottom: 0; }
+  .cfg-content.is-error .el-textarea__inner { border-color: #f56c6c; }
+  .cfg-content-err { color: #f56c6c; font-size: 12px; line-height: 1; padding-top: 4px; flex: 1; text-align: right; }
+  .fail-tip { color: #606266; line-height: 1.9; }
+  .fail-item { color: #606266; line-height: 1.9; }
+
+  /* ===== 课程管理（课程配置） ===== */
+  .cm-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cm-back-row { display: flex; align-items: center; gap: 10px; }
+  .cm-name { font-weight: 700; font-size: 15px; }
+  .cm-tag-done { background: #e8f7ee; color: #52c41a; font-size: 12px; border-radius: 3px; padding: 1px 8px; }
+  .cm-type { color: #666; }
+  .cm-progress { display: flex; align-items: center; gap: 12px; color: #333; }
+  .cm-progress b { color: #2b7cff; }
+  .cm-step { color: #8c6d1f; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 3px; padding: 1px 8px; font-size: 12px; }
+  .tab-badge { background: #f56c6c; color: #fff; font-size: 11px; border-radius: 9px; padding: 0 5px; margin-left: 2px; }
+  .cm-toolbar { display: flex; gap: 10px; margin-bottom: 12px; }
+  .cm-body { display: flex; gap: 16px; align-items: flex-start; }
+  .cm-left { flex: 0 0 44%; min-width: 0; border: 1px solid #ebeef5; border-radius: 8px; overflow: hidden; }
+  .cm-head-row { display: flex; align-items: center; background: #f5f7fa; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid #ebeef5; }
+  .cm-list { max-height: 460px; overflow-y: auto; }
+  .cm-row { display: flex; align-items: center; padding: 11px 14px; cursor: pointer; border-top: 1px solid #f4f5f7; border-left: 3px solid transparent; }
+  .cm-row:hover { background: #f5f9ff; }
+  .cm-row.active { color: #2b7cff; background: #eef5ff; border-left-color: #2b7cff; font-weight: 600; }
+  .cm-ch-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cm-ch-data { width: 64px; color: #999; flex-shrink: 0; }
+  .cm-ch-tag-w { width: 64px; flex-shrink: 0; text-align: left; }
+  .cm-ch-tag { background: #e8f1fd; color: #2b7cff; font-size: 12px; border-radius: 3px; padding: 1px 8px; }
+  .cm-right { flex: 1; min-width: 0; border: 1px solid #ebeef5; border-radius: 8px; padding: 14px 16px 16px; }
+  .cm-r-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cm-r-sum { color: #2b7cff; }
+  .blue { color: #2b7cff; }
+  .cm-notice { display: flex; justify-content: space-between; align-items: center; background: #e9f2fd; border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; flex-wrap: wrap; gap: 8px; }
+  .cm-notice-btns { display: flex; gap: 8px; }
+  .btn-warn { color: #e6a23c; border-color: #f5dab1; background: #fdf6ec; }
+  .cm-sec-label { border-left: 3px solid #2b7cff; padding-left: 8px; font-weight: 600; margin: 14px 0 8px; }
+  .cm-card { display: flex; align-items: center; gap: 12px; border: 1px solid #ebeef5; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .cm-card:hover { border-color: #c9ddfb; }
+  .cm-card-icon { width: 38px; height: 38px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; flex-shrink: 0; }
+  .cm-thumb { position: relative; width: 64px; height: 38px; border-radius: 4px; background: linear-gradient(135deg, #6a89b8 0%, #46608a 60%, #2e3f5c 100%); flex-shrink: 0; }
+  .cm-thumb-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 12px; opacity: .9; }
+  .cm-thumb-dur { position: absolute; right: 3px; bottom: 3px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; line-height: 1; padding: 1px 3px; border-radius: 2px; }
+  .cm-card-main { flex: 1; min-width: 0; }
+  .cm-card-title { font-weight: 600; }
+  .cm-card-tag { font-weight: 400; font-size: 12px; color: #999; margin-left: 6px; }
+  .cm-card-meta { color: #999; font-size: 12px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cm-card-view { color: #2b7cff; cursor: pointer; flex-shrink: 0; font-size: 12px; }
+  .cm-card-view:hover { color: #1a5fe0; text-decoration: underline; }
+  /* 视频详情弹窗 - 视频信息Tab */
+  .vi-top { display: flex; gap: 16px; }
+  .vi-player { flex: 1.15; min-width: 0; border-radius: 6px; overflow: hidden; background: #000; }
+  .vi-screen { position: relative; height: 260px; background: linear-gradient(180deg, #b9d4ea 0%, #d9e7f2 55%, #cfd8e2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .vi-screen-title { font-size: 30px; letter-spacing: 10px; text-indent: 10px; color: #333; font-weight: 600; }
+  .vi-screen-sub { font-size: 20px; color: #333; font-weight: 600; margin-top: 6px; letter-spacing: 4px; }
+  .vi-ctrl { display: flex; justify-content: space-between; color: #fff; font-size: 12px; padding: 8px 10px; background: #1e1e1e; }
+  .vi-side { flex: 1; min-width: 0; }
+  .vi-name { font-size: 13px; color: #333; margin-bottom: 8px; }
+  .vi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .vi-kv { font-size: 12px; color: #333; display: flex; align-items: flex-start; line-height: 1.7; }
+  .vi-k { color: #999; flex-shrink: 0; }
+  .vi-cover-row { margin-top: 10px; }
+  .vi-cover { width: 128px; height: 80px; border-radius: 4px; background: linear-gradient(180deg, #b9d4ea 0%, #d9e7f2 60%, #cfd8e2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .vi-cover-t { font-size: 14px; color: #333; font-weight: 600; letter-spacing: 3px; }
+  .vi-cover-s { font-size: 11px; color: #555; margin-top: 3px; letter-spacing: 2px; }
+  .vi-intro-row { margin-top: 10px; }
+  .vi-intro-row .el-input { flex: 1; }
+  .dlg-sec { border-left: 3px solid #2b7cff; padding-left: 8px; font-weight: 600; font-size: 13px; margin: 16px 0 8px; }
+  .fmt-table { width: 70%; border-collapse: collapse; font-size: 12px; }
+  .fmt-table th, .fmt-table td { border: 1px solid #ebeef5; padding: 7px 10px; text-align: center; color: #333; }
+  .fmt-table th { background: #f5f7fa; font-weight: 600; }
+  .fmt-table td:first-child { background: #f8f9fb; }
+  .fmt-size { color: #2b7cff; }
+  .op-line { font-size: 12px; color: #333; line-height: 2; }
+  .tag-block-title { font-size: 13px; font-weight: 600; color: #333; margin: 10px 0 6px; }
+  .tag-bar { display: flex; flex-wrap: wrap; gap: 6px 24px; background: #e9f2fd; border-radius: 4px; padding: 8px 12px; font-size: 12px; color: #333; }
+  .ext-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 12px; color: #333; padding: 2px 4px; }
+  .kv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .kv-table th, .kv-table td { border: 1px solid #ebeef5; padding: 7px 10px; text-align: center; color: #333; }
+  .kv-table th { background: #f5f7fa; font-weight: 600; }
+  .empty-cell { color: #999; padding: 18px 0; }
+  .vp-info { border: 1px solid #ebeef5; border-radius: 6px; padding: 4px 12px; }
+  .vp-info-row { display: flex; padding: 8px 0; border-top: 1px solid #f4f5f7; }
+  .vp-info-row:first-child { border-top: none; }
+  .vp-k { width: 84px; color: #999; flex-shrink: 0; }
+  .vp-v { color: #333; }
+  /* 视频详情弹窗 - 切片信息Tab（与视频页一致：视频 + 黑色进度条 + 时间轴，只读） */
+  .sv-row { display: flex; gap: 16px; align-items: flex-start; }
+  .sv-player-col { flex: 0 0 460px; width: 460px; }
+  .sv-video-box { width: 460px; height: 259px; }
+  .sv-video-box .video-poster { height: 259px; }
+  .sv-panel { flex: 1 1 auto; min-width: 260px; border: 1px solid #ebeef5; border-radius: 8px; overflow: hidden; }
+  .sv-panel-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f7f9fc; border-bottom: 1px solid #ebeef5; flex-wrap: wrap; }
+  .sv-panel-head .title { font-size: 13px; color: #333; font-weight: 600; }
+  .sv-panel-body { padding: 12px; min-height: 150px; }
+  .sv-info-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #f0f2f5; font-size: 13px; }
+  .sv-info-row:last-child { border-bottom: none; }
+  .sv-info-row .k { width: 68px; color: #999; flex-shrink: 0; }
+  .sv-info-row .v { color: #333; word-break: break-all; }
+  .sv-empty { display: flex; align-items: center; justify-content: center; height: 126px; color: #bbb; font-size: 13px; }
+  .sv-timeline { margin-top: 14px; }
+  .sv-timeline .tl-actions { margin-bottom: 8px; }
+  /* 视频详情弹窗 - 切片信息Tab */
+  .slice-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .slice-empty-box { width: 58px; height: 40px; border-radius: 6px; background: #5b8ff9; position: relative; margin-bottom: 2px; box-shadow: 0 6px 14px rgba(91,143,249,.35); }
+  .slice-empty-box::before { content: ''; position: absolute; top: -9px; left: 5px; right: 5px; height: 13px; border-radius: 4px; background: #85aef9; }
+  .slice-empty-illu { margin-bottom: 4px; }
+  .slice-empty-txt { color: #999; font-size: 12px; margin-top: 10px; }
+  .cm-add { text-align: center; margin-top: 12px; }
+  .cm-req { margin-top: 16px; border: 1px solid #ffe58f; background: #fffbe6; border-radius: 8px; padding: 14px 18px; }
+  .cm-req-title { font-weight: 700; color: #d48806; margin-bottom: 8px; }
+  .cm-req-body { color: #8c6d1f; font-size: 13px; line-height: 1.9; }
+  .cm-req-legend { margin-left: 16px; }
+  .cm-req-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+  .cm-req-legend .dot.c1 { background: #c9d7f8; }
+  .cm-req-legend .dot.c2 { background: #c2e3f8; }
+  .cm-req-legend .dot.c3 { background: #ccd3f5; }
+  .vd-tabs .el-tabs__header { border-bottom: none; }
+  .vd-tabs .el-tabs__nav-wrap::after { background-color: transparent; }
+  /* min-height:0 必加：flex 子项默认 min-height:auto 不会被压缩，导致 body 不滚动、
+   实际滚动的是外层 .el-overlay-dialog，tab 的 position:sticky 便失效 */
+  .vd-dialog { display: flex; flex-direction: column; max-height: 85vh; overflow: visible; }
+  .vd-dialog .el-dialog__body { flex: 1; min-height: 0; overflow-y: auto; }
+  /* 弹窗内为查看态：隐藏【标记起点】【标记终点】【添加区间】【添加互动】，仅保留【播放区间】与缩放 */
+  .vd-dialog .tl-toolbar > .el-button { display: none; }
+  .vd-dialog .tl-actions > .el-button:nth-of-type(2),
+  .vd-dialog .tl-actions > .el-button:nth-of-type(3) { display: none; }
+  .vd-dialog-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+  .vd-dialog-header .el-button { margin-left: auto; }
+
+  /* ===== 课包管理（课包详情） ===== */
+  .pkg-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .pkg-back-title { display: flex; align-items: center; gap: 8px; }
+  .pkg-title { font-weight: 700; font-size: 15px; }
+  .pkg-id { color: #999; font-size: 12px; }
+  .pkg-actions { display: flex; gap: 10px; }
+  .pkg-section-title { font-weight: 700; font-size: 14px; margin-bottom: 14px; }
+  .pkg-form { display: flex; flex-direction: column; gap: 14px; }
+  .pkg-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: start; }
+  .pkg-fitem { display: flex; align-items: center; gap: 8px; }
+  .pkg-fitem-wide { grid-column: span 1; }
+  .pkg-label { color: #606266; font-size: 13px; width: 92px; flex-shrink: 0; text-align: right; }
+  .pkg-label .req { color: #f56c6c; margin-right: 2px; }
+  .pkg-inp { flex: 1; }
+  .pkg-text { color: #333; font-size: 13px; flex: 1; }
+  .pkg-type-tag { display: inline-block; border: 1px solid #dcdfe6; border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #606266; margin-right: 8px; cursor: pointer; }
+  .pkg-type-tag.active { background: #e8f1fd; color: #2b7cff; border-color: #2b7cff; }
+  .pkg-res-tabs { display: flex; gap: 24px; border-bottom: 1px solid #ebeef5; margin-bottom: 16px; }
+  .pkg-res-tab { font-size: 14px; color: #606266; padding-bottom: 10px; cursor: pointer; position: relative; }
+  .pkg-res-tab.active { color: #2b7cff; font-weight: 600; }
+  .pkg-res-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #2b7cff; }
+  .pkg-sec { margin-bottom: 14px; }
+  .pkg-sec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .pkg-sec-label { font-weight: 600; font-size: 13px; border-left: 3px solid #2b7cff; padding-left: 8px; }
+  .pkg-sec-count { color: #999; font-size: 12px; }
+  .pkg-add-btn { width: 20px; height: 20px; border-radius: 50%; background: #2b7cff; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; margin-left: auto; }
+  .pkg-card { display: flex; align-items: center; gap: 12px; border: 1px solid #ebeef5; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .pkg-card:hover { border-color: #c9ddfb; }
+  .pkg-thumb { position: relative; flex-shrink: 0; border-radius: 6px; overflow: hidden; }
+  .pkg-thumb-doc { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+  .pkg-thumb-video { width: 80px; height: 48px; background: linear-gradient(135deg, #6a89b8 0%, #46608a 60%, #2e3f5c 100%); }
+  .pkg-thumb-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 12px; opacity: .9; }
+  .pkg-thumb-dur { position: absolute; right: 3px; bottom: 3px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; line-height: 1; padding: 1px 3px; border-radius: 2px; }
+  .pkg-card-main { flex: 1; min-width: 0; }
+  .pkg-card-title { font-weight: 600; font-size: 13px; }
+  .pkg-card-meta { color: #999; font-size: 12px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pkg-card-ops { display: flex; gap: 10px; flex-shrink: 0; }
+  .pkg-op { font-size: 12px; cursor: pointer; }
+  .pkg-op-preview { color: #2b7cff; }
+  .pkg-op-remove { color: #f56c6c; }
+  .pkg-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; }
+  .pkg-empty-box { width: 58px; height: 40px; border-radius: 6px; background: #5b8ff9; position: relative; margin-bottom: 2px; box-shadow: 0 6px 14px rgba(91,143,249,.35); }
+  .pkg-empty-box::before { content: ''; position: absolute; top: -9px; left: 5px; right: 5px; height: 13px; border-radius: 4px; background: #85aef9; }
+  .pkg-empty-txt { color: #999; font-size: 12px; margin-top: 12px; }
+
+  /* ===== 挂载资源抽屉 ===== */
+  .mount-head { font-size: 16px; font-weight: 600; color: #333; }
+  .mount-tabs { display: flex; align-items: center; gap: 28px; border-bottom: 1px solid #ebeef5; padding-bottom: 12px; margin-bottom: 16px; }
+  .mount-tab { font-size: 14px; color: #333; cursor: pointer; }
+  .mount-tab.active { color: #2b7cff; font-weight: 600; }
+  .mount-tab-tip { margin-left: auto; color: #999; font-size: 13px; cursor: pointer; }
+  .mount-frow { display: flex; align-items: flex-start; margin-bottom: 12px; font-size: 13px; }
+  .mount-flabel { color: #999; flex-shrink: 0; line-height: 22px; }
+  .mount-opts { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .mount-opt { color: #333; cursor: pointer; line-height: 22px; }
+  .mount-opt:hover { color: #2b7cff; }
+  .mount-opt.active { color: #2b7cff; }
+  .mount-arr { color: #bbb; font-size: 11px; }
+  .mount-search-row { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 10px; }
+  .mount-search { display: flex; align-items: center; }
+  .mount-search-inp { width: 200px; }
+  .mount-reset { color: #666; font-size: 13px; cursor: pointer; }
+  .mount-reset:hover { color: #2b7cff; }
+  .mount-check-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .mount-chosen { color: #999; font-size: 13px; }
+  .mount-list { display: flex; flex-direction: column; gap: 12px; }
+  .mount-item { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #ebeef5; border-radius: 8px; padding: 12px; }
+  .mount-item.checked { border-color: #2b7cff; background: #f5f9ff; }
+  .mount-thumb { width: 150px; height: 84px; border-radius: 6px; flex-shrink: 0; position: relative; overflow: hidden; color: #fff;
+    background: linear-gradient(135deg, #3a7bd5 0%, #6ab0f3 55%, #8fd3f4 100%); }
+  .mount-thumb .mk-tag { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,.45); font-size: 11px; padding: 1px 6px; border-radius: 3px; }
+  .mount-thumb .mk-title { position: absolute; left: 8px; bottom: 22px; font-size: 12px; }
+  .mount-thumb .mk-teacher { position: absolute; left: 8px; bottom: 7px; font-size: 11px; opacity: .85; }
+  .mount-thumb .mk-dur { position: absolute; right: 6px; bottom: 7px; font-size: 11px; opacity: .85; }
+  .mount-main { flex: 1; min-width: 0; }
+  .mount-title { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
+  .mount-title .st { font-size: 12px; font-weight: 400; color: #0abf74; background: #e8f9f1; padding: 0 6px; border-radius: 3px; flex-shrink: 0; }
+  .mount-sub { color: #999; font-size: 12px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mount-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .mount-tag { font-size: 11px; color: #5b8ff9; background: #eef4ff; padding: 1px 8px; border-radius: 3px; }
+  .mount-meta { color: #999; font-size: 12px; margin-top: 8px; }
+  .mount-view { color: #2b7cff; font-size: 13px; cursor: pointer; flex-shrink: 0; align-self: center; }
+  .mount-view:hover { color: #1e63d6; }
+  .mount-page { display: flex; justify-content: center; margin-top: 16px; }
+  .cfg-added { color: #999; font-size: 12px; margin-right: 8px; }
+  .cfg-q { background: #fff; border: 1px solid #ebeef5; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+  .cfg-q-line1 { color: #333; }
+  .cfg-q-id { color: #2b7cff; margin: 0 4px; }
+  .cfg-q-type { background: #fdf6ec; color: #e6a23c; font-size: 12px; border-radius: 3px; padding: 1px 6px; }
+  .cfg-q-stem { color: #333; margin: 6px 0; }
+  .cfg-q-line3 { display: flex; align-items: center; gap: 6px; color: #666; }
+  .cfg-q-radio { margin: 0 6px; }
+  .cfg-q-radio .el-radio { margin-right: 12px; }
+  .cfg-q-inp { width: 44px; margin: 0 2px; }
+  .cfg-q-ops { margin-left: auto; display: flex; gap: 12px; }
+  .cfg-q-view { cursor: pointer; font-size: 12px; color: #606266; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 3px 10px; }
+  .cfg-q-view:hover { color: #2b7cff; border-color: #2b7cff; }
+  .cfg-q-del { cursor: pointer; font-size: 12px; color: #f56c6c; background: #fef0f0; border: 1px solid #fbc4c4; border-radius: 4px; padding: 3px 10px; }
+  .cfg-q-del:hover { color: #fff; background: #f56c6c; border-color: #f56c6c; }
+  .cfg-empty { text-align: center; color: #bbb; padding: 22px 0 10px; }
+  .cfg-empty-ico { font-size: 26px; margin-bottom: 6px; }
+  .cfg-empty-txt { font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="logo"><span class="mark"></span>九学王内容中台</div>
+    <div class="topnav">
+      <a><span class="ico" style="background:#9aa7b8;"></span>知识体系</a>
+      <a><span class="ico" style="background:#9aa7b8; border-radius:50%;"></span>属性与标签</a>
+      <a><span class="ico" style="background:#9aa7b8;"></span>映射关系</a>
+      <a class="active"><span class="ico" style="background:#2b7cff; border-radius:50%;"></span>内容资产库</a>
+      <a><span class="ico" style="background:#9aa7b8;"></span>开放服务</a>
+      <a><span class="ico" style="background:#9aa7b8;"></span>系统设置</a>
+    </div>
+    <div class="topbar-right">
+      <button class="pill-btn">接口文档</button>
+      <button class="pill-btn">▦ 工作台</button>
+      <span class="avatar">易</span>
+      <span class="username">易丽娟</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="menu-item menu-group-open">基础资源库 <span class="arr">⌃</span></div>
+      <div class="menu-sub" :class="{ active: $route.path === '/video' }" @click="$router.push('/video')">视频资源</div>
+      <div class="menu-sub" :class="{ active: $route.path === '/course' }" @click="$router.push('/course')">课件资源</div>
+      <div class="menu-item menu-group-open">课程中心 <span class="arr">⌃</span></div>
+      <div class="menu-sub" :class="{ active: $route.path === '/course-manage' }" @click="$router.push('/course-manage')">课程管理</div>
+      <div class="menu-sub" :class="{ active: $route.path === '/course-package' }" @click="$router.push('/course-package')">课包管理</div>
+    </aside>
+
+    <router-view></router-view>
+
+    <div class="main" id="video-main">
+      <div class="breadcrumb">内容资产库 / 基础资源库 / 查看视频</div>
+      <div class="back">← 返回</div>
+
+      <div class="page-card">
+        <div class="page-tabs">
+          <div class="tab">视频信息编辑</div>
+          <div class="tab active">切片与标注</div>
+        </div>
+
+        <div class="edit-row">
+          <div class="video-col">
+            <div class="video-box" ref="vbox">
+              <video ref="vprev" v-show="videoSrc" :src="videoSrc" class="vreal" preload="auto" playsinline @timeupdate="onTimeUpdate" @loadedmetadata="onVideoMeta" @play="playing = true" @pause="playing = false; playRangeEnd = null"></video>
+              <div v-if="!videoSrc" class="video-poster">
+                <span class="hint">视频预览区</span>
+                <div class="subtitle">接下来老师先来读</div>
               </div>
-
-              <!-- 教材目录 -->
-              <template v-if="activeTab === 'catalog'">
-                <!-- 操作按钮 -->
-                <div class="action-bar">
-                  <div class="action-left">
-                    <el-button type="primary" @click="openDialog()">
-                      <svg
-                        class="btn-icon"
-                        viewBox="0 0 24 24"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                        style="margin-right: 4px"
-                      >
-                        <path d="M12 5v7H5v1h7v7h1v-7h7v-1h-7V5h-1z" />
-                      </svg>
-                      添加章节
-                    </el-button>
-                    <el-button @click="downloadTemplate()">
-                      <svg
-                        class="btn-icon"
-                        viewBox="0 0 24 24"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                        style="margin-right: 4px"
-                      >
-                        <path
-                          d="M12 15l-4.5-4.5H11V4h2v6.5h3.5L12 15zm-7 3v1h14v-1H5z"
-                        />
-                      </svg>
-                      下载导入模板
-                    </el-button>
+            </div>
+            <!-- 进度条区域：视频下方黑色块（与视频同宽） -->
+            <div class="vprog-wrap" v-if="videoSrc">
+                <span class="vplay-btn" :title="playing ? '暂停' : '播放'" @click.stop="togglePlay">
+                  <svg v-if="!playing" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                  <svg v-else viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+                </span>
+                <span class="vtime">{{ fmtShort(videoCur) }} / {{ fmtShort(videoDur) }}</span>
+                <div class="vprog" ref="vprog" @mousedown.stop="onProgDown">
+                  <div class="vprog-inner">
+                    <div v-for="(s,i) in progressSegs" :key="s.key" class="vprog-seg"
+                         :style="{ left: s.left + '%', width: s.width + '%', background: s.color, color: rangeTextColor(s.color) }">
+                      <span class="vprog-seg-name" v-truncate-tip>{{ s.name }}</span>
+                    </div>
                   </div>
-                  <div class="action-right">
-                    <el-input
-                      v-model="searchKeyword"
-                      placeholder="请输入章节名称"
-                      clearable
-                      style="width: 220px"
-                    >
-                      <template #prefix>
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="14"
-                          height="14"
-                          fill="#909399"
-                        >
-                          <path
-                            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                          />
-                        </svg>
-                      </template>
-                    </el-input>
-                    <el-button @click="exportTree()">
-                      <svg
-                        class="btn-icon"
-                        viewBox="0 0 24 24"
-                        width="14"
-                        height="14"
-                        fill="currentColor"
-                        style="margin-right: 4px"
-                      >
-                        <path
-                          d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
-                        />
-                      </svg>
-                      导出目录
-                    </el-button>
+                  <div class="vprog-head" :style="{ left: pctProg + '%' }"></div>
+                  <div v-for="(m,i) in progressInterMarks" :key="m.key"
+                       class="vprog-mark" :class="{ active: !isNewInter && activeSeg===m.code }"
+                       :title="m.name + '　' + m.time"
+                       :style="{ left: m.left + '%' }">
+                    <span class="vprog-mark-name">{{ m.name }}</span>
+                    <i class="vprog-mark-dot"></i>
                   </div>
                 </div>
+                <span class="vctl-btn" :title="videoMuted ? '取消静音' : '静音'" @click.stop="toggleMute">
+                  <svg v-if="!videoMuted" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z"></path><path d="M14.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path><path d="M17 6.5a7 7 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                  <svg v-else viewBox="0 0 24 24" width="17" height="17"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z" fill="currentColor"></path><path d="M14.5 9.5l5 5M19.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                </span>
+                <span class="vctl-btn" :title="isFullscreen ? '退出全屏' : '全屏'" @click.stop="toggleFullscreen">
+                  <svg v-if="!isFullscreen" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
+                  <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></svg>
+                </span>
+                <el-dropdown trigger="click" placement="top" @command="onSpeedCommand">
+                  <span class="vctl-btn" title="更多" @click.stop>
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="12" cy="5" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="12" cy="19" r="1.7"></circle></svg>
+                  </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item v-for="r in [0.5, 1, 1.25, 1.5, 2]" :key="r" :command="r">{{ r === 1 ? '1x（正常）' : r + 'x' }}</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+            </div>
 
-                <!-- 表格 -->
-                <el-table
-                  ref="tableRef"
-                  :data="filteredData"
-                  indent="28"
-                  row-key="id"
-                  :tree-props="{ children: 'children' }"
-                  :expand-row-keys="expandedKeys"
-                  :row-class-name="rowClassName"
-                  style="width: 100%"
-                >
-                  <el-table-column
-                    prop="name"
-                    label="目录"
-                    min-width="280"
-                  >
-                    <template #default="{ row }">
-                      <el-input
-                        v-model="row.name"
-                        placeholder="请输入章节名称"
-                        @blur="saveRowName(row)"
-                      ></el-input>
+          <!-- 编辑区间面板（图1） -->
+          <div class="panel-col" v-show="panelMode==='range'">
+            <div class="panel-head">
+              <div class="panel-title">{{ isNewRange ? '新增区间' : '编辑区间' }}</div>
+              <div>
+                <el-button size="small" plain @click="cancelCurrent('range')">取消</el-button>
+                <el-button size="small" color="#f78989" style="color:#fff; border:none;" @click="deleteCurrent('range')">删除</el-button>
+                <el-button size="small" type="primary" @click="saveCurrent('range')">保存</el-button>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel flabel-narrow"><span class="req">*</span>区间名称:</div>
+              <div class="fctrl">
+                <el-input v-model="rangeForm.name" maxlength="50" class="name-inp range-name" size="small">
+                  <template #suffix><span style="color:#bbb; font-size:12px;">3 / 50</span></template>
+                </el-input>
+                <span class="color-label">区间颜色:</span>
+                <el-popover placement="bottom" :width="260" trigger="click">
+                  <template #reference><span class="color-swatch"></span></template>
+                  <el-color-picker v-model="rangeForm.color" ></el-color-picker>
+                </el-popover>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel flabel-narrow"><span class="req">*</span>起始时间:</div>
+              <div class="fctrl">
+                <div class="time-wrap">
+                  <el-input-number v-model="rangeForm.sM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">分</span>
+                  <el-input-number v-model="rangeForm.sS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">秒</span>
+                  <el-input-number v-model="rangeForm.sMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">毫秒</span>
+                  <span class="dash">—</span>
+                  <el-input-number v-model="rangeForm.eM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">分</span>
+                  <el-input-number v-model="rangeForm.eS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">秒</span>
+                  <el-input-number v-model="rangeForm.eMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">毫秒</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel flabel-narrow">处理类型:</div>
+              <div class="fctrl"><el-tag size="small" color="#e6f0ff" style="color:#2b7cff; border:1px solid #a8c8f8;">人工打标</el-tag></div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel flabel-narrow">主知识点:</div>
+              <div class="fctrl">
+                <el-button class="know-link" type="text">关联配置</el-button>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel flabel-narrow">副知识点:</div>
+              
+            </div>
+          </div>
+
+          <!-- 互动点面板（图2 + 需求1/2） -->
+          <div class="panel-col" v-show="panelMode==='interaction'">
+            <div class="panel-head">
+              <div class="panel-title">{{ isNewInter ? '新增互动' : '编辑互动' }}</div>
+              <div>
+                <el-button size="small" plain @click="cancelCurrent('interaction')">取消</el-button>
+                <el-button size="small" color="#f78989" style="color:#fff; border:none;" @click="deleteCurrent('interaction')">删除</el-button>
+                <el-button size="small" type="primary" @click="saveCurrent('interaction')">保存</el-button>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel"><span class="req">*</span>互动名称:</div>
+              <div class="fctrl">
+                <el-input v-model="interForm.name" maxlength="50" class="name-inp" size="small" @input="nameManuallyEdited = true">
+                  <template #suffix><span style="color:#bbb; font-size:12px;">{{ (interForm.name || '').length }} / 50</span></template>
+                </el-input>
+              </div>
+            </div>
+
+            <!-- 需求1：互动类型分类 = 测练类 / 语音类 / 其他类，随机分组迁移至测练类 -->
+            <div class="frow frow-top">
+              <div class="flabel" style="line-height:32px;"><span class="req">*</span>互动类型:</div>
+              <div class="fctrl" style="display:block;">
+                <div class="cat-checks">
+                  <el-checkbox v-for="cat in typeCats" :key="cat.name"
+                    v-model="cat.checked" @change="onCatChange(cat)">{{ cat.name }}</el-checkbox>
+                </div>
+                <div v-for="cat in checkedCats" :key="cat.name" class="cat-panel">
+                  <el-radio-group v-model="cat.selected" @change="onTypePick(cat)">
+                    <el-radio v-for="opt in cat.options" :key="opt.code" :value="opt.code">
+                      {{ opt.label }}
+                      <el-tooltip :content="opt.tip" placement="top"><span class="info-ico">ⓘ</span></el-tooltip>
+                    </el-radio>
+                  </el-radio-group>
+                </div>
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="flabel"><span class="req">*</span>起始时间:</div>
+              <div class="fctrl">
+                <div class="time-wrap">
+                  <el-input-number v-model="interForm.sM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">分</span>
+                  <el-input-number v-model="interForm.sS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">秒</span>
+                  <el-input-number v-model="interForm.sMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <span class="unit">毫秒</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 倒计时（播控互动-课间休息） -->
+            <div class="frow" v-if="activeConfig.showCountdown">
+              <div class="flabel"><span class="req">*</span>倒计时:</div>
+              <div class="fctrl time-wrap">
+                <el-input-number v-model="interForm.countdownMin" :min="0" :controls="false" class="t-inp" size="small" ></el-input-number>
+                <span class="unit">分</span>
+                <el-input-number v-model="interForm.countdownSec" :min="0" :max="59" :controls="false" class="t-inp" size="small" ></el-input-number>
+                <span class="unit">秒</span>
+              </div>
+            </div>
+            <div class="frow frow-top" v-if="activeConfig.showCountdown">
+              <div class="flabel" style="line-height:30px;"><span class="req">*</span>倒计时说明:</div>
+              <div class="fctrl" style="display:block;">
+                <el-input v-model="interForm.countdownDesc" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入内容" ></el-input>
+              </div>
+            </div>
+
+            <!-- 分组数量（测练类-随机分组） -->
+            <div class="frow" v-if="activeConfig.showGroupCount">
+              <div class="flabel"><span class="req">*</span>分组数量:</div>
+              <div class="fctrl">
+                <el-input-number v-model="interForm.groupCount" :min="2" :max="999" :controls="false" class="group-count-inp" placeholder="请输入随机分组数量，最低为2" ></el-input-number>
+              </div>
+            </div>
+
+            <!-- 提示文本 / 关联内容（语音类、拓展互动：输入文本，不添加题目） -->
+            <div class="frow frow-top" v-if="activeConfig.showContentText && !activeConfig.showQuestions">
+              <div class="flabel" style="line-height:30px;"><span class="req" v-if="activeConfig.contentTextRequired">*</span>{{ activeConfig.contentTextLabel }}</div>
+              <div class="fctrl" style="display:block;">
+                <!-- <el-input v-model="interForm.contentText" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入该互动使用的文本内容" ></el-input> -->
+              </div>
+            </div>
+
+            <!-- 提示文本（测练类常规答题等） -->
+            <div class="frow frow-top" v-if="activeConfig.showContentText && activeConfig.showQuestions && activeConfig.contentTextLabel === '提示文本'">
+              <div class="flabel" style="line-height:30px;">提示文本:</div>
+              <div class="fctrl" style="display:block;">
+                <el-input v-model="interForm.contentText" type="textarea" :rows="2" maxlength="500" show-word-limit placeholder="请输入该互动使用的文本内容" ></el-input>
+              </div>
+            </div>
+
+            <!-- 关联文本（语音类）：必填 -->
+            <div class="frow frow-top" v-if="activeConfig.showQuestions && activeConfig.contentTextLabel === '关联内容'">
+              <div class="flabel" style="line-height:24px;"><span class="req">*</span>关联文本:</div>
+              <div class="fctrl" style="display:block;">
+                <el-input v-model="interForm.contentText" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入该互动使用的文本内容" ></el-input>
+              </div>
+            </div>
+
+            <!-- 关联题目：测练类必填，语音类可选填 -->
+            <div class="frow frow-top" v-if="activeConfig.showQuestions" style="align-items:flex-start;">
+              <div class="flabel" style="line-height:24px;"><span class="req" v-if="currentCatName() === '测练类'">*</span>关联题目:</div>
+              <div class="fctrl" style="display:block;">
+                <span style="font-size:13px;color:#606266;margin-right:8px;">已添加 {{ interForm.questions.length }} 道题</span>
+                <el-button type="primary" size="small" @click="addQuestion">＋ 添加题目</el-button>
+                <div class="picked-wrap" v-if="interForm.questions.length">
+                  <div class="picked-area" ref="pickArea" @scroll.passive="onPickScroll">
+                  <transition-group name="flip" tag="div" class="picked-list">
+                  <div class="picked-item" v-for="(q,idx) in interForm.questions" :key="q.id"
+                       :class="{ dragging: q === dragItem, grab: grabItem === q && !dragItem }"
+                       :draggable="grabItem === q"
+                       @dragstart="onDragStart(idx, $event)"
+                       @dragenter.prevent="onDragEnter(idx)"
+                       @dragover.prevent
+                       @drop.prevent="onDrop()"
+                       @dragend="onDragEnd"
+                       @mouseup="grabItem = null">
+                  <span class="drag-handle" title="拖拽排序" @mousedown="grabItem = q">⠿</span>
+                  <div class="q-head">
+                    <span class="q-no">#{{ idx + 1 }}</span>
+                    <span class="q-id">{{ q.id }}</span>
+                    <span class="q-diff" :class="'d-' + q.diff">{{ q.diff }}</span>
+                  </div>
+                  <div class="q-stem">{{ q.stem }}</div>
+                  <div class="q-foot">
+                    <svg class="clock-ico" viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                    <span class="q-dur-label">答题时长限制</span>
+                    <el-radio-group v-model="q.timeLimited" size="small" class="q-dur-radio">
+                      <el-radio :label="false">无</el-radio>
+                      <el-radio :label="true">有</el-radio>
+                    </el-radio-group>
+                    <template v-if="q.timeLimited">
+                      <el-input-number v-model="q.durationMin" :min="0" :controls="false" class="dur-inp" placeholder="0" ></el-input-number>
+                      <span class="unit">分</span>
+                      <el-input-number v-model="q.durationSec" :min="0" :max="59" :controls="false" class="dur-inp" placeholder="30" ></el-input-number>
+                      <span class="unit">秒</span>
                     </template>
-                  </el-table-column>
-                  <el-table-column
-                    prop="level"
-                    label="层级"
-                    width="120"
-                    align="right"
-                    :formatter="formatLevel"
-                  ></el-table-column>
-                  <el-table-column
-                    prop="id"
-                    label="ID"
-                    width="140"
-                    align="right"
-                  ></el-table-column>
-                  <el-table-column label="操作" width="300" align="center" header-align="center">
-                    <template #default="{ row }">
-                      <el-button link type="primary" @click="addChild(row)"
-                        >添加子章节</el-button
-                      >
-                      <el-tooltip
-                        :content="canDeleteTextbook(row) ? '' : '该章节已被业务引用，无法删除，请先解除关联'"
-                        :disabled="canDeleteTextbook(row)"
-                        placement="top"
-                      >
-                        <span
-                          :class="{ 'op-disabled-wrap': !canDeleteTextbook(row) }"
-                        >
-                          <el-button
-                            link
-                            type="danger"
-                            :disabled="!canDeleteTextbook(row)"
-                            @click="deleteRow(row)"
-                            >删除</el-button
-                          >
-                        </span>
-                      </el-tooltip>
-                      <el-button
-                        link
-                        class="drag-handle"
-                        title="按住拖拽排序"
-                        @click
+                    <el-button size="small" color="#f5f7fa" style="color:#606266;border:none;margin-left:auto;" @click="viewQuestion(q)">查看详情</el-button>
+                    <el-button size="small" color="#fde2e2" style="color:#f56c6c;border:none;" @click="removeQuestion(idx)">移除</el-button>
+                  </div>
+                  </div>
+                  </transition-group>
+                  </div>
+                  <div class="pick-sb" v-show="pickSbVisible" @mousedown="onPickTrackDown">
+                    <div class="pick-sb-thumb" :style="pickThumbStyle" @mousedown.stop.prevent="onPickThumbDown"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 未选中区间/互动时的占位 -->
+          <div class="panel-col panel-empty" v-show="panelMode==='empty'">
+            <div class="slice-empty">
+              <svg class="slice-empty-illu" viewBox="0 0 128 104" width="128" height="104" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="64" cy="46" rx="46" ry="34" fill="#eaf2ff"/>
+                <path d="M64 14 L104 38 L64 62 L24 38 Z" fill="#c6dcff"/>
+                <path d="M24 42 L64 64 L104 42 L104 82 L64 102 L24 82 Z" fill="#5b8ff9"/>
+                <path d="M24 42 L64 64 L104 42 L104 54 L64 74 L24 54 Z" fill="#a9c9ff"/>
+                <path d="M107 24 l3.4 8 8 3.4 -8 3.4 -3.4 8 -3.4 -8 -8 -3.4 8 -3.4z" fill="#8fb8ff"/>
+                <path d="M17 30 l2.6 6 6 2.6 -6 2.6 -2.6 6 -2.6 -6 -6 -2.6 6 -2.6z" fill="#8fb8ff"/>
+              </svg>
+              <div class="slice-empty-txt">请添加或选择区间操作</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部：区间 / 互动（剪映式时间轴） -->
+        <div class="bottom">
+          <div class="tl-toolbar">
+            <span class="title">区间（{{ ranges.length }}个）</span>
+            <el-select :model-value="activeRangeIdx" size="small" style="width:150px;" placeholder="请选择区间" @change="requestSelectRange">
+              <el-option v-for="(r,idx) in ranges" :key="r.id" :label="r.name" :value="idx" ></el-option>
+            </el-select>
+            <span class="title">互动（{{ interList.length }}个）</span>
+            <el-select v-model="activeSeg" size="small" style="width:180px;" placeholder="请选择互动" @change="onInterSelect">
+              <el-option v-for="t in interList" :key="t.code" :label="t.name" :value="t.code" ></el-option>
+            </el-select>
+            <span class="spacer"></span>
+            <el-button type="primary" size="small" @click="addInteraction">＋ 添加互动</el-button>
+            <el-button type="primary" size="small" @click="addRange">＋ 添加区间</el-button>
+          </div>
+
+          <!-- 时间轴工具栏 -->
+          <div class="tl-actions">
+            <el-button size="small" :disabled="!canPlayRange || isNewInter" @click="playVideo">播放区间</el-button>
+            <el-button size="small" :disabled="!canMark" @click="markStart">标记起点</el-button>
+            <el-button size="small" :disabled="!canMark || activeSeg != null || isNewInter" title="互动点仅需起始时间" @click="markEnd">标记终点</el-button>
+            <div class="tl-zoom">
+              <span class="tl-zoom-btn" title="缩小时间轴" @click="zoomBy(-4)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M15.6 15.6 L20 20"></path>
+                  <path d="M7.6 10.5 L13.4 10.5"></path>
+                </svg>
+              </span>
+              <el-slider v-model="zoomLevel" :min="defaultLevel" :max="8" :step="1" :show-tooltip="false" style="width:110px;" @change="onZoomChange"></el-slider>
+              <span class="tl-zoom-btn" title="放大时间轴" @click="zoomBy(4)">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M15.6 15.6 L20 20"></path>
+                  <path d="M7.6 10.5 L13.4 10.5"></path>
+                  <path d="M10.5 7.6 L10.5 13.4"></path>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <div class="tl-scroll" ref="tlScroll">
+            <div class="tl-body" ref="tlBody" :style="{ width: tlBodyWidth + 'px' }">
+              <div class="tl-ruler" @mousedown="onRulerDown">
+                <span v-for="(t,i) in rulerTicks" :key="i" class="tl-tick" :class="{ minor: !t.major, 'tl-tick-last': t.last }" :style="{ left: t.left + '%' }">{{ t.label }}</span>
+              </div>
+              <div class="tl-track tl-video">
+                <div class="tl-clip-wrap">
+                  <div class="tl-clip tl-video-card" :style="{ width: (videoDur / tlTotal * 100) + '%' }">
+                    <span class="tl-card-name">{{ videoName }}</span>
+                  </div>
+                  <!-- 互动点：按起始时间在轨道上定位展示，点击可选中 -->
+                  <div class="tl-marks">
+                    <div v-for="t in interList" :key="t.code"
+                         class="tl-mark" :class="{ active: !isNewInter && activeSeg===t.code }"
+                         :style="markPos(t, markColor(t.code))"
+                         :title="t.name + '　' + rangeStartText(t)"
+                         @click.stop="selectSeg(t.code)">
+                      <el-icon class="tl-mark-ico"><Location /></el-icon>
+                      <span class="tl-mark-name">{{ t.name }}</span>
+                    </div>
+                    <!-- 新增中的互动：轨道上实时预览互动点（默认选中高亮） -->
+                    <div v-if="isNewInter" class="tl-mark active"
+                         :style="markPos(interForm, markColor(''))"
+                         :title="interForm.name + '　' + rangeStartText(interForm)">
+                      <el-icon class="tl-mark-ico"><Location /></el-icon>
+                      <span class="tl-mark-name">{{ interForm.name }}</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- 每个区间默认都展示：色带在轨道上方/下方（不占轨道高度），轨道高度保持统一 -->
+                <div class="tl-ranges">
+                  <div v-for="(r,idx) in ranges" :key="r.id"
+                       class="tl-range-seg" :class="{ active: activeRangeIdx===idx }"
+                       :style="Object.assign(segPos(r), { '--rc': r.color })"
+                       @mousedown="activeRangeIdx===idx && startRangeMove($event, idx)" @click="onRangeClick(idx)">
+                    <span class="tl-range-edge left" @mousedown.stop="startRangeResize($event, idx, 'left')" @click.stop></span>
+                    <span class="tl-range-edge right" @mousedown.stop="startRangeResize($event, idx, 'right')" @click.stop></span>
+                    <div class="tl-range-head">
+                      <span class="tl-range-name" v-truncate-tip>{{ r.name }}</span>
+                    </div>
+                  </div>
+                  <!-- 新增中的区间：轨道上实时预览（虚线边框区分未保存，可整体拖拽/缩放，放手重叠则还原） -->
+                  <div v-if="isNewRange" class="tl-range-seg active"
+                       :style="Object.assign(segPos(rangeForm), { '--rc': rangeForm.color || '#fbd9e0' })"
+                       @mousedown="startRangeMove($event, -1)">
+                    <span class="tl-range-edge left" @mousedown.stop="startRangeResize($event, -1, 'left')" @click.stop></span>
+                    <span class="tl-range-edge right" @mousedown.stop="startRangeResize($event, -1, 'right')" @click.stop></span>
+                    <div class="tl-range-head">
+                      <span class="tl-range-name" v-truncate-tip>{{ rangeForm.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tl-playhead" :style="{ left: pct + '%' }" @mousedown.stop="onPlayheadDown"></div>
+            </div>
+            <div class="tl-space"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 需求说明：展示在区间区域下方（区间容器外） -->
+        <div class="cm-req">
+          <div class="cm-req-title">需求说明</div>
+          <div class="cm-req-body">
+            <b>1. 互动类型分类修改：</b>分类名依次修改为 <b>测练类、语音类、其他类</b>；<b>【随机分组】</b>标签 迁移至 <b>【测练类】</b>，并且支持填写提示文本、关联题目；语音类互动支持可选关联题目。<br>
+            <b>2. 互动名称设置默认值：</b>默认与所选互动标签一致，切换标签时自动更新，支持手动修改.<br>
+            <b>3. 互动已关联的题目卡片优化：</b>测练类的【关联内容】改为【关联题目】，展示与课件侧的展示、交互一致：新增支持【查看详情】、拖拽、选择有无答题时长限制（默认无，有则默认30秒）。<br>
+            <b>4. 互动区间优化：</b>互动区间 统一改为 互动，去掉结束时间，起始时间默认 0分0秒0毫秒。<br>
+            <b>5. 视频进度条优化：</b>位置展示在视频下方，支持展示区间和互动点，互动点名称在hover时或下方轨道选中时才展示。<br>
+            <b>6. 区间&互动展示区优化：</b>新增时间轴，支持放大缩小; 播放头竖线支持拖拽，拖拽时在视频中同步预览对应帧; 新增【播放区间】按钮; 区间轨道支持拖拽边界、拖拽整体。<br>
+            <b>7.区间&互动展示区优化（仅编辑页）：</b>新增【标记起点】、【标记终点】按钮。<br>
+            <b>8. 时间轴放大/缩小规则：</b><br>
+            <span class="cm-req-legend">① <b>按阶梯缩放</b>：缩放以「大刻度间隔」为档位，共 9 级，依次为 10 分钟、5 分钟、2 分钟、1 分钟、30 秒、10 秒、5 秒、2 秒、1 秒；【放大时间轴】进一档、【缩小时间轴】退一档，滑块与按钮等价。</span><br>
+            <span class="cm-req-legend">② <b>每档刻度密度固定</b>：每个大刻度在轨道上约占 140px（保证刻度文字不重叠），据此推导该档的「像素/秒」；大刻度展示时间文字，其内固定均分 <b>10 个小刻度</b>（最小 1 秒），同一档位只展示本档刻度，不混入其它档位。</span><br>
+            <span class="cm-req-legend">③ <b>最小级别 = 刚好铺满</b>：缩到最小时整条时间轴恰好铺满可视区（不残留空白、也不出现横向滚动）；进入页面默认即为该最小级别。可视宽度变化（窗口缩放、弹窗打开）后会自动重新铺满；用户手动缩放过则不再自动调整。</span><br>
+            <span class="cm-req-legend">④ <b>最大级别</b>：放大到 1 秒一大刻度即为最细档（1 秒 = 约 140px），不能再放大。</span><br>
+            <span class="cm-req-legend">⑤ <b>总时长取整</b>：时间轴总长按视频时长向上取整到整分钟（如 7:40 → 8:00），保证末端刻度对齐整分。</span><br>
+            <span class="cm-req-legend">⑥ <b>缩放后播放头居中</b>：每次切换档位后，播放头竖线自动滚动到可视区中间，便于在放大后继续查看当前位置附近切片。</span>
+          </div>
+        </div>
+
+        <!-- 题目详情弹窗 -->
+        <el-dialog v-model="detailVisible" title="题目详情" width="720px">
+          <div class="qd-cards">
+            <div class="qd-card"><span class="qd-label">题目ID</span><span class="qd-val">{{ detailQ.id }}</span></div>
+            <div class="qd-card"><span class="qd-label">题型</span><span class="qd-val">{{ detailQ.type }}</span></div>
+            <div class="qd-card"><span class="qd-label">难度</span><span class="qd-val qd-diff" :class="'d-' + detailQ.diff">{{ detailQ.diff }}</span></div>
+          </div>
+          <div class="qd-body">
+            <div class="qd-stem">{{ detailQ.stem }}</div>
+            <div class="qd-opt" v-for="(o,i) in detailQ.options" :key="i">{{ o }}</div>
+            <div class="qd-split"></div>
+            <div class="qd-kv"><span class="qd-key">【 答 案 】</span><span class="qd-val2">{{ detailQ.answer }}</span></div>
+            <div class="qd-kv"><span class="qd-key">【 解 析 】</span><span class="qd-val2">{{ detailQ.analysis }}</span></div>
+          </div>
+          <template #footer>
+            <el-button type="primary" @click="detailVisible = false">关闭</el-button>
+          </template>
+        </el-dialog>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 课件详情页（课件资源路由） -->
+<script type="text/x-template" id="course-page-tpl">
+  <div class="main">
+    <div class="breadcrumb">内容资产库 / 基础资源库 / 教学资源 / 课件详情</div>
+
+    <div class="course-topbar">
+      <div class="back" @click="onCancel">← 返回</div>
+      <div>
+        <el-button size="small" plain @click="onCancel">取消</el-button>
+        <el-button size="small" type="primary" @click="onSave">保存配置</el-button>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <div class="page-tabs">
+        <div class="tab" :class="{ active: activeTab === 'basic' }" @click="activeTab = 'basic'">基本信息</div>
+        <div class="tab" :class="{ active: activeTab === 'inter' }" @click="activeTab = 'inter'">互动类型</div>
+      </div>
+
+      <!-- 基本信息 -->
+      <div v-if="activeTab === 'basic'" class="course-basic">
+        <div class="frow"><div class="flabel">课件名称:</div><div class="fctrl"><el-input v-model="basic.name" size="small" style="width:240px;"></el-input></div></div>
+        <div class="frow"><div class="flabel">所属目录:</div><div class="fctrl"><el-input v-model="basic.dir" size="small" style="width:240px;"></el-input></div></div>
+        <div class="frow"><div class="flabel">课件简介:</div><div class="fctrl"><el-input type="textarea" :rows="3" v-model="basic.intro" style="width:420px;"></el-input></div></div>
+      </div>
+
+      <!-- 互动类型 -->
+      <div v-else class="course-body">
+        <!-- 左：预览 -->
+        <div class="course-left">
+          <div class="pv-head">
+            <div>
+              <div class="pv-title">预览</div>
+              <div class="pv-file">课件：围绕中心意思写_.pptx</div>
+            </div>
+            <div>
+              <el-button size="small" plain @click="regenPreview">重新生成预览</el-button>
+              <div class="pv-pageinfo">第 {{ curPage }} / {{ pageTotal }} 页</div>
+            </div>
+          </div>
+
+          <div class="pv-label">页面选择</div>
+          <div class="pv-pages">
+            <div v-for="p in visiblePages" :key="p" class="pv-page" :class="{ active: curPage === p }" @click="curPage = p">{{ p }}<span class="pv-badge" v-if="pageBadge(p)">{{ pageBadge(p) }}</span></div>
+          </div>
+
+          <div class="pv-shot">
+            <div class="pv-cover">
+              <div class="pv-cover-title">习 作</div>
+              <div class="pv-cover-sub">围绕中心意思写</div>
+              <div class="pv-cover-speaker">主讲人：谢老师</div>
+            </div>
+          </div>
+
+          <div class="pv-foot">
+            <div class="pv-foot-title">当前页面互动类型</div>
+            <div class="pv-foot-right">
+              <span class="pv-count">{{ pageTypes.length }} 个</span>
+              <span class="pv-tag" v-for="t in pageTypes" :key="t">{{ t }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：互动类型配置 -->
+        <div class="course-right">
+          <div class="cfg-head">
+            <div class="cfg-title">互动类型配置</div>
+            <div class="cfg-tools">
+              <span class="cfg-chosen">已选择 {{ pageTypes.length }} 个</span>
+              <span class="cfg-reset" @click="resetPage">⟳ 重置当前页</span>
+            </div>
+          </div>
+          <div class="cfg-sub">当前页可对应添加多个互动环节</div>
+
+          <div class="cfg-sec">
+            <span class="cfg-sec-label">互动类型</span>
+            <span class="cfg-sec-tip">支持多选，勾选结果仅作用于当前页</span>
+          </div>
+          <el-select v-model="pageTypes" multiple clearable size="small" class="cfg-select" placeholder="请选择互动类型">
+            <el-option-group v-for="g in typeGroups" :key="g.name" :label="g.name + '（' + g.options.length + '）'">
+              <el-option v-for="t in g.options" :key="t" :label="t" :value="t"></el-option>
+            </el-option-group>
+          </el-select>
+
+          <!-- 选中类型提示卡：仅显示最后选中的一个 -->
+          <div class="cfg-hero" v-if="typeConfigs.length">
+            <span class="cfg-icon" :style="{ background: typeConfigs[typeConfigs.length - 1].iconBg }">{{ typeConfigs[typeConfigs.length - 1].icon }}</span>
+            <div>
+              <div class="cfg-card-name">{{ typeConfigs[typeConfigs.length - 1].name }}</div>
+              <div class="cfg-card-desc">{{ typeConfigs[typeConfigs.length - 1].desc }}</div>
+            </div>
+          </div>
+
+          <div class="cfg-block" v-for="cfg in typeConfigs" :key="cfg.name">
+            <div class="cfg-extra" v-for="(f, fi) in (cfg.extraFields || [])" :key="fi">
+              <span class="cfg-extra-label">{{ f.label }}</span>
+              <el-input-number v-model="f.value" :min="0" :controls="false" size="small" class="cfg-extra-inp"></el-input-number>
+            </div>
+            <!-- 题目列表（支持添加题目的类型展示） -->
+            <template v-if="cfg.questions !== undefined">
+              <div class="cfg-qsec-head">
+                <span class="cfg-qsec-label">{{ cfg.name }}</span>
+                <div>
+                  <span class="cfg-added">已添加 {{ cfg.questions.length }} 道题</span>
+                  <el-button size="small" type="primary" @click="">＋ 添加题目</el-button>
+                </div>
+              </div>
+              <!-- 关联文本（测评类：必填，失焦提示 + 保存校验） -->
+              <div class="cfg-content" :class="{ 'is-error': typeMeta[cfg.name].contentTextErr }" v-if="cfg.contentText !== undefined">
+                <span class="cfg-content-label"><span class="req">*</span>关联文本</span>
+                <el-input v-model="typeMeta[cfg.name].contentText" type="textarea" :rows="3" maxlength="500" show-word-limit
+                          placeholder="请输入该互动使用的文本内容" class="cfg-content-form"
+                          @blur="onContentTextBlur(cfg.name)" @input="typeMeta[cfg.name].contentTextErr = false"></el-input>
+                <div class="cfg-content-err" v-if="typeMeta[cfg.name].contentTextErr">请输入关联文本</div>
+              </div>
+              <div class="cfg-q" v-for="(q, qi) in cfg.questions" :key="q.id">
+                <div class="cfg-q-line1">#{{ qi + 1 }}　<span class="cfg-q-id">{{ q.id }}</span>　<span class="cfg-q-type">{{ q.type }}</span></div>
+                <div class="cfg-q-stem">{{ q.stem }}</div>
+                <div class="cfg-q-line3">
+                  <span>🕘 答题时长限制</span>
+                  <el-radio-group v-model="q.timeLimited" size="small" class="cfg-q-radio">
+                    <el-radio :label="false">无</el-radio>
+                    <el-radio :label="true">有</el-radio>
+                  </el-radio-group>
+                  <template v-if="q.timeLimited">
+                    <el-input-number v-model="q.durationMin" :min="0" :controls="false" size="small" class="cfg-q-inp"></el-input-number> 分
+                    <el-input-number v-model="q.durationSec" :min="0" :controls="false" size="small" class="cfg-q-inp"></el-input-number> 秒
+                  </template>
+                  <div class="cfg-q-ops">
+                    <span class="cfg-q-view">查看详情</span>
+                    <span class="cfg-q-del">移除</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <div class="req-note">
+        <b>需求说明</b><br>
+        1. 测练类互动添加试题的答题时长提供限制选择；<br>
+        2. 测评类互动新增必填项 关联文本（失焦提示 + 保存校验），题目改为非必填（保存不校验）。
+      </div>
+
+      <!-- 题目详情弹窗 -->
+      <el-dialog v-model="detailVisible" title="题目详情" width="720px">
+        <div class="qd-cards">
+          <div class="qd-card"><span class="qd-label">题目ID</span><span class="qd-val">{{ detailQ.id }}</span></div>
+          <div class="qd-card"><span class="qd-label">题型</span><span class="qd-val">{{ detailQ.type }}</span></div>
+        </div>
+        <div class="qd-body">
+          <div class="qd-stem">{{ detailQ.stem }}</div>
+          <div class="qd-opt" v-for="(o, i) in detailQ.options" :key="i">{{ o }}</div>
+          <div class="qd-split"></div>
+          <div class="qd-kv"><span class="qd-key">【 答 案 】</span><span class="qd-val2">{{ detailQ.answer }}</span></div>
+          <div class="qd-kv"><span class="qd-key">【 解 析 】</span><span class="qd-val2">{{ detailQ.analysis }}</span></div>
+        </div>
+        <template #footer>
+          <el-button type="primary" @click="detailVisible = false">关闭</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 保存失败弹窗（语音类关联内容未填写） -->
+      <el-dialog v-model="saveFailVisible" title="保存失败" width="480px" align-center>
+        <div class="fail-tip">以下必填项未完成，请补充后再保存：</div>
+        <div class="fail-item" v-for="t in saveFailList" :key="t">{{ t }}未填写关联文本</div>
+        <template #footer>
+          <el-button type="primary" @click="saveFailVisible = false">我知道了</el-button>
+        </template>
+      </el-dialog>
+    </div>
+  </div>
+</script>
+
+<!-- 课程管理（课程配置）路由页 -->
+<script type="text/x-template" id="course-manage-tpl">
+  <div class="main">
+    <div class="breadcrumb">内容资产库 / 课程中心 / 课程配置</div>
+
+    <div class="cm-topbar">
+      <div class="cm-back-row">
+        <span class="back">←</span>
+        <span class="cm-name">小友学诗（下）</span>
+        <span class="cm-tag-done">已上架</span>
+        <span class="cm-type">课程类型: 同步知识点</span>
+      </div>
+      <div class="cm-progress">
+        <span>课程配置情况：<b>14/14</b></span>
+        <span class="cm-step">① 课程大纲建设</span>
+        <span class="cm-step">② 挂载资源</span>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <div class="page-tabs">
+        <div class="tab active">课程配置</div>
+        <div class="tab">关联教材 <span class="tab-badge">10</span></div>
+      </div>
+
+      <div class="cm-toolbar">
+        <el-input v-model="kw" size="small" placeholder="请输入章节名称" style="width:220px;"><template #prefix>🔍</template></el-input>
+        <el-button size="small" type="primary">批量挂载</el-button>
+      </div>
+
+      <div class="cm-body">
+        <!-- 左：章节列表 -->
+        <div class="cm-left">
+          <div class="cm-head-row"><span class="cm-ch-name">章节名称</span><span class="cm-ch-data">数据</span><span class="cm-ch-tag-w">课包</span></div>
+          <div class="cm-list">
+          <div class="cm-row" v-for="ch in filteredChapters" :key="ch" :class="{ active: curChapter === ch }" @click="curChapter = ch">
+            <span class="cm-ch-name">{{ ch }}</span>
+            <span class="cm-ch-data">1/1/1</span>
+            <span class="cm-ch-tag-w"><span class="cm-ch-tag">已关联</span></span>
+          </div>
+          </div>
+        </div>
+
+        <!-- 右：章节配置详情 -->
+        <div class="cm-right">
+          <div class="cm-r-head">
+            <span>章节名称：<span class="blue">梅花1</span></span>
+            <span class="cm-r-sum">累计6个环节，4个资料</span>
+          </div>
+
+          <div class="cm-notice">
+            <span>当前章节已关联备课诘 <span class="blue">2098062569003556885</span>　｜　引用次数: <b>2次</b></span>
+            <div class="cm-notice-btns">
+              <el-button size="small" type="primary">编辑课包</el-button>
+              <el-button size="small" class="btn-warn">清空课包</el-button>
+              <el-button size="small" plain>解除关联</el-button>
+            </div>
+          </div>
+
+          <div class="cm-sec" v-for="sec in sections" :key="sec.label">
+            <div class="cm-sec-label">{{ sec.label }}</div>
+            <div class="cm-card" v-for="item in sec.items" :key="item.title">
+              <div class="cm-card-icon" v-if="item.icon" :style="{ background: item.iconBg }">{{ item.icon }}</div>
+              <div class="cm-thumb" v-else>
+                <span class="cm-thumb-play">▶</span>
+                <span class="cm-thumb-dur" v-if="item.duration">{{ item.duration }}</span>
+              </div>
+              <div class="cm-card-main">
+                <div class="cm-card-title">{{ item.title }} <span class="cm-card-tag" v-if="item.tag">{{ item.tag }}</span></div>
+                <div class="cm-card-meta">{{ item.meta }}</div>
+                <div class="cm-card-meta">{{ item.meta2 }}</div>
+              </div>
+              <span class="cm-card-view" @click="openPreview(item)">预览</span>
+            </div>
+          </div>
+
+          <div class="cm-add"><el-button size="small">添加章节</el-button></div>
+        </div>
+      </div>
+
+      <!-- 视频详情弹窗 -->
+      <el-dialog v-model="videoPreviewVisible" title="视频详情" width="1300px" align-center class="vd-dialog">
+        <template #header>
+          <div class="vd-dialog-header">
+            <span>视频详情</span>
+            <el-button size="small" type="primary" @click="goEdit">去编辑</el-button>
+          </div>
+        </template>
+        <el-tabs v-model="videoTab" class="vd-tabs">
+          <el-tab-pane label="视频信息" name="info">
+            <div class="vi-top">
+              <div class="vi-player">
+                <div class="vi-screen">
+                  <div class="vi-screen-title">梅 花</div>
+                  <div class="vi-screen-sub">王 安 石</div>
+                </div>
+                <div class="vi-ctrl"><span>▶ 0:00 / 9:19</span><span>🔊　⛶</span></div>
+              </div>
+              <div class="vi-side">
+                <div class="vi-name">视频名称：<b>梅花</b></div>
+                <div class="vi-grid">
+                  <div class="vi-kv"><span class="vi-k">视频ID：</span>2081724369058402306</div>
+                  <div class="vi-kv"><span class="vi-k">视频时长：</span>00:09:19</div>
+                  <div class="vi-kv"><span class="vi-k">讲师信息：</span>未配置</div>
+                  <div class="vi-kv"><span class="vi-k">上架状态：</span>上架</div>
+                </div>
+                <div class="vi-kv vi-cover-row"><span class="vi-k">视频封面：</span>
+                  <div class="vi-cover"><div class="vi-cover-t">梅 花</div><div class="vi-cover-s">王安石</div></div>
+                </div>
+                <div class="vi-kv vi-intro-row"><span class="vi-k">视频简介：</span>
+                  <el-input v-model="videoIntro" type="textarea" :rows="3" maxlength="200" show-word-limit placeholder="请输入视频简介"></el-input>
+                </div>
+              </div>
+            </div>
+
+            <div class="dlg-sec">文件格式</div>
+            <table class="fmt-table">
+              <tr><th>格式 / 分辨率</th><th>m3u8</th><th>mp4</th><th>mkv</th><th>jvmp3</th><th>mp3</th></tr>
+              <tr><td>240P</td><td></td><td></td><td></td><td rowspan="4"></td><td rowspan="4"></td></tr>
+              <tr><td>480P</td><td></td><td></td><td></td></tr>
+              <tr><td>720P</td><td></td><td class="fmt-size">53.94MB</td><td></td></tr>
+              <tr><td>1080P</td><td></td><td></td><td></td></tr>
+            </table>
+
+            <div class="dlg-sec">操作记录</div>
+            <div class="op-line">创建人：sys</div>
+            <div class="op-line">创建时间：2023-08-25 11:29:32</div>
+            <div class="op-line">更新人：sys</div>
+            <div class="op-line">更新时间：2026-09-04 13:58:28</div>
+
+            <div class="dlg-sec">视频标签</div>
+            <div class="tag-block-title">基本信息</div>
+            <div class="tag-bar">
+              <span>🎓 学段：小学</span><span>学科：语文</span><span>视频类型：同步、同步基础</span>
+              <span>年级：二年级</span><span>适用版本：同步教材版 / 统编版</span>
+            </div>
+            <div class="tag-block-title">拓展信息</div>
+            <div class="ext-grid">
+              <div>适用人群：学生</div><div>适用难度：难度：3</div>
+              <div>学习目标：——</div><div>制作形式：真人出镜</div>
+              <div>视频模式：视频课</div>
+            </div>
+            <table class="kv-table">
+              <tr><th>序号</th><th>章节名称</th><th>主知识点</th><th>次知识点</th></tr>
+              <tr><td colspan="4" class="empty-cell">暂无数据</td></tr>
+            </table>
+
+            <div class="dlg-sec">关联内容 0 个</div>
+            <table class="kv-table">
+              <tr><th>序号</th><th>课程名称</th><th>关联章节</th><th>章节ID</th></tr>
+              <tr><td colspan="4" class="empty-cell">暂无数据</td></tr>
+            </table>
+          </el-tab-pane>
+          <el-tab-pane label="切片信息" name="slice">
+            <SliceArea />
+        </el-tabs>
+      </el-dialog>
+
+      <div class="cm-req">
+        <div class="cm-req-title">需求说明</div>
+        <div class="cm-req-body">
+          在 课程详情页/课程配置页 的视频预览弹窗中、课程配置页-添加视频抽屉 的视频查看弹窗中 新增 tab，默认展示视频信息，支持展示切片信息（与视频详情页展示一致），并提供【去编辑】按钮（权限与视频编辑权限一致）
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<!-- 课包管理（课包详情）路由页 -->
+<script type="text/x-template" id="course-package-tpl">
+  <div class="main">
+    <div class="breadcrumb">内容资产库 / 课程中心 / 课包详情</div>
+
+    <div class="pkg-topbar">
+      <div class="pkg-back-title">
+        <span class="back">←</span>
+        <span class="pkg-title">编辑备课包</span>
+        <span class="pkg-id">ID：2098062635646853232</span>
+      </div>
+      <div class="pkg-actions">
+        <el-button size="small">取消</el-button>
+        <el-button size="small" type="primary">保存修改</el-button>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <div class="pkg-section-title">基本信息</div>
+      <div class="pkg-form">
+        <div class="pkg-form-row">
+          <div class="pkg-fitem">
+            <span class="pkg-label"><span class="req">*</span>课包名称</span>
+            <el-input v-model="pkg.name" maxlength="150" show-word-limit size="small" class="pkg-inp"></el-input>
+          </div>
+          <div class="pkg-fitem">
+            <span class="pkg-label">别名</span>
+            <el-input v-model="pkg.alias" maxlength="150" show-word-limit size="small" placeholder="选填，多个别名用" class="pkg-inp"></el-input>
+          </div>
+          <div class="pkg-fitem">
+            <span class="pkg-label"><span class="req">*</span>学段</span>
+            <el-select v-model="pkg.stage" size="small" class="pkg-inp">
+              <el-option label="初中" value="初中"></el-option>
+            </el-select>
+          </div>
+        </div>
+        <div class="pkg-form-row">
+          <div class="pkg-fitem">
+            <span class="pkg-label"><span class="req">*</span>学科</span>
+            <el-select v-model="pkg.subject" size="small" class="pkg-inp">
+              <el-option label="数学" value="数学"></el-option>
+            </el-select>
+          </div>
+          <div class="pkg-fitem pkg-fitem-wide">
+            <span class="pkg-label">关联资料类型</span>
+            <span class="pkg-type-tag" v-for="t in relatedTypes" :key="t.label" :class="{ active: t.active }">{{ t.label }}</span>
+          </div>
+          <div class="pkg-fitem">
+            <span class="pkg-label">创建人</span>
+            <span class="pkg-text">{{ pkg.creator }}</span>
+          </div>
+        </div>
+        <div class="pkg-form-row">
+          <div class="pkg-fitem">
+            <span class="pkg-label">创建时间</span>
+            <span class="pkg-text">{{ pkg.createTime }}</span>
+          </div>
+          <div class="pkg-fitem">
+            <span class="pkg-label">更新人</span>
+            <span class="pkg-text">{{ pkg.updater }}</span>
+          </div>
+          <div class="pkg-fitem">
+            <span class="pkg-label">更新时间</span>
+            <span class="pkg-text">{{ pkg.updateTime }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-card">
+      <div class="pkg-res-tabs">
+        <span class="pkg-res-tab" :class="{ active: resTab === 'list' }" @click="resTab = 'list'">资源清单 {{ resourceCount }}</span>
+        <span class="pkg-res-tab" :class="{ active: resTab === 'course' }" @click="resTab = 'course'">引用课程 {{ refCourseCount }}</span>
+      </div>
+
+      <div v-if="resTab === 'list'">
+        <div class="pkg-sec" v-for="sec in resourceSections" :key="sec.label">
+          <div class="pkg-sec-head">
+            <span class="pkg-sec-label">{{ sec.label }}</span>
+            <span class="pkg-sec-count">{{ sec.items.length }}个</span>
+            <span class="pkg-add-btn" @click="onSectionAdd(sec)">+</span>
+          </div>
+          <div class="cm-card" v-for="item in sec.items" :key="item.id">
+            <div class="cm-card-icon" v-if="item.icon" :style="{ background: item.iconBg }">{{ item.icon }}</div>
+            <div class="cm-thumb" v-else>
+              <span class="cm-thumb-play">▶</span>
+              <span class="cm-thumb-dur" v-if="item.duration">{{ item.duration }}</span>
+            </div>
+            <div class="cm-card-main">
+              <div class="cm-card-title">{{ item.title }} <span class="cm-card-tag" v-if="item.tag">{{ item.tag }}</span></div>
+              <div class="cm-card-meta">{{ item.meta }}</div>
+              <div class="cm-card-meta">{{ item.meta2 }}</div>
+            </div>
+            <span class="cm-card-view" @click="openPreview(item)">预览</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="pkg-empty">
+        <div class="pkg-empty-box"></div>
+        <div class="pkg-empty-txt">暂无引用课程</div>
+      </div>
+    </div>
+
+    <div class="cm-req">
+      <div class="cm-req-title">需求说明</div>
+      <div class="cm-req-body">
+        <div>在 课包详情页/课包编辑页 的视频预览弹窗、课包编辑页-添加视频抽屉 的查看弹窗 中新增 tab，默认展示「视频信息」，支持展示「切片信息」（与视频详情页展示一致），并提供【去编辑】按钮（权限与视频编辑权限一致）。</div>
+      </div>
+    </div>
+
+    <el-dialog v-model="videoPreviewVisible" title="视频详情" width="1300px" align-center class="vd-dialog vd-tabs">
+      <template #header>
+        <div class="vd-dialog-header">
+          <span>视频详情</span>
+          <el-button size="small" type="primary" @click="goEdit">去编辑</el-button>
+        </div>
+      </template>
+      <el-tabs v-model="videoTab" class="vd-tabs">
+        <el-tab-pane label="视频信息" name="info">
+          <div class="vi-top">
+            <div class="vi-player">
+              <div class="vi-screen">
+                <div class="vi-screen-title">梅 花</div>
+                <div class="vi-screen-sub">王 安 石</div>
+              </div>
+              <div class="vi-ctrl"><span>▶ 0:00 / 9:19</span><span>🔊　⛶</span></div>
+            </div>
+            <div class="vi-side">
+              <div class="vi-name">视频名称：<b>梅花</b></div>
+              <div class="vi-grid">
+                <div class="vi-kv"><span class="vi-k">视频ID：</span>2081724369058402306</div>
+                <div class="vi-kv"><span class="vi-k">视频时长：</span>00:09:19</div>
+                <div class="vi-kv"><span class="vi-k">讲师信息：</span>未配置</div>
+                <div class="vi-kv"><span class="vi-k">上架状态：</span>上架</div>
+              </div>
+              <div class="vi-kv vi-cover-row"><span class="vi-k">视频封面：</span>
+                <div class="vi-cover"><div class="vi-cover-t">梅 花</div><div class="vi-cover-s">王安石</div></div>
+              </div>
+              <div class="vi-kv vi-intro-row"><span class="vi-k">视频简介：</span>
+                <el-input v-model="videoIntro" type="textarea" :rows="3" maxlength="200" show-word-limit placeholder="请输入视频简介"></el-input>
+              </div>
+            </div>
+          </div>
+
+          <div class="dlg-sec">文件格式</div>
+          <table class="fmt-table">
+            <tr><th>格式 / 分辨率</th><th>m3u8</th><th>mp4</th><th>mkv</th><th>jvmp3</th><th>mp3</th></tr>
+            <tr><td>240P</td><td></td><td></td><td></td><td rowspan="4"></td><td rowspan="4"></td></tr>
+            <tr><td>480P</td><td></td><td></td><td></td></tr>
+            <tr><td>720P</td><td></td><td class="fmt-size">53.94MB</td><td></td></tr>
+            <tr><td>1080P</td><td></td><td></td><td></td></tr>
+          </table>
+
+          <div class="dlg-sec">操作记录</div>
+          <div class="op-line">创建人：sys</div>
+          <div class="op-line">创建时间：2023-08-25 11:29:32</div>
+          <div class="op-line">更新人：sys</div>
+          <div class="op-line">更新时间：2026-09-04 13:58:28</div>
+
+          <div class="dlg-sec">视频标签</div>
+          <div class="tag-block-title">基本信息</div>
+          <div class="tag-bar">
+            <span>🎓 学段：小学</span><span>学科：语文</span><span>视频类型：同步、同步基础</span>
+            <span>年级：二年级</span><span>适用版本：同步教材版 / 统编版</span>
+          </div>
+          <div class="tag-block-title">拓展信息</div>
+          <div class="ext-grid">
+            <div>适用人群：学生</div><div>适用难度：难度：3</div>
+            <div>学习目标：——</div><div>制作形式：真人出镜</div>
+            <div>视频模式：视频课</div>
+          </div>
+          <table class="kv-table">
+            <tr><th>序号</th><th>章节名称</th><th>主知识点</th><th>次知识点</th></tr>
+            <tr><td colspan="4" class="empty-cell">暂无数据</td></tr>
+          </table>
+
+          <div class="dlg-sec">关联内容 0 个</div>
+          <table class="kv-table">
+            <tr><th>序号</th><th>课程名称</th><th>关联章节</th><th>章节ID</th></tr>
+            <tr><td colspan="4" class="empty-cell">暂无数据</td></tr>
+          </table>
+        </el-tab-pane>
+        <el-tab-pane label="切片信息" name="slice">
+          <SliceArea />
+      </el-tabs>
+    </el-dialog>
+
+    <!-- 挂载资源抽屉 -->
+    <el-drawer v-model="mountDrawerVisible" size="76%" class="mount-drawer">
+      <template #header><span class="mount-head">挂载资源</span></template>
+      <div class="mount-tabs">
+        <span v-for="t in mountTabs" :key="t" class="mount-tab" :class="{ active: mountTab === t }" @click="mountTab = t">{{ t }}</span>
+        <span class="mount-tab-tip">ⓘ 分类说明</span>
+      </div>
+
+      <div class="mount-frow" v-for="f in mountFilters" :key="f.key">
+        <span class="mount-flabel">{{ f.label }}：</span>
+        <div class="mount-opts">
+          <span v-for="o in f.options" :key="o" class="mount-opt" :class="{ active: f.value === o }" @click="f.value = o">{{ o }}</span>
+        </div>
+      </div>
+      <div class="mount-frow">
+        <span class="mount-flabel">更多：</span>
+        <div class="mount-opts">
+          <span v-for="m in mountMore" :key="m" class="mount-opt">{{ m }} <span class="mount-arr">∨</span></span>
+        </div>
+      </div>
+
+      <div class="mount-search-row">
+        <div class="mount-search">
+          <span class="mount-flabel">视频名称：</span>
+          <el-input v-model="mountSearch" size="small" placeholder="请输入名称或ID" class="mount-search-inp">
+            <template #suffix><span style="cursor:pointer;">🔍</span></template>
+          </el-input>
+        </div>
+        <span class="mount-reset" @click="resetMountFilters">⟳ 重置</span>
+      </div>
+
+      <div class="mount-check-row">
+        <el-checkbox :model-value="mountSelected.length === mountList.length && mountList.length > 0" @change="toggleAllMount">全选</el-checkbox>
+        <span class="mount-chosen">已选：{{ mountSelected.length }} 条</span>
+      </div>
+
+      <div class="mount-list">
+        <div class="mount-item" v-for="item in mountList" :key="item.id" :class="{ checked: mountSelected.includes(item.id) }">
+          <el-checkbox :model-value="mountSelected.includes(item.id)" @change="toggleMount(item.id)"></el-checkbox>
+          <div class="mount-thumb">
+            <span class="mk-tag">人工打标</span>
+            <div class="mk-title">{{ item.thumbTitle }}</div>
+            <div class="mk-teacher">{{ item.thumbTeacher }}</div>
+            <span class="mk-dur">{{ item.duration }}</span>
+          </div>
+          <div class="mount-main">
+            <div class="mount-title">{{ item.title }} <span class="st">已上架</span></div>
+            <div class="mount-sub">{{ item.sub }}</div>
+            <div class="mount-tags">
+              <span class="mount-tag" v-for="tg in item.tags" :key="tg">{{ tg }}</span>
+            </div>
+            <div class="mount-meta">ID：{{ item.vid }}　关联课程数量：{{ item.courseCount }}　打点知识点：{{ item.points }}　互动类型：{{ item.interTypes }}　讲师：{{ item.teacher }}　更新时间：{{ item.updateTime }}</div>
+          </div>
+          <span class="mount-view" @click="viewMount(item)">查看</span>
+        </div>
+      </div>
+
+      <div class="mount-page">
+        <el-pagination background layout="total, sizes, prev, pager, next, jumper"
+          :total="mountTotal" :page-size="10" :page-sizes="[10, 20, 50]" v-model:current-page="mountPage"></el-pagination>
+      </div>
+
+      <template #footer>
+        <el-button size="small" @click="mountDrawerVisible = false">取消</el-button>
+        <el-button size="small" type="primary" @click="confirmMount">确定挂载</el-button>
+      </template>
+    </el-drawer>
+  </div>
+</script>
+
+<script>
+  const { createApp } = Vue;
+
+  // ===== 缩放阶梯：大刻度间隔（毫秒），从最缩到最放；每点一次放大按此变化，最小 1 秒 =====
+  const ZOOM_MAJOR_STEPS = [600000, 300000, 120000, 60000, 30000, 10000, 5000, 2000, 1000];
+  // 每个大刻度在轨道上占据的像素宽（约 140px，保证刻度文字不重叠）
+  const ZOOM_MAJOR_PX = 140;
+
+  // ===== 视频编辑页（视频资源路由）：模板取自 #app 内的 #video-main 节点 =====
+  const videoMainEl = document.getElementById('video-main');
+  // 提取视频页「切片与标注」区域（.edit-row 起、.cm-req 前的兄弟节点），供视频预览弹窗复用，保证与视频页展示完全一致
+  const sliceAreaHtml = (function () {
+    const from = videoMainEl.querySelector('.edit-row');
+    const stop = videoMainEl.querySelector('.cm-req');
+    if (!from) return '<div style="padding:24px;color:#999;text-align:center;">切片信息加载中…</div>';
+    let html = '', n = from;
+    while (n && n !== stop) { html += n.outerHTML; n = n.nextElementSibling; }
+    return html || '<div style="padding:24px;color:#999;text-align:center;">切片信息加载中…</div>';
+  })();
+  const VideoPage = {
+    template: videoMainEl.outerHTML,
+    data() {
+      return {
+        panelMode: 'empty',
+        activeRangeIdx: null,
+        activeSeg: null,
+        isNewRange: false,
+        rangeSnapshot: null,
+        isNewInter: false,
+        dragItem: null,
+        grabItem: null,
+        detailVisible: false,
+        detailQ: {},
+        videoCur: 0,
+        videoDur: 452000,
+        playRangeEnd: null,
+        zoomLevel: 8,
+        trackWidth: 0,
+        zoomTouched: false,
+        videoSrc: '',
+        videoName: '',
+        playing: false,
+        videoMuted: false,
+        isFullscreen: false,
+        vprogW: 0,
+        rangeIdSeq: 3,
+        interIdSeq: 1,
+        rangeForm: { id: '', name: '区间1', color: '#fbd9e0', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 30, eMs: 0 },
+        // 各 scope 字段展示配置（对齐 shared.ts INTERACTION_OPTION_CONFIG）
+        typeOptionConfig: {
+          ROUTINE_ANSWER:    { showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          INTERACTIVE_QA:    { showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          RUSH_ANSWER:       { showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          RANDOM_PICK:       { showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          DESIGNATE_STUDENT: { showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          RANDOM_GROUP:      { showGroupCount: true, showContentText: true, contentTextLabel: '提示文本', showQuestions: true },
+          VOICE_ASSESSMENT:  { showContentText: true, contentTextLabel: '关联内容', contentTextRequired: true, showQuestions: true },
+          READ_ASSESSMENT:   { showContentText: true, contentTextLabel: '关联内容', contentTextRequired: true, showQuestions: true },
+          CLASS_BREAK:       { showCountdown: true },
+        },
+        // 需求1：分类复选框 + 分类内单选；随机分组自其他类迁入测练类
+        typeCats: [
+          { name: '测练类', checked: true, selected: 'ROUTINE_ANSWER', options: [
+            { code: 'ROUTINE_ANSWER', label: '常规答题', tip: '纯答题、仅关联题库中题目' },
+            { code: 'RUSH_ANSWER', label: '题目抢答', tip: '达到时间点后，学生可以进行答题抢答' },
+            { code: 'RANDOM_PICK', label: '随机挑人', tip: '课堂游戏-随机挑人进行答题' },
+            { code: 'DESIGNATE_STUDENT', label: '指定学生', tip: '到达时间点后教师可以指定学生进行作答' },
+            { code: 'INTERACTIVE_QA', label: '互动问答', tip: '视频到达打点位置后，设备端会弹出选择题答题界面' },
+            { code: 'RANDOM_GROUP', label: '随机分组', migrated: true, tip: '到达时间点后随机进行分组，给学生进行答题，按照分组进行答题情况对比' },
+          ]},
+          { name: '语音类', checked: false, selected: '', options: [
+            { code: 'VOICE_ASSESSMENT', label: '语音测评', tip: '视频到达打点位置后，唤起设备话筒进行录音，录音完成后调用 AI 测评接口进行评分' },
+            { code: 'READ_ASSESSMENT', label: '跟读测评', tip: '视频到达打点位置后，设备端会弹出语音测评界面，将调用智言算法进行语音评测' },
+          ]},
+          { name: '其他类', checked: false, selected: '', options: [
+            { code: 'CLASS_BREAK', label: '课间休息', tip: '到达时间点出现倒计时，课堂暂停的场景' },
+          ]},
+        ],
+        interForm: {
+          name: '常规答题', type: 'ROUTINE_ANSWER',
+          sM: 0, sS: 0, sMs: 0,
+          contentText: '', countdownMin: 0, countdownSec: 0, countdownDesc: '', groupCount: 2,
+          questions: [
+            { id: '2109481523831898113', type: '填空题', diff: '中等', stem: '如果正数 x 满足 x + x² = 3，那么 √x + 1/√x 的值是____.',
+              options: [], answer: '√5', analysis: '将 √x + 1/√x 两边平方得 x + 1/x + 2，结合条件 x + x² = 3 化简求值即可。', timeLimited: true, durationMin: 1, durationSec: 0 },
+            { id: '2109481523831898114', type: '判断题', diff: '中等', stem: '下列各组句中加点字解释完全正确的一项是（ ）',
+              options: [
+                'A.本其成败之迹：本，根本 凡植木之性，其本欲舒：本，根',
+                'B.举天下之豪杰：举，拿 莫令事不举：举，成功',
+                'C.扶辇下除：除，宫殿的台阶 寻蒙国恩，除臣洗马：除，授官',
+                'D.君因我降：因，凭借 蒙故业，因遗策：因，通过',
+              ], answer: 'B', analysis: '略', timeLimited: true, durationMin: 0, durationSec: 30 },
+          ]
+        },
+        ranges: [
+          { id: 'r1', name: '区间1', color: '#fde3e9', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 30, eMs: 0 },
+          { id: 'r2', name: '区间2', color: '#dcf2d0', sM: 0, sS: 30, sMs: 0, eM: 0, eS: 60, eMs: 0 },
+        ],
+        interList: [
+          { code: 'ROUTINE_ANSWER', name: '常规答题', type: 'ROUTINE_ANSWER',
+            sM: 0, sS: 5, sMs: 0,
+            contentText: '', groupCount: 2, countdownMin: 0, countdownSec: 0, countdownDesc: '',
+            questions: [
+              { id: '2109481523831898113', type: '填空题', diff: '中等', stem: '如果正数 x 满足 x + x² = 3，那么 √x + 1/√x 的值是____.',
+                options: [], answer: '√5', analysis: '将 √x + 1/√x 两边平方得 x + 1/x + 2，结合条件 x + x² = 3 化简求值即可。', timeLimited: true, durationMin: 1, durationSec: 0 },
+              { id: '2109481523831898114', type: '判断题', diff: '中等', stem: '下列各组句中加点字解释完全正确的一项是（ ）',
+                options: [
+                  'A.本其成败之迹：本，根本 凡植木之性，其本欲舒：本，根',
+                  'B.举天下之豪杰：举，拿 莫令事不举：举，成功',
+                  'C.扶辇下除：除，宫殿的台阶 寻蒙国恩，除臣洗马：除，授官',
+                  'D.君因我降：因，凭借 蒙故业，因遗策：因，通过',
+                ], answer: 'B', analysis: '略', timeLimited: true, durationMin: 0, durationSec: 30 },
+            ] },
+          { code: 'VOICE_ASSESSMENT', name: '语音测评', type: 'VOICE_ASSESSMENT',
+            sM: 0, sS: 25, sMs: 0,
+            contentText: '', groupCount: 2, countdownMin: 0, countdownSec: 0, countdownDesc: '', questions: [] },
+          { code: 'RANDOM_GROUP', name: '随机分组', type: 'RANDOM_GROUP',
+            sM: 0, sS: 45, sMs: 0,
+            contentText: '', groupCount: 2, countdownMin: 0, countdownSec: 0, countdownDesc: '', questions: [] },
+          { code: 'RUSH_ANSWER', name: '题目抢答', type: 'RUSH_ANSWER',
+            sM: 1, sS: 10, sMs: 0,
+            contentText: '', groupCount: 2, countdownMin: 0, countdownSec: 0, countdownDesc: '', questions: [] },
+        ],
+        nameManuallyEdited: false,
+        pickScroll: { top: 0, view: 0, total: 0 },
+      };
+    },
+    created() {
+      // 初始不默认选中任何区间/互动；自动加载固定示例视频并截帧
+      this.videoSrc = 'video.mp4';
+    },
+    mounted() {
+      this.measureTrack();
+      this.fitTimeline(); // 默认缩到最小：整条时间轴刚好铺满可视区
+      this.$nextTick(this.measureTrack); // 进度条渲染后再测一次宽度
+      this.$nextTick(this.refreshPickScroll);
+      window.addEventListener('resize', this.measureTrack);
+      window.addEventListener('resize', this.refreshPickScroll);
+      document.addEventListener('fullscreenchange', this.onFullscreenChange);
+    },
+    beforeUnmount() {
+      window.removeEventListener('resize', this.measureTrack);
+      window.removeEventListener('resize', this.refreshPickScroll);
+      document.removeEventListener('fullscreenchange', this.onFullscreenChange);
+      window.removeEventListener('mousemove', this.onPickThumbMove);
+      window.removeEventListener('mouseup', this.onPickThumbUp);
+    },
+    computed: {
+      activeConfig() {
+        return this.typeOptionConfig[this.interForm.type] || { showContentText: false, showQuestions: false };
+      },
+      checkedCats() {
+        return this.typeCats.filter(c => c.checked);
+      },
+      pct() {
+        return this.videoDur ? (this.videoCur / this.tlTotal * 100) : 0;
+      },
+      // 视频控制条进度（按真实时长）
+      pctProg() {
+        return this.videoDur ? (this.videoCur / this.videoDur * 100) : 0;
+      },
+      // 时间轴总时长：向上取整到整分钟（如视频 7:40 → 刻度最大 8:00）
+      tlTotal() {
+        const dur = this.videoDur || 0;
+        return (Math.ceil(dur / 60000) * 60000) || 60000;
+      },
+      // 时间轴内容宽度：按缩放比例（px/秒）
+      tlBodyWidth() {
+        return Math.ceil(this.tlTotal / 1000 * this.tlZoom);
+      },
+      // 缩小边界：缩到最小时整条时间轴刚好铺满可视区（扣除 tl-body 左右各 14px 边距），不残留空白
+      minZoom() {
+        const w = (this.trackWidth || 0) - 28;
+        if (w <= 0 || !this.tlTotal) return 1;
+        return Math.max(0.5, Math.round(w * 1000 / this.tlTotal * 100) / 100);
+      },
+      // 当前缩放（px/秒）：由级别的大刻度间隔推导，保证每个大刻度约 140px 宽
+      tlZoom() {
+        return this.levelZoom(this.zoomLevel);
+      },
+      // 默认（最缩）级别：取「不超过铺满缩放的最大级别」，即刚好放满屏幕又不出现滚动
+      defaultLevel() {
+        const fit = this.minZoom;
+        let lv = 0;
+        for (let i = 0; i < ZOOM_MAJOR_STEPS.length; i++) {
+          if (this.levelZoom(i) <= fit) lv = i;
+        }
+        return lv;
+      },
+      // 是否可标记起/终点：已选中或正在新增区间，或已选中或正在新增互动点时启用
+      canMark() {
+        return (this.activeRangeIdx != null && this.activeRangeIdx >= 0) || this.isNewRange
+          || this.activeSeg != null || this.isNewInter;
+      },
+      // 是否可播放区间：必须真正选中一个已存在区间，且不在新增区间未完成状态下
+      canPlayRange() {
+        if (this.isNewRange) return true; // 新增中的区间（用 rangeForm）也可播放预览
+        return this.activeRangeIdx != null && this.activeRangeIdx >= 0
+          && !!this.ranges[this.activeRangeIdx];
+      },
+      // 当前选中区间（时间轴上方名称 + 上下色带）
+      activeRangeInfo() {
+        const r = this.activeRangeIdx != null ? this.ranges[this.activeRangeIdx] : null;
+        if (!r) return null;
+        return {
+          ...r,
+          sText: this.fmtShort(r.sM * 60000 + r.sS * 1000 + (r.sMs || 0)),
+          eText: this.fmtShort(r.eM * 60000 + r.eS * 1000 + (r.eMs || 0)),
+        };
+      },
+      // 进度条上的起点小圆点（区间 + 互动点起始时间）
+      progressSegs() {
+        const dur = this.videoDur || 1;
+        const list = this.ranges.map((r, i) => {
+          const s = r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+          const e = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+          const left = Math.max(0, Math.min(100, s / dur * 100));
+          const right = Math.max(0, Math.min(100, e / dur * 100));
+          return { key: 'p' + (r.id || i), left, width: Math.max(0, right - left), color: r.color, name: r.name };
+        });
+        // 新增中的区间：进度条上实时预览（半透明区分未保存）
+        if (this.isNewRange) {
+          const r = this.rangeForm;
+          const s = r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+          const e = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+          const left = Math.max(0, Math.min(100, s / dur * 100));
+          const right = Math.max(0, Math.min(100, e / dur * 100));
+          list.push({ key: 'p-draft', left, width: Math.max(0, right - left), color: r.color || '#fbd9e0', name: r.name });
+        }
+        return list;
+      },
+      // 进度条上的互动点标记（按起始时间定位；名称默认隐藏，hover/选中时显示）
+      progressInterMarks() {
+        const dur = this.videoDur || 1;
+        const list = this.interList.map((t, i) => {
+          const ms = t.sM * 60000 + t.sS * 1000 + (t.sMs || 0);
+          return {
+            key: 'pm' + (t.code || i),
+            code: t.code,
+            left: Math.max(0, Math.min(100, ms / dur * 100)),
+            name: t.name,
+            time: this.fmtShort(ms)
+          };
+        });
+        // 新增中的互动：进度条上实时预览互动点（activeSeg='' 与草稿 code='' 同值，自动高亮为选中态）
+        if (this.isNewInter) {
+          const t = this.interForm;
+          const ms = t.sM * 60000 + t.sS * 1000 + (t.sMs || 0);
+          list.push({ key: 'pm-draft', code: '', left: Math.max(0, Math.min(100, ms / dur * 100)), name: t.name, time: this.fmtShort(ms) });
+        }
+        return list;
+      },
+      // 进度条上的起点小圆点（区间 + 互动点起始时间）
+      progressMarks() {
+        const dur = this.videoDur || 1;
+        const marks = [];
+        this.ranges.forEach((r, i) => {
+          const ms = r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+          marks.push({ key: 'm-r' + (r.id || i), ms, left: Math.min(100, ms / dur * 100), name: r.name });
+        });
+        this.interList.forEach((t, i) => {
+          const ms = t.sM * 60000 + t.sS * 1000 + (t.sMs || 0);
+          marks.push({ key: 'm-i' + (t.code || i), ms, left: Math.min(100, ms / dur * 100), name: t.name });
+        });
+        return marks.sort((a, b) => a.ms - b.ms);
+      },
+      // 题目区 JS 模拟滚动条的滑块尺寸/位置
+      pickThumbStyle() {
+        const s = this.pickScroll;
+        if (!s.total || s.total <= s.view) return { height: '100%', top: '0' };
+        const th = Math.max(6, s.view / s.total * s.view);
+        const top = (s.top / (s.total - s.view)) * (s.view - th);
+        return { height: th + 'px', top: top + 'px' };
+      },
+      pickSbVisible() {
+        const s = this.pickScroll;
+        return !!s.total && s.total > s.view;
+      },
+      // 时间轴标尺刻度：大刻度间隔随缩放级别变化（10分→5分→2分→1分→30秒→10秒→5秒→2秒→1秒），
+      // 小刻度为大刻度的 1/10（最小 1 秒）
+      // 时间轴标尺刻度：某一缩放级别只展示该级大刻度（带文字）+ 固定 10 个等分小刻度（仅刻度线），
+      // 不混入其他层级；如 10 秒一大刻度 → 每 10 秒一个数字、中间 10 根每秒小刻度
+      rulerTicks() {
+        const dur = this.tlTotal;
+        const major = ZOOM_MAJOR_STEPS[this.zoomLevel] || 60000;
+        const minor = major / 10; // 大刻度内固定 10 个小刻度
+        const ticks = [];
+        for (let ms = 0; ms <= dur; ms += minor) {
+          const isMajor = ms % major === 0;
+          ticks.push({
+            label: isMajor ? this.fmtShort(ms) : '',
+            left: ms / dur * 100,
+            major: isMajor,
+            first: ms === 0,
+            last: ms >= dur
+          });
+        }
+        return ticks;
+      },
+    },
+    watch: {
+      'interForm.type'(val) {
+        const opt = this.findOption(val);
+        // 需求2：名称默认跟随选中的互动类型标签；手动修改后不再被覆盖
+        if (opt && !this.nameManuallyEdited) this.interForm.name = opt.label;
+        // 让顶部分类复选/单选态与当前类型保持一致（单一数据源）
+        this.syncCatsFromType();
+      },
+      // 编辑中的互动起始时间变化时，同步已保存互动，使轨道/进度条上的点位实时跟随
+        // 注意：options API 的 watch key 会被 traverse 当作单个路径解析，逗号分隔写法无效，需逐个声明
+      'interForm.sM'() { this.syncInterStartToList(); },
+      'interForm.sS'() { this.syncInterStartToList(); },
+      'interForm.sMs'() { this.syncInterStartToList(); },
+      // 题目增删/编辑导致高度变化时刷新模拟滚动条
+      'interForm.questions': {
+        deep: true,
+        handler() { this.$nextTick(this.refreshPickScroll); }
+      }
+    },
+    directives: {
+      // 文本被截断时才加 title 悬浮提示；能完整显示则不加
+      'truncate-tip': {
+        mounted(el) {
+          el.__checkTip = () => {
+            const t = (el.textContent || '').trim();
+            if (el.scrollWidth > el.clientWidth + 1) el.title = t;
+            else el.removeAttribute('title');
+          };
+          el.__checkTip();
+        },
+        updated(el) { if (el.__checkTip) el.__checkTip(); }
+      }
+    },
+    methods: {
+      // 当前互动类型所属分类名（如 测练类/语音类/其他类）
+      currentCatName() {
+        const code = this.interForm.type;
+        for (const c of this.typeCats) {
+          if (c.options.some(o => o.code === code)) return c.name;
+        }
+        return '';
+      },
+      findOption(code) {
+        for (const g of this.typeCats) { const f = g.options.find(o => o.code === code); if (f) return f; }
+        return null;
+      },
+      onCatChange(cat) {
+        if (cat.checked) {
+          // 复选框外观、单选行为：选中当前项时取消其它项
+          this.typeCats.forEach(c => { if (c !== cat) c.checked = false; });
+          if (!cat.selected) cat.selected = cat.options[0].code;
+          this.interForm.type = cat.selected;
+        } else {
+          // 不允许取消最后一个已选项（与单选一致）
+          if (!this.typeCats.some(c => c.checked)) { cat.checked = true; return; }
+          if (this.interForm.type === cat.selected) {
+            const next = this.checkedCats.find(c => c.selected);
+            this.interForm.type = next ? next.selected : '';
+          }
+        }
+      },
+      onTypePick(cat) {
+        this.interForm.type = cat.selected;
+      },
+      syncCatsFromType() {
+        const t = this.interForm.type;
+        this.typeCats.forEach(c => {
+          const has = c.options.some(o => o.code === t);
+          c.checked = has;
+          if (has) c.selected = t;
+        });
+        if (t) this.activeSeg = t;
+      },
+      clone(obj) { return JSON.parse(JSON.stringify(obj)); },
+      blankRange() {
+        return { id: '', name: '', color: '#fbd9e0', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 0, eMs: 0 };
+      },
+      blankInter() {
+        return { code: '', name: '', type: 'ROUTINE_ANSWER', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 0, eMs: 0,
+          contentText: '', groupCount: 2, countdownMin: 0, countdownSec: 0, countdownDesc: '', questions: [] };
+      },
+      selectRange(idx) {
+        if (idx == null || !this.ranges[idx]) return;
+        this.activeRangeIdx = idx;
+        this.isNewRange = false;
+        this.panelMode = 'range';
+        this.activeSeg = null; // 选中区间后取消互动选中（互斥）
+        this.rangeForm = this.clone(this.ranges[idx]);
+        this.rangeSnapshot = this.clone(this.rangeForm); // 记录编辑起点，用于未保存改动检测
+      },
+      // 区间编辑内容是否有未保存变化（对比进入编辑/上次保存时的快照）
+      isRangeDirty() {
+        if (!this.rangeSnapshot) return false;
+        return JSON.stringify(this.rangeForm) !== JSON.stringify(this.rangeSnapshot);
+      },
+      // 点击/选择其他区间：编辑中且有未保存改动时拦截，弹窗确认「保存并切换」
+      requestSelectRange(idx) {
+        if (idx == null || !this.ranges[idx]) return;
+        const editing = this.isNewRange || (this.activeRangeIdx != null && this.activeRangeIdx >= 0);
+        const sameTarget = !this.isNewRange && this.activeRangeIdx === idx;
+        if (!editing || sameTarget || !this.isRangeDirty()) { this.selectRange(idx); return; }
+        ElementPlus.ElMessageBox.confirm('当前编辑区间未做保存，请确认是否保存并切换？', '提示', {
+          confirmButtonText: '保存', cancelButtonText: '取消', type: 'warning'
+        }).then(() => {
+          if (this.saveCurrent('range')) this.selectRange(idx); // 保存校验失败则停留在当前编辑
+        }).catch(() => {});
+      },
+      // ===== 区间边界拖拽 =====
+      rangeStartMs(r) { return r.sM * 60000 + r.sS * 1000 + (r.sMs || 0); },
+      rangeEndMs(r) { return r.eM * 60000 + r.eS * 1000 + (r.eMs || 0); },
+      pxToMs(clientX) {
+        const body = this.$refs.tlBody; if (!body) return 0;
+        const rect = body.getBoundingClientRect();
+        const frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+        return frac * this.tlTotal;
+      },
+      startRangeResize(e, idx, edge) {
+        e.preventDefault();
+        const r = (idx === -1) ? this.rangeForm : this.ranges[idx];
+        if (!r) return;
+        const start = this.rangeStartMs(r), end = this.rangeEndMs(r);
+        let prevEnd = 0, nextStart = this.tlTotal;
+        this.ranges.forEach((o) => {
+          const os = this.rangeStartMs(o), oe = this.rangeEndMs(o);
+          if (oe <= start && oe > prevEnd) prevEnd = oe;
+          if (os >= end && os < nextStart) nextStart = os;
+        });
+        this._resize = { idx, edge, prevEnd, nextStart, draft: idx === -1 };
+        // 拖拽边界时暂停播放，便于按帧预览边界位置
+        const v = this.$refs.vprev;
+        if (v && !v.paused) v.pause();
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'ew-resize';
+        window.addEventListener('mousemove', this.onRangeResizeMove);
+        window.addEventListener('mouseup', this.onRangeResizeEnd);
+      },
+      onRangeResizeMove(e) {
+        const d = this._resize; if (!d) return;
+        const r = d.draft ? this.rangeForm : this.ranges[d.idx]; if (!r) return;
+        const MIN = 1000;
+        let ms = this.pxToMs(e.clientX);
+        if (d.edge === 'left') {
+          ms = Math.min(this.rangeEndMs(r) - MIN, Math.max(d.prevEnd, ms));
+          const t = this.setTimeFromMs(ms);
+          r.sM = t.m; r.sS = t.s; r.sMs = t.ms;
+        } else {
+          ms = Math.min(d.nextStart, Math.max(this.rangeStartMs(r) + MIN, ms));
+          const t = this.setTimeFromMs(ms);
+          r.eM = t.m; r.eS = t.s; r.eMs = t.ms;
+        }
+        if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
+        // 拖拽边界时让播放竖线（进度条 & 时间轴）与边界位置实时同步，同时视频按帧预览
+        this.videoCur = ms;
+        const v = this.$refs.vprev;
+        if (v && this.videoSrc) { try { v.currentTime = ms / 1000; } catch (err) {} }
+      },
+      onRangeResizeEnd() {
+        window.removeEventListener('mousemove', this.onRangeResizeMove);
+        window.removeEventListener('mouseup', this.onRangeResizeEnd);
+        this._resize = null;
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+      },
+      // ===== 区间整体拖拽（选中状态下拖动主体移动，不与其它区间重叠） =====
+      startRangeMove(e, idx) {
+        e.preventDefault();
+        const r = (idx === -1) ? this.rangeForm : this.ranges[idx];
+        if (!r) return;
+        const start = this.rangeStartMs(r), end = this.rangeEndMs(r);
+        // 可跨过其它区间自由拖拽：仅约束整段不超出时间轴 [0, tlTotal]
+        const prevEnd = 0, nextStart = this.tlTotal;
+        this._move = { idx, draft: idx === -1, start0: start, end0: end, prevEnd, nextStart, grabX: e.clientX, moved: false };
+        this._rangeDragged = false;
+        document.body.style.userSelect = 'none';
+        document.body.classList.add('dragging');
+        window.addEventListener('mousemove', this.onRangeMove);
+        window.addEventListener('mouseup', this.onRangeMoveEnd);
+      },
+      onRangeMove(e) {
+        const d = this._move; if (!d) return;
+        const r = d.draft ? this.rangeForm : this.ranges[d.idx]; if (!r) return;
+        const delta = this.pxToMs(e.clientX) - this.pxToMs(d.grabX);
+        // 左极限：start >= prevEnd；右极限：end <= nextStart（整体平移，端点均不越界 → 不会重叠）
+        const maxLeft = d.prevEnd - d.start0;
+        const maxRight = d.nextStart - d.end0;
+        let shift = Math.max(maxLeft, Math.min(maxRight, delta));
+        if (Math.abs(shift) > 0.1) { d.moved = true; this._rangeDragged = true; }
+        const t0 = this.setTimeFromMs(d.start0 + shift);
+        const t1 = this.setTimeFromMs(d.end0 + shift);
+        r.sM = t0.m; r.sS = t0.s; r.sMs = t0.ms;
+        r.eM = t1.m; r.eS = t1.s; r.eMs = t1.ms;
+        if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
+        // 整体拖拽：播放竖线（进度条 & 时间轴）跟随区间起始点，视频按帧预览
+        const startMs = d.start0 + shift;
+        this.videoCur = startMs;
+        const v = this.$refs.vprev;
+        if (v && this.videoSrc) { try { v.currentTime = startMs / 1000; } catch (err) {} }
+      },
+      onRangeMoveEnd() {
+        window.removeEventListener('mousemove', this.onRangeMove);
+        window.removeEventListener('mouseup', this.onRangeMoveEnd);
+        const d = this._move;
+        this._move = null;
+        document.body.style.userSelect = '';
+        document.body.classList.remove('dragging');
+        if (!d) return;
+        const r = d.draft ? this.rangeForm : this.ranges[d.idx];
+        if (!r) return;
+        // 放手校验：与任一其它区间重叠 → 还原到拖拽前位置并提示
+        const s = this.rangeStartMs(r), e = this.rangeEndMs(r);
+        const overlap = this.ranges.some((o) => {
+          if (o === r) return false;
+          const os = this.rangeStartMs(o), oe = this.rangeEndMs(o);
+          return s < oe && os < e;
+        });
+        if (overlap) {
+          const t0 = this.setTimeFromMs(d.start0), t1 = this.setTimeFromMs(d.end0);
+          r.sM = t0.m; r.sS = t0.s; r.sMs = t0.ms;
+          r.eM = t1.m; r.eS = t1.s; r.eMs = t1.ms;
+          if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
+          ElementPlus.ElMessage.warning('当前时间段与其他区间重复，不允许拖拽');
+        }
+      },
+      onRangeClick(idx) {
+        if (this._rangeDragged) { this._rangeDragged = false; return; } // 拖拽后抑制误触发的选中
+        this.requestSelectRange(idx);
+      },
+      // 时间线放大/缩小（剪映式）：以播放头为中心保持在可视区内
+      // 某一缩放级别对应的 px/秒（大刻度间隔越短，每秒像素越多）
+      levelZoom(i) {
+        const ms = ZOOM_MAJOR_STEPS[i] || 1000;
+        return Math.round(ZOOM_MAJOR_PX * 1000 / ms * 100) / 100;
+      },
+      // 按区间色亮度选择文字颜色，保证进度条色块上名称可读
+      rangeTextColor(hex) {
+        const c = (hex || '').replace('#', '');
+        if (c.length < 6) return '#333';
+        const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#333' : '#fff';
+      },
+      // 播放/暂停预览视频
+      togglePlay() {
+        const v = this.$refs.vprev;
+        if (!v || !this.videoSrc) return;
+        if (v.paused) v.play(); else v.pause();
+      },
+      // 静音/取消静音
+      toggleMute() {
+        const v = this.$refs.vprev;
+        if (!v) return;
+        v.muted = !v.muted;
+        this.videoMuted = v.muted;
+      },
+      // 全屏/退出全屏（作用于视频容器）
+      toggleFullscreen() {
+        const box = this.$refs.vbox;
+        if (!box) return;
+        if (document.fullscreenElement) { document.exitFullscreen(); }
+        else if (box.requestFullscreen) { box.requestFullscreen(); }
+      },
+      onFullscreenChange() {
+        this.isFullscreen = !!document.fullscreenElement;
+        this.$nextTick(this.measureTrack); // 全屏后进度条变宽，重新测量以重算名称防重叠
+      },
+      // 更多菜单：切换播放倍速
+      onSpeedCommand(rate) {
+        const v = this.$refs.vprev;
+        if (v) v.playbackRate = Number(rate);
+      },
+      // 自定义进度条：点击/拖动定位（支持按住拖动）
+      onProgDown(e) {
+        const bar = e.currentTarget;
+        const seek = (ev) => {
+          const rect = bar.getBoundingClientRect();
+          const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
+          const ms = Math.round(frac * this.videoDur);
+          this.videoCur = ms;
+          const v = this.$refs.vprev;
+          if (v && this.videoSrc) { try { v.currentTime = ms / 1000; } catch (err) {} }
+        };
+        seek(e);
+        const move = (ev) => seek(ev);
+        const up = () => {
+          window.removeEventListener('mousemove', move);
+          window.removeEventListener('mouseup', up);
+        };
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', up);
+      },
+      // 时间线放大/缩小：按阶梯切换大刻度间隔；最小到 1 秒一大刻度，不能再放大
+      zoomBy(dir) {
+        const maxLv = ZOOM_MAJOR_STEPS.length - 1; // 1 秒一大刻度（最放）
+        let lv = this.zoomLevel + (dir > 0 ? 1 : -1);
+        lv = Math.min(maxLv, Math.max(this.defaultLevel, lv));
+        this.zoomLevel = lv;
+        this.zoomTouched = true;
+        this.centerPlayhead();
+      },
+      // 滑条切换级别
+      onZoomChange() {
+        this.zoomTouched = true;
+        this.centerPlayhead();
+      },
+      // 测量时间轴可视宽度，用于计算「缩到最小=刚好铺满」的边界
+      measureTrack() {
+        const el = this.$refs.tlScroll;
+        if (el) {
+          this.trackWidth = el.clientWidth;
+          if (this.zoomLevel < this.defaultLevel) this.zoomLevel = this.defaultLevel;
+        }
+        const bar = this.$refs.vprog;
+        if (bar) this.vprogW = bar.clientWidth;
+      },
+      // 默认缩放：缩到最粗级别，使整条时间轴刚好铺满可视区（无横向滚动）
+      fitTimeline() {
+        this.zoomLevel = this.defaultLevel;
+      },
+      centerPlayhead() {
+        this.$nextTick(() => {
+          const sc = this.$refs.tlScroll;
+          const body = this.$refs.tlBody;
+          if (!sc || !body || !this.videoDur) return;
+          const ratio = this.videoCur / this.tlTotal;
+          sc.scrollLeft = body.getBoundingClientRect().width * ratio - sc.clientWidth / 2;
+        });
+      },
+      // 播放区间：跳到选中区间起点并播放
+      playVideo() {
+        const v = this.$refs.vprev;
+        const r = this.isNewRange ? this.rangeForm : this.ranges[this.activeRangeIdx];
+        if (v && this.videoSrc && r) {
+          const sMs = r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+          const eMs = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+          this.playRangeEnd = eMs;
+          v.currentTime = sMs / 1000;
+          v.play();
+        } else {
+          ElementPlus.ElMessage.warning('请先选中一个区间');
+        }
+      },
+      onVideoMeta(e) {
+        const v = e.target;
+        if (v && isFinite(v.duration)) {
+          this.videoDur = v.duration * 1000;
+          // 真实时长加载后（初始是占位值）边界会变，用户未手动缩放则重新铺满
+          this.$nextTick(() => { if (!this.zoomTouched) this.fitTimeline(); });
+        }
+      },
+      onTimeUpdate(e) {
+        const v = e.target;
+        if (!v.seeking) this.videoCur = v.currentTime * 1000;
+        // 播放区间：到达终止点自动暂停
+        if (this.playRangeEnd != null && this.videoCur >= this.playRangeEnd) {
+          v.pause();
+          this.playRangeEnd = null;
+        }
+      },
+      setTimeFromMs(ms) {
+        return { m: Math.floor(ms / 60000), s: Math.floor((ms % 60000) / 1000), ms: Math.floor(ms % 1000) };
+      },
+      markStart() {
+        const t = this.setTimeFromMs(this.videoCur);
+        if (this.panelMode === 'interaction') {
+          this.interForm.sM = t.m; this.interForm.sS = t.s; this.interForm.sMs = t.ms;
+          this.syncInterStartToList(); // 显式同步：标记后轨道/进度条上的点位立即跟随
+        } else {
+          if (this.videoCur >= this.rangeEndMs(this.rangeForm)) {
+            ElementPlus.ElMessage.error('起始时间需小于结束时间');
+            return;
+          }
+          this.rangeForm.sM = t.m; this.rangeForm.sS = t.s; this.rangeForm.sMs = t.ms;
+          // 编辑已保存区间时同步更新实际区间对象，轨道实时跟随
+          const r = this.ranges[this.activeRangeIdx];
+          if (r) { r.sM = t.m; r.sS = t.s; r.sMs = t.ms; }
+        }
+        ElementPlus.ElMessage({ message: '已将当前时间设置为起始时间', type: 'success' });
+      },
+      markEnd() {
+        const t = this.setTimeFromMs(this.videoCur);
+        // 互动点只需起始时间，终止时间仅作用于区间
+        if (this.videoCur <= this.rangeStartMs(this.rangeForm)) {
+          ElementPlus.ElMessage.error('结束时间需大于起始时间');
+          return;
+        }
+        this.rangeForm.eM = t.m; this.rangeForm.eS = t.s; this.rangeForm.eMs = t.ms;
+        // 编辑已保存区间时同步更新实际区间对象，轨道实时跟随
+        const r = this.ranges[this.activeRangeIdx];
+        if (r) { r.eM = t.m; r.eS = t.s; r.eMs = t.ms; }
+        ElementPlus.ElMessage({ message: '已将当前时间设置为结束时间', type: 'success' });
+      },
+      onProgressClick(e) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        this.videoCur = Math.round(frac * this.videoDur);
+      },
+      // 时间轴播放头：按下拖动定位（对齐时间刻度），松开结束
+      // 按鼠标 X 定位播放头（换算为时间并联动预览视频）
+      seekToX(ev) {
+        const body = this.$refs.tlBody;
+        if (!body || !this.videoDur) return;
+        const rect = body.getBoundingClientRect();
+        const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
+        const ms = Math.round(frac * this.tlTotal);
+        this.videoCur = Math.min(ms, this.videoDur);
+        const v = this.$refs.vprev;
+        if (v && this.videoSrc) { try { v.currentTime = Math.min(ms, this.videoDur) / 1000; } catch (err) {} }
+      },
+      // 标尺：单击即定位，按住可拖动跟随
+      onRulerDown(e) {
+        e.preventDefault();
+        this.seekToX(e);
+        const move = (ev) => this.seekToX(ev);
+        const up = () => {
+          window.removeEventListener('mousemove', move);
+          window.removeEventListener('mouseup', up);
+        };
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', up);
+      },
+      // 竖线本体：拖动定位（单击竖线也视为定位）
+      onPlayheadDown(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.seekToX(e);
+        const move = (ev) => this.seekToX(ev);
+        const up = () => {
+          window.removeEventListener('mousemove', move);
+          window.removeEventListener('mouseup', up);
+        };
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', up);
+      },
+      fmt(ms) {
+        const m = Math.floor(ms / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        const m3 = Math.floor(ms % 1000);
+        const p2 = n => String(n).padStart(2, '0');
+        const p3 = n => String(n).padStart(3, '0');
+        return `${m}:${p2(s)}.${p3(m3)}`;
+      },
+      fmtShort(ms) {
+        const m = Math.floor(ms / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        const p2 = n => String(n).padStart(2, '0');
+        return `${p2(m)}:${p2(s)}`;
+      },
+      rangeStartText(r) {
+        return this.fmtShort(r.sM * 60000 + r.sS * 1000 + (r.sMs || 0));
+      },
+      segPos(o, color) {
+        const dur = this.tlTotal;
+        const s = o.sM * 60000 + o.sS * 1000 + (o.sMs || 0);
+        const e = o.eM != null ? (o.eM * 60000 + o.eS * 1000 + (o.eMs || 0)) : s;
+        const left = Math.max(0, Math.min(100, s / dur * 100));
+        const width = Math.max(1, Math.min(100 - left, (e - s) / dur * 100));
+        const style = { left: left + '%', width: width + '%' };
+        if (color) style.background = color;
+        return style;
+      },
+      // 互动点标记颜色：默认统一灰色，选中时经 .tl-mark.active 覆盖为蓝色
+      markColor(code) {
+        return '#999';
+      },
+      // 互动点标记定位：按起始时间换算为时间轴百分比，颜色经 CSS 变量传给图标
+      markPos(o, color) {
+        const dur = this.tlTotal;
+        const ms = o.sM * 60000 + o.sS * 1000 + (o.sMs || 0);
+        const style = { left: Math.max(0, Math.min(100, ms / dur * 100)) + '%' };
+        if (color) style['--mc'] = color;
+        return style;
+      },
+      // 互动起始时间写入已保存互动（仅编辑态）：保证轨道与进度条上的点位实时跟随表单变化
+      syncInterStartToList() {
+        if (this.isNewInter || !this.activeSeg) return;
+        const t = this.interList.find(x => x.code === this.activeSeg);
+        if (!t) return;
+        t.sM = this.interForm.sM;
+        t.sS = this.interForm.sS;
+        t.sMs = this.interForm.sMs;
+      },
+      loadInter(code) {
+        const cur = this.interList.find(t => t.code === code);
+        if (!cur) return;
+        this.activeSeg = code;
+        this.isNewInter = false;
+        this.panelMode = 'interaction';
+        this.activeRangeIdx = null; // 选中互动后取消区间选中（互斥）
+        const opt = this.findOption(cur.type);
+        // 已保存的名称若与类型标签不同，视为手动修改，不再被覆盖
+        this.nameManuallyEdited = !!cur.name && opt && cur.name !== opt.label;
+        this.interForm = this.clone(cur);
+      },
+      selectSeg(code) { this.loadInter(code); },
+      onInterSelect(code) { if (code) this.loadInter(code); },
+      addRange() {
+        this.isNewRange = true; this.isNewInter = false; this.panelMode = 'range';
+        this.activeRangeIdx = -1; this.activeSeg = null; // 取消互动选中（互斥），使标记终点可用
+
+        // 默认起始时间：有区间则取「最晚结束时间的下一秒」，无区间则从 00:00 起；默认时长 10s
+        let startMs = 0;
+        if (this.ranges.length) {
+          let maxEnd = 0;
+          for (const r of this.ranges) {
+            const e = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+            if (e > maxEnd) maxEnd = e;
+          }
+          startMs = maxEnd + 1000;
+        }
+        const endMs = startMs + 10000;
+        const toMS = (ms) => ({ M: Math.floor(ms / 60000), S: Math.floor((ms % 60000) / 1000), Ms: Math.round(ms % 1000) });
+        const s = toMS(startMs), e = toMS(endMs);
+        this.rangeForm = {
+          id: '', name: '', color: '#fbd9e0',
+          sM: s.M, sS: s.S, sMs: s.Ms, eM: e.M, eS: e.S, eMs: e.Ms
+        };
+        this.rangeSnapshot = this.clone(this.rangeForm); // 新增起点快照
+      },
+      addInteraction() {
+        this.isNewInter = true; this.isNewRange = false; this.panelMode = 'interaction';
+        this.activeSeg = ''; this.activeRangeIdx = null; // 取消区间选中（互斥）
+        const blank = this.blankInter();
+        // 需求2：新增时名称默认取当前选中的互动类型标签
+        const def = this.findOption(blank.type) || this.findOption('ROUTINE_ANSWER');
+        blank.name = def ? def.label : '';
+        this.interForm = blank;
+        this.nameManuallyEdited = false;
+      },
+      saveCurrent(kind) {
+        if (kind === 'range') {
+          const data = this.clone(this.rangeForm);
+          // 区间不可重叠校验
+          const s = data.sM * 60000 + data.sS * 1000 + (data.sMs || 0);
+          const e = data.eM * 60000 + data.eS * 1000 + (data.eMs || 0);
+          if (e <= s) { ElementPlus.ElMessage.error('结束时间需大于起始时间'); return false; }
+          if (!data.name || !data.name.trim()) { ElementPlus.ElMessage.error('请输入区间名称'); return false; }
+          for (let i = 0; i < this.ranges.length; i++) {
+            if (!this.isNewRange && i === this.activeRangeIdx) continue;
+            const r = this.ranges[i];
+            const rs = r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+            const re = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+            if (s < re && e > rs) {
+              ElementPlus.ElMessage.error('区间不可与「' + r.name + '」重叠');
+              return false;
+            }
+          }
+          if (this.isNewRange) {
+            data.id = 'r' + (this.rangeIdSeq++);
+            this.ranges.push(data);
+            this.isNewRange = false;
+            this.activeRangeIdx = this.ranges.length - 1;
+          } else {
+            this.ranges.splice(this.activeRangeIdx, 1, data);
+          }
+          this.rangeForm = this.clone(data);
+          this.rangeSnapshot = this.clone(data); // 保存后重置快照
+        } else {
+          const data = this.clone(this.interForm);
+          if (!data.name) { const o = this.findOption(data.type); data.name = o ? o.label : data.type; }
+          // 测练类：关联题目必填；语音类：关联文本必填（关联题目可选填）
+          if (this.currentCatName() === '测练类' && !(data.questions && data.questions.length)) {
+            ElementPlus.ElMessage.error('请添加关联题目');
+            return false;
+          }
+          if (this.currentCatName() === '语音类' && !(data.contentText && String(data.contentText).trim())) {
+            ElementPlus.ElMessage.error('请填写关联文本');
+            return false;
+          }
+          // 不同互动的起始时间不能重复
+          const sMs = data.sM * 60000 + data.sS * 1000 + (data.sMs || 0);
+          const dup = this.interList.find(t => {
+            if (!this.isNewInter && t.code === this.activeSeg) return false; // 排除自身
+            return (t.sM * 60000 + t.sS * 1000 + (t.sMs || 0)) === sMs;
+          });
+          if (dup) {
+            ElementPlus.ElMessage.error('互动「' + dup.name + '」的起始时间与当前相同，起始时间不可重复');
+            return false;
+          }
+          if (this.isNewInter) {
+            data.code = 'INTER_' + (this.interIdSeq++);
+            this.interList.push(data);
+            this.isNewInter = false;
+            this.activeSeg = data.code;
+          } else {
+            const i = this.interList.findIndex(t => t.code === this.activeSeg);
+            if (i > -1) this.interList.splice(i, 1, data);
+          }
+          this.interForm = this.clone(data);
+        }
+        this.$message.success('已保存');
+        return true;
+      },
+      deleteCurrent(kind) {
+        if (kind === 'range') {
+          if (this.isNewRange) { this.cancelCurrent('range'); return; }
+          this.ranges.splice(this.activeRangeIdx, 1);
+          if (this.ranges.length) {
+            this.activeRangeIdx = Math.min(this.activeRangeIdx, this.ranges.length - 1);
+            this.rangeForm = this.clone(this.ranges[this.activeRangeIdx]);
+          } else {
+            this.activeRangeIdx = -1; this.rangeForm = this.blankRange(); this.panelMode = 'interaction';
+          }
+          this.rangeSnapshot = this.clone(this.rangeForm); // 删除后同步快照，避免误判改动
+          this.$message.success('已删除区间');
+        } else {
+          if (this.isNewInter) { this.cancelCurrent('interaction'); return; }
+          const i = this.interList.findIndex(t => t.code === this.activeSeg);
+          if (i > -1) this.interList.splice(i, 1);
+          if (this.interList.length) {
+            this.activeSeg = this.interList[0].code;
+            this.interForm = this.clone(this.interList[0]);
+          } else {
+            this.activeSeg = ''; this.interForm = this.blankInter(); this.panelMode = 'range';
+          }
+          this.$message.success('已删除互动');
+        }
+      },
+      cancelCurrent(kind) {
+        if (kind === 'range') {
+          if (this.isNewRange) {
+            this.isNewRange = false;
+            if (this.ranges.length) {
+              this.activeRangeIdx = 0;
+              this.rangeForm = this.clone(this.ranges[0]);
+              this.panelMode = 'range';
+            } else {
+              this.activeRangeIdx = null;
+              this.rangeForm = this.blankRange();
+              this.panelMode = 'empty';
+            }
+          } else {
+            this.rangeForm = this.clone(this.ranges[this.activeRangeIdx]);
+          }
+          this.rangeSnapshot = this.clone(this.rangeForm); // 取消后重置快照，避免误判改动
+        } else {
+          if (this.isNewInter) {
+            this.isNewInter = false;
+            if (this.interList.length) {
+              this.activeSeg = this.interList[0].code;
+              this.interForm = this.clone(this.interList[0]);
+              this.panelMode = 'interaction';
+            } else {
+              this.activeSeg = null;
+              this.interForm = this.blankInter();
+              this.panelMode = 'empty';
+            }
+          } else {
+            const cur = this.interList.find(t => t.code === this.activeSeg);
+            if (cur) this.interForm = this.clone(cur);
+          }
+        }
+      },
+      segColor(code) {
+        const cat = this.typeCats.find(g => g.options.some(o => o.code === code))?.name;
+        if (cat === '测练类') return '#c9d7f8';
+        if (cat === '语音类') return '#c9d7f8';
+        return '#ccd3f5';
+      },
+      addQuestion() {
+        this.interForm.questions.push({
+          id: '2049052041472369' + (1000 + this.interForm.questions.length),
+          type: '选择', diff: '简单', stem: '（新添加的题目）请配置题干内容。',
+          options: [], answer: '', analysis: '略', timeLimited: false, durationMin: 0, durationSec: 30
+        });
+      },
+      clearQuestions() {
+        this.interForm.questions = [];
+      },
+      onDragStart(idx, e) {
+        this.grabItem = null;
+        this.dragItem = this.interForm.questions[idx];
+        e.dataTransfer.effectAllowed = 'move';
+        // 清掉上一次交换可能残留的 FLIP transform，保证来回交换预览都正常
+        this.$nextTick(() => {
+          document.querySelectorAll('.picked-item').forEach(el => { el.style.transform = ''; });
+        });
+        // 自定义拖拽影像：白色卡片 + 黑色边框 + 阴影（对齐截图）
+        const node = e.target.closest('.picked-item');
+        if (node) {
+          const rect = node.getBoundingClientRect();
+          const offX = e.clientX - rect.left;
+          const offY = e.clientY - rect.top;
+          const clone = node.cloneNode(true);
+          clone.style.position = 'absolute';
+          clone.style.top = '-9999px';
+          clone.style.left = '-9999px';
+          clone.style.width = node.offsetWidth + 'px';
+          clone.style.background = '#fff';
+          clone.style.border = '1px solid #000';
+          clone.style.boxShadow = '0 6px 16px rgba(0,0,0,.25)';
+          document.body.appendChild(clone);
+          // 偏移量取按下点在卡片内的位置，浮动卡片初始与原卡片完全重合
+          e.dataTransfer.setDragImage(clone, offX, offY);
+          setTimeout(() => document.body.removeChild(clone), 0);
+        }
+      },
+      // 拖拽过程中实时重排数组：transition-group 的 FLIP 动画让卡片平滑滑动交换（可反复预览）
+      onDragEnter(idx) {
+        const item = this.dragItem;
+        if (!item) return;
+        const arr = this.interForm.questions;
+        const cur = arr.indexOf(item);
+        if (cur === -1 || cur === idx) return;
+        arr.splice(cur, 1);
+        arr.splice(idx, 0, item);
+      },
+      onDrop() {
+        this.dragItem = null;
+        this.grabItem = null;
+        // 清掉拖拽中因 transition:none 被压制的位移，避免松手后补播一次位移动画
+        this.$nextTick(() => {
+          document.querySelectorAll('.picked-item').forEach(el => { el.style.transform = ''; });
+        });
+      },
+      onDragEnd() {
+        this.dragItem = null;
+        this.grabItem = null;
+        this.$nextTick(() => {
+          document.querySelectorAll('.picked-item').forEach(el => { el.style.transform = ''; });
+        });
+      },
+      removeQuestion(idx) { this.interForm.questions.splice(idx, 1); },
+      viewQuestion(q) { this.detailQ = q; this.detailVisible = true; },
+      // ---- 题目区 JS 模拟滚动条 ----
+      refreshPickScroll() {
+        const el = this.$refs.pickArea;
+        const top = el ? el.scrollTop : 0;
+        const view = el ? el.clientHeight : 0;
+        const total = el ? el.scrollHeight : 0;
+        const cur = this.pickScroll;
+        if (cur.top === top && cur.view === view && cur.total === total) return; // 防抖动
+        this.pickScroll = { top, view, total };
+      },
+      onPickScroll() { this.refreshPickScroll(); },
+      onPickTrackDown(e) {
+        const el = this.$refs.pickArea;
+        if (!el || !this.pickSbVisible) return;
+        const s = this.pickScroll;
+        const th = Math.max(12, s.view / s.total * s.view);
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickY = e.clientY - rect.top;
+        let top = (clickY - th / 2) / (s.view - th) * (s.total - s.view);
+        top = Math.max(0, Math.min(s.total - s.view, top));
+        el.scrollTop = top;
+        this.refreshPickScroll();
+      },
+      onPickThumbDown(e) {
+        const el = this.$refs.pickArea;
+        if (!el || !this.pickSbVisible) return;
+        const s = this.pickScroll;
+        this._sbDrag = { startY: e.clientY, startTop: el.scrollTop, view: s.view, total: s.total, th: Math.max(6, s.view / s.total * s.view) };
+        document.body.style.userSelect = 'none';
+        window.addEventListener('mousemove', this.onPickThumbMove);
+        window.addEventListener('mouseup', this.onPickThumbUp);
+      },
+      onPickThumbMove(e) {
+        const d = this._sbDrag; if (!d) return;
+        const delta = e.clientY - d.startY;
+        const maxScroll = d.total - d.view;
+        const maxThumb = d.view - d.th;
+        let top = d.startTop + (delta / maxThumb) * maxScroll;
+        top = Math.max(0, Math.min(maxScroll, top));
+        this.$refs.pickArea.scrollTop = top;
+      },
+      onPickThumbUp() {
+        this._sbDrag = null;
+        document.body.style.userSelect = '';
+        window.removeEventListener('mousemove', this.onPickThumbMove);
+        window.removeEventListener('mouseup', this.onPickThumbUp);
+      },
+    }
+  };
+
+  // ===== 课件详情页（课件资源路由） =====
+  const CoursePage = {
+    template: '#course-page-tpl',
+    data() {
+      return {
+        activeTab: 'inter',
+        pageTotal: 33,
+        visiblePageCount: 12,
+        curPage: 1,
+        // 互动类型下拉：分类分组（对齐截图）
+        typeGroups: [
+          { name: '语音类', options: ['跟读测评', '语音测评'] },
+          { name: '测练类', options: ['分组', '答题', '抢答', '指定学生', '随机挑人'] },
+          { name: '其他类', options: ['课间休息'] },
+        ],
+        pageTypes: ['答题', '语音测评'],
+        basic: { name: '围绕中心意思写（习题课件）', dir: '教学资源 / 语文 / 五年级', intro: '' },
+        // 各类型的卡片配置（勾选即生成对应卡片）
+        typeMeta: {
+          '跟读测评': { icon: '🗣', iconBg: '#eef4ff', desc: '学生跟随范读音频逐句跟读，系统自动评测发音并评分', contentText: '', questions: [] },
+          '语音测评': { icon: '🎙', iconBg: '#e8f7ee', desc: '唤起设备话筒进行录音，录音完成后调用 AI 测评接口进行评分', contentText: '', questions: [] },
+          '答题': { icon: '📝', iconBg: '#eef4ff', desc: '纯答题、仅关联题库中题目', questions: [
+            { id: '2109481523827703811', type: '较易', stem: '补写出下列句子中的空缺部分。', options: [], answer: '', analysis: '略', timeLimited: false, durationMin: 0, durationSec: 30 },
+          ] },
+          '分组': { icon: '👥', iconBg: '#f0f1ff', desc: '到达时间点后随机进行分组，按分组对比答题情况', questions: [],
+            extraFields: [ { label: '分组数量', value: 4 } ] },
+          '抢答': { icon: '⚡', iconBg: '#fde2e2', desc: '达到时间点后，学生可以进行答题抢答', questions: [],
+            extraFields: [ { label: '抢答人数', value: 1 } ] },
+          '指定学生': { icon: '🙋', iconBg: '#eef9f0', desc: '到达时间点后教师可以指定学生进行作答', questions: [] },
+          '随机挑人': { icon: '🎯', iconBg: '#fdeef0', desc: '课堂游戏-随机挑人进行答题', questions: [] },
+          '课间休息': { icon: '☕', iconBg: '#f4f6fa', desc: '到达时间点后进入课间休息倒计时', questions: [],
+            extraFields: [ { label: '休息时长（分）', value: 5 } ] },
+        },
+        detailVisible: false,
+        detailQ: {},
+        saveFailVisible: false,
+        saveFailList: [],
+      };
+    },
+    computed: {
+      visiblePages() { return Array.from({ length: this.visiblePageCount }, (_, i) => i + 1); },
+      // 卡片列表跟随下拉勾选（选择结果仅作用于当前页）
+      typeConfigs() {
+        return this.pageTypes
+          .filter(t => this.typeMeta[t])
+          .map(t => Object.assign({ name: t }, this.typeMeta[t]));
+      },
+    },
+    methods: {
+      // 各页互动数量角标（原型仅第1页有配置）
+      pageBadge(p) { return p === 1 ? this.pageTypes.length : 0; },
+      regenPreview() { ElementPlus.ElMessage.success('已重新生成第 ' + this.curPage + ' 页预览'); },
+      resetPage() {
+        this.pageTypes = [];
+        Object.values(this.typeMeta).forEach(m => { m.questions = []; });
+        ElementPlus.ElMessage.success('已重置当前页互动配置');
+      },
+      addQuestion(cfg) {
+        cfg.questions.push({
+          id: '2109481523837038' + (200 + cfg.questions.length),
+          type: '较易', stem: '（新添加的题目）请配置题干内容。', options: [], answer: '', analysis: '略',
+          timeLimited: false, durationMin: 0, durationSec: 30
+        });
+      },
+      removeQuestion(cfg, qi) { cfg.questions.splice(qi, 1); },
+      viewQuestion(q) { this.detailQ = q; this.detailVisible = true; },
+      onCancel() { this.$router.back(); },
+      // 关联文本失焦校验：为空则标红提示
+      onContentTextBlur(name) {
+        const m = this.typeMeta[name];
+        if (m && m.contentText !== undefined && !String(m.contentText).trim()) m.contentTextErr = true;
+      },
+      onSave() {
+        // 关联文本必填：保存时校验已选类型的关联文本是否填写
+        let miss = [];
+        this.pageTypes.forEach(t => {
+          const m = this.typeMeta[t];
+          if (!m || m.contentText === undefined) return;
+          if (!String(m.contentText).trim()) { m.contentTextErr = true; miss.push(t); }
+        });
+        if (miss.length) {
+          this.saveFailList = miss;
+          this.saveFailVisible = true;
+          return;
+        }
+        ElementPlus.ElMessage.success('保存成功');
+      },
+    }
+  };
+
+  // 视频页节点移出根模板，改由路由渲染
+  videoMainEl.remove();
+
+  // 切片信息展示组件：模板直接取视频页的切片区域，逻辑复用视频页（保证弹窗与视频页展示一致）
+  const { template: _vpTpl, ...VideoPageLogic } = VideoPage;
+  const SliceArea = {
+    name: 'SliceArea',
+    template: '<div class="page-card">' + sliceAreaHtml + '</div>',
+    mixins: [VideoPageLogic],
+    mounted() {
+      this.$nextTick(() => {
+        this.measureTrack();
+        this.fitTimeline();
+        // 弹窗内的宽度在打开动画/窗口缩放中会变化，最小级别（=刚好铺满的刻度粒度）依赖实际可视宽度，
+        // 因此用 ResizeObserver 持续跟随：宽度变化即重算并铺满，保证与视频页的最小级别一致
+        const el = this.$refs.tlScroll;
+        if (el && window.ResizeObserver) {
+          this._svRO = new ResizeObserver(() => {
+            const w = el.clientWidth;
+            if (w > 0 && Math.abs(w - this.trackWidth) > 1) {
+              this.measureTrack();
+              if (!this.zoomTouched) this.fitTimeline();
+            }
+          });
+          this._svRO.observe(el);
+        }
+      });
+      // 兜底：挂载初期若仍测到 0 宽度，轮询等待可见后重算一次
+      this._svFitTimer = setInterval(() => {
+        if (this.trackWidth > 0) { clearInterval(this._svFitTimer); this._svFitTimer = null; }
+      }, 150);
+      setTimeout(() => { if (this._svFitTimer) { clearInterval(this._svFitTimer); this._svFitTimer = null; } }, 4000);
+    },
+    beforeUnmount() {
+      if (this._svFitTimer) clearInterval(this._svFitTimer);
+      if (this._svRO) { this._svRO.disconnect(); this._svRO = null; }
+    },
+  };
+
+  // ===== 课程管理（课程配置）路由页 =====
+  const CourseManagePage = {
+    template: '#course-manage-tpl',
+    data() {
+      return {
+        kw: '',
+        curChapter: '梅花',
+        videoPreviewVisible: false,
+        videoTab: 'info',
+        videoIntro: '',
+        activeRangeIdx: null,
+        activeSeg: null,
+        ranges: [
+          { id: 'r1', name: '区间1', color: '#fde3e9', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 30, eMs: 0 },
+          { id: 'r2', name: '区间2', color: '#dcf2d0', sM: 0, sS: 30, sMs: 0, eM: 0, eS: 60, eMs: 0 },
+        ],
+        interList: [
+          { code: 'ROUTINE_ANSWER', name: '常规答题', type: 'ROUTINE_ANSWER', sM: 0, sS: 5, sMs: 0, contentText: '', questions: [{ id: '2109481523831898113', type: '填空题' }, { id: '2109481523831898114', type: '判断题' }] },
+          { code: 'VOICE_ASSESSMENT', name: '语音测评', type: 'VOICE_ASSESSMENT', sM: 0, sS: 25, sMs: 0, contentText: '请跟读「墙角数枝梅，凌寒独自开」', questions: [] },
+          { code: 'RANDOM_GROUP', name: '随机分组', type: 'RANDOM_GROUP', sM: 0, sS: 45, sMs: 0, contentText: '', questions: [] },
+        ],
+        sliceQuestions: [{}, {}],
+        chapters: [
+          '梅花', '小儿垂钓', '赠汪伦', '望庐山瀑布', '江雪', '夜宿山寺', '敕勒歌',
+          '村居', '咏柳', '赋得古原草送别（节选）', '晓出净慈寺送林子方', '绝句', '悯农（其一）', '舟夜书所见'
+        ],
+        sections: [
+          { label: '学案', items: [
+            { icon: '学', iconBg: '#a48ad4', title: '梅花（讲义）',
+              meta: '学案ID：2081724369393946627', meta2: '更新：2026-09-04 13:59:59' }
+          ] },
+          { label: '视频', items: [
+            { title: '梅花', duration: '00:09:19',
+              meta: '视频ID：2081724369058402306　时长：00:09:19　大小：53.94MB　讲师：-',
+              meta2: '更新：2026-09-04 13:58:28' }
+          ] },
+          { label: '练习卷', items: [
+            { icon: '练', iconBg: '#67c23a', title: '梅花（练习卷）',
+              meta: '试卷ID: 208640458158869971　地区: -　年级: 二年级',
+              meta2: '试卷类型: 学练试卷　题量: 3　更新: 2026-10-13 09:30:46' }
+          ] },
+        ],
+      };
+    },
+    computed: {
+      filteredChapters() {
+        const k = this.kw.trim();
+        return k ? this.chapters.filter(c => c.includes(k)) : this.chapters;
+      },
+    },
+    methods: {
+      openPreview(item) {
+        if (item.duration) {
+          this.videoPreviewVisible = true;
+        } else {
+          // ElementPlus.ElMessage.info('该资源暂不支持预览');
+        }
+      },
+      goEdit() {
+        ElementPlus.ElMessage({ message: '前往视频编辑页', type: 'primary' });
+      },
+      segColor(code) {
+        if (code === 'ROUTINE_ANSWER' || code === 'RANDOM_GROUP') return '#c9d7f8';
+        if (code === 'VOICE_ASSESSMENT') return '#c2e3f8';
+        return '#ccd3f5';
+      },
+    },
+  };
+
+  // ===== 课包管理（课包详情）路由页 =====
+  const CoursePackagePage = {
+    template: '#course-package-tpl',
+    data() {
+      return {
+        pkg: {
+          name: '乘法幂的运算的简',
+          alias: '',
+          stage: '初中',
+          subject: '数学',
+          creator: 'lixiaojun',
+          updater: 'wukaihao',
+          createTime: '2026-09-10 22:54:47',
+          updateTime: '2026-10-14 09:57:00',
+        },
+        relatedTypes: [
+          { label: '学案', active: true },
+          { label: '视频', active: true },
+          { label: '练习卷', active: true },
+          { label: '测试卷', active: false },
+          { label: '课件', active: false },
+        ],
+        resTab: 'list',
+        refCourseCount: 8,
+        resourceSections: [
+          { label: '学案', type: 'doc', icon: '学', iconBg: '#a48ad4', items: [
+            { id: 'd1', icon: '学', iconBg: '#a48ad4', title: '梅花（讲义）',
+              meta: '学案ID：2081724369393946627', meta2: '更新：2026-09-04 13:59:59' }
+          ] },
+          { label: '视频', type: 'video', items: [
+            { id: 'v1', title: '梅花', duration: '00:09:19',
+              meta: '视频ID：2081724369058402306　时长：00:09:19　大小：53.94MB　讲师：-',
+              meta2: '更新：2026-09-04 13:58:28' }
+          ] },
+        ],
+        videoPreviewVisible: false,
+        videoTab: 'info',
+        videoIntro: '',
+        activeRangeIdx: null,
+        activeSeg: null,
+        ranges: [
+          { id: 'r1', name: '区间1', color: '#fde3e9', sM: 0, sS: 0, sMs: 0, eM: 0, eS: 30, eMs: 0 },
+          { id: 'r2', name: '区间2', color: '#dcf2d0', sM: 0, sS: 30, sMs: 0, eM: 0, eS: 60, eMs: 0 },
+        ],
+        interList: [
+          { code: 'ROUTINE_ANSWER', name: '常规答题', type: 'ROUTINE_ANSWER', sM: 0, sS: 5, sMs: 0, contentText: '', questions: [{ id: '2109481523831898113', type: '填空题' }, { id: '2109481523831898114', type: '判断题' }] },
+          { code: 'VOICE_ASSESSMENT', name: '语音测评', type: 'VOICE_ASSESSMENT', sM: 0, sS: 25, sMs: 0, contentText: '请跟读「墙角数枝梅，凌寒独自开」', questions: [] },
+          { code: 'RANDOM_GROUP', name: '随机分组', type: 'RANDOM_GROUP', sM: 0, sS: 45, sMs: 0, contentText: '', questions: [] },
+        ],
+        sliceQuestions: [{}, {}],
+        // 挂载资源抽屉
+        mountDrawerVisible: false,
+        mountTabs: ['课程视频', '基础配套视频', '素养视频', '幼儿视频', '等级考试视频'],
+        mountTab: '课程视频',
+        mountFilters: [
+          { label: '学段', key: 'stage', value: '初中', options: ['小学', '初中', '高中', '学前教育', '中职'] },
+          { label: '学科', key: 'subject', value: '数学', options: ['语文', '数学', '英语', '生物学', '物理', '历史', '化学', '思想政治', '道德与法治', '地理', '音乐', '美术'] },
+          { label: '视频类型', key: 'vtype', value: '不限', options: ['不限', '同步', '备考', '专项'] },
+          { label: '年级', key: 'grade', value: '不限', options: ['不限', '七年级', '八年级', '九年级', '六年级'] },
+        ],
+        mountMore: ['适用版本', '适用人群', '适用难度', '学习目标', '制作形式', '视频模式'],
+        mountSearch: '',
+        mountSelected: [],
+        mountTotal: 3685,
+        mountPage: 1,
+        mountList: [
+          { id: 'm1', vid: '208172439447212036', title: '人教版（新课标）初中数学七年级下册7.2.1平行线的概念_ISBN9787107382475_005',
+            sub: '人教版（新课标）初中数学七年级下册7.2.1平行线的概念_ISBN9787107382475_005',
+            thumbTitle: '平行线的概念', thumbTeacher: '主讲：周老师', duration: '10:00',
+            tags: ['初中', '数学', '同步', '同步基础', '七年级', '同步教材版', '人教版', '学生', '难度：3', '真人出镜', '横板视频'],
+            courseCount: 1, points: 0, interTypes: 2, teacher: '未配置', updateTime: '2026-10-14 14:18:22' },
+          { id: 'm2', vid: '208172439447212037', title: '乘法幂的运算的简单应用（上）',
+            sub: '乘法幂的运算的简单应用（上）',
+            thumbTitle: '乘法幂的运算', thumbTeacher: '主讲：李老师', duration: '08:32',
+            tags: ['初中', '数学', '同步', '同步基础', '八年级', '同步教材版', '学生', '难度：3', '真人出镜', '横板视频'],
+            courseCount: 0, points: 0, interTypes: 0, teacher: '未配置', updateTime: '2026-10-14 10:02:11' },
+        ],
+      };
+    },
+    computed: {
+      resourceCount() {
+        return this.resourceSections.reduce((s, sec) => s + sec.items.length, 0);
+      },
+    },
+    methods: {
+      onSectionAdd(sec) {
+        if (sec.type === 'video') {
+          this.mountDrawerVisible = true;
+        }
+      },
+      toggleMount(id) {
+        const i = this.mountSelected.indexOf(id);
+        if (i > -1) this.mountSelected.splice(i, 1);
+        else this.mountSelected.push(id);
+      },
+      toggleAllMount() {
+        if (this.mountSelected.length === this.mountList.length) this.mountSelected = [];
+        else this.mountSelected = this.mountList.map(t => t.id);
+      },
+      resetMountFilters() {
+        this.mountFilters.forEach(f => { f.value = f.options[0]; });
+        this.mountFilters[0].value = '初中';
+        this.mountFilters[1].value = '数学';
+        this.mountSearch = '';
+        this.mountSelected = [];
+      },
+      viewMount(item) {
+        this.videoTab = 'info';
+        this.videoPreviewVisible = true;
+      },
+      confirmMount() {
+        if (!this.mountSelected.length) {
+          ElementPlus.ElMessage.warning('请先选择要挂载的视频');
+          return;
+        }
+        const picked = this.mountList.filter(t => this.mountSelected.includes(t.id));
+        const sec = this.resourceSections.find(s => s.type === 'video');
+        picked.forEach(t => {
+          if (!sec.items.some(v => v.id === t.id)) {
+            sec.items.push({ id: t.id, title: t.title, duration: t.duration,
+              meta: '视频ID：' + t.vid + '　关联课程数量：' + t.courseCount + '　讲师：' + t.teacher,
+              meta2: '更新：' + t.updateTime });
+          }
+        });
+        this.mountDrawerVisible = false;
+        this.mountSelected = [];
+        ElementPlus.ElMessage.success('挂载成功');
+      },
+      openPreview(item) {
+        if (item.duration) {
+          this.videoPreviewVisible = true;
+        } else {
+          // ElementPlus.ElMessage.info('该资源暂不支持预览');
+        }
+      },
+      goEdit() {
+        ElementPlus.ElMessage({ message: '前往视频编辑页', type: 'primary' });
+      },
+      segColor(code) {
+        if (code === 'ROUTINE_ANSWER' || code === 'RANDOM_GROUP') return '#c9d7f8';
+        if (code === 'VOICE_ASSESSMENT') return '#c2e3f8';
+        return '#ccd3f5';
+      },
+    },
+  };
+
+  const router = VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes: [
+      { path: '/', redirect: '/video' },
+      { path: '/video', name: 'video', component: VideoPage },
+      { path: '/course', name: 'course', component: CoursePage },
+      { path: '/course-manage', name: 'courseManage', component: CourseManagePage },
+      { path: '/course-package', name: 'coursePackage', component: CoursePackagePage },
+    ],
+  });
+
+  // 注册 Element Plus 全部图标（含 Location 定位图标）
+  const app = createApp({});
+  app.component('SliceArea', SliceArea); // 切片信息展示组件（弹窗复用视频页切片区域）
+  if (window.ElementPlusIconsVue) {
+    for (const [name, comp] of Object.entries(ElementPlusIconsVue)) {
+      app.component(name, comp);
+    }
+  }
+  app.use(ElementPlus).use(router).mount('#app');
+</script>
+</body>
+</html>
