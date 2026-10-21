@@ -51,8 +51,12 @@
   .panel-empty { display: flex; }
   .panel-empty .slice-empty { width: 100%; }
 
-  /* 视频区域：上（视频）+ 下（黑色进度条）两块，拼成同一张圆角卡片 */
-  .video-box { background: #000; border-radius: 12px 12px 0 0; overflow: hidden; position: relative; width: 584px; height: 328px; }
+  /* 视频区域：视频 + 黑色进度条 包进同一张卡片，整卡可全屏（含进度条） */
+  .video-card { width: 584px; border-radius: 12px; overflow: hidden; background: #000; }
+  .video-box { background: #000; position: relative; width: 584px; height: 328px; }
+  /* 全屏：视频铺满，底部仍显示进度条 */
+  .video-card:fullscreen { width: 100%; height: 100%; display: flex; flex-direction: column; }
+  .video-card:fullscreen .video-box { width: 100%; height: auto; flex: 1; }
   .video-poster { width: 100%; height: 328px;
     background: linear-gradient(180deg,#8a5a2a 0%, #b07a3a 30%, #6e4520 70%, #3c2410 100%); position: relative;
     display: flex; align-items: center; justify-content: center; }
@@ -67,6 +71,21 @@
   .vctl-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
     border-radius: 50%; color: #fff; cursor: default; flex-shrink: 0; }
   .vctl-btn:hover { background: rgba(0,0,0,.4); }
+  /* 音量控件：默认只显示喇叭按钮；hover 时向上弹出竖直音量滑杆 */
+  .vctl-volume { position: relative; display: inline-flex; flex-shrink: 0; }
+  .vol-pop { position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%);
+    width: 30px; height: 112px; padding: 12px 0; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,.6); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+  .vctl-volume:hover .vol-pop, .vctl-volume:focus-within .vol-pop { display: flex; }
+  .vol-slider { -webkit-appearance: none; appearance: none; width: 88px; height: 4px;
+    border-radius: 2px; outline: none; cursor: pointer;
+    /* 用旋转把横向滑杆变成竖向：0 在底部、100 在顶部 */
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); }
+  .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.45); cursor: pointer; }
+  .vol-slider::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.45); cursor: pointer; }
   .vtime { font-size: 11px; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
   .vprog { position: relative; flex: 1; height: 22px; background: #fff; border-radius: 6px; }
   .vprog-seg { position: absolute; top: 0; bottom: 0; border-radius: 0; display: flex; align-items: center;
@@ -627,7 +646,8 @@
 
         <div class="edit-row">
           <div class="video-col">
-            <div class="video-box" ref="vbox">
+            <div class="video-card" ref="vbox">
+            <div class="video-box">
               <video ref="vprev" v-show="videoSrc" :src="videoSrc" class="vreal" preload="auto" playsinline @timeupdate="onTimeUpdate" @loadedmetadata="onVideoMeta" @play="playing = true" @pause="playing = false; playRangeEnd = null"></video>
               <div v-if="!videoSrc" class="video-poster">
                 <span class="hint">视频预览区</span>
@@ -657,9 +677,17 @@
                     <i class="vprog-mark-dot"></i>
                   </div>
                 </div>
-                <span class="vctl-btn" :title="videoMuted ? '取消静音' : '静音'" @click.stop="toggleMute">
-                  <svg v-if="!videoMuted" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z"></path><path d="M14.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path><path d="M17 6.5a7 7 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
-                  <svg v-else viewBox="0 0 24 24" width="17" height="17"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z" fill="currentColor"></path><path d="M14.5 9.5l5 5M19.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                <span class="vctl-volume">
+                  <span class="vctl-btn" :title="(videoMuted || !videoVolume) ? '取消静音' : '静音'" @click.stop="toggleMute">
+                    <svg v-if="videoMuted || !videoVolume" viewBox="0 0 24 24" width="17" height="17"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z" fill="currentColor"></path><path d="M14.5 9.5l5 5M19.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                    <svg v-else-if="videoVolume < 50" viewBox="0 0 24 24" width="17" height="17"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z" fill="currentColor"></path><path d="M14.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                    <svg v-else viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M3 9.5v5h3.5L11 18V6L6.5 9.5H3z"></path><path d="M14.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path><path d="M17 6.5a7 7 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>
+                  </span>
+                  <span class="vol-pop">
+                    <input class="vol-slider" type="range" min="0" max="100" step="1" title="音量"
+                           v-model.number="videoVolume" @input.stop="onVolumeInput" @click.stop
+                           :style="{ background: 'linear-gradient(to right, #fff ' + videoVolume + '%, rgba(255,255,255,.35) ' + videoVolume + '%)' }">
+                  </span>
                 </span>
                 <span class="vctl-btn" :title="isFullscreen ? '退出全屏' : '全屏'" @click.stop="toggleFullscreen">
                   <svg v-if="!isFullscreen" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
@@ -676,6 +704,7 @@
                   </template>
                 </el-dropdown>
               </div>
+            </div>
             </div>
 
           <!-- 编辑区间面板（图1） -->
@@ -707,18 +736,18 @@
               <div class="flabel flabel-narrow"><span class="req">*</span>起始时间:</div>
               <div class="fctrl">
                 <div class="time-wrap">
-                  <el-input-number v-model="rangeForm.sM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.sM" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">分</span>
-                  <el-input-number v-model="rangeForm.sS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.sS" :min="0" :max="59" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">秒</span>
-                  <el-input-number v-model="rangeForm.sMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.sMs" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">毫秒</span>
                   <span class="dash">—</span>
-                  <el-input-number v-model="rangeForm.eM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.eM" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">分</span>
-                  <el-input-number v-model="rangeForm.eS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.eS" :min="0" :max="59" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">秒</span>
-                  <el-input-number v-model="rangeForm.eMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="rangeForm.eMs" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">毫秒</span>
                 </div>
               </div>
@@ -785,11 +814,11 @@
               <div class="flabel"><span class="req">*</span>起始时间:</div>
               <div class="fctrl">
                 <div class="time-wrap">
-                  <el-input-number v-model="interForm.sM" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="interForm.sM" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">分</span>
-                  <el-input-number v-model="interForm.sS" :min="0" :max="59" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="interForm.sS" :min="0" :max="59" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">秒</span>
-                  <el-input-number v-model="interForm.sMs" :min="0" :controls="false" class="t-inp" ></el-input-number>
+                  <el-input-number v-model="interForm.sMs" :min="0" :controls="false" class="t-inp"></el-input-number>
                   <span class="unit">毫秒</span>
                 </div>
               </div>
@@ -920,7 +949,7 @@
               <el-option v-for="(r,idx) in ranges" :key="r.id" :label="r.name" :value="idx" ></el-option>
             </el-select>
             <span class="title">互动（{{ interList.length }}个）</span>
-            <el-select v-model="activeSeg" size="small" style="width:180px;" placeholder="请选择互动" @change="onInterSelect">
+            <el-select :model-value="activeSeg" size="small" style="width:180px;" placeholder="请选择互动" @change="onInterSelect">
               <el-option v-for="t in interList" :key="t.code" :label="t.name" :value="t.code" ></el-option>
             </el-select>
             <span class="spacer"></span>
@@ -970,7 +999,7 @@
                          class="tl-mark" :class="{ active: !isNewInter && activeSeg===t.code }"
                          :style="markPos(t, markColor(t.code))"
                          :title="t.name + '　' + rangeStartText(t)"
-                         @click.stop="selectSeg(t.code)">
+                         @click.stop="requestSelectSeg(t.code)">
                       <el-icon class="tl-mark-ico"><Location /></el-icon>
                       <span class="tl-mark-name">{{ t.name }}</span>
                     </div>
@@ -1679,7 +1708,9 @@
         activeRangeIdx: null,
         activeSeg: null,
         isNewRange: false,
+        suppressRangeWatch: false, // 程序化加载区间表单时抑制 watch，避免播放头误跳
         rangeSnapshot: null,
+        interSnapshot: null,
         isNewInter: false,
         dragItem: null,
         grabItem: null,
@@ -1695,6 +1726,7 @@
         videoName: '',
         playing: false,
         videoMuted: false,
+        videoVolume: 100,
         isFullscreen: false,
         vprogW: 0,
         rangeIdSeq: 3,
@@ -1780,9 +1812,9 @@
       };
     },
     created() {
-      // 初始不默认选中任何区间/互动；自动加载固定示例视频并截帧
-      // 视频源：线上地址（避免大文件入库导致 GitHub 100MB 限制）
-      this.videoSrc = 'https://tospub-test.zhinengtongbu.com/jxwnrzt/video/20260916/23311ed455b469ede0c3bd1c8c07b118.mp4';
+      // 初始不默认选中任何区间/互动；自动加载示例视频并截帧
+      // 视频源：本地文件（同目录 video.mp4），本地 seek 即时生效，便于验证帧预览；如需线上可改回 CDN 地址
+      this.videoSrc = './video.mp4';
     },
     mounted() {
       this.measureTrack();
@@ -1961,11 +1993,18 @@
         // 让顶部分类复选/单选态与当前类型保持一致（单一数据源）
         this.syncCatsFromType();
       },
-      // 编辑中的互动起始时间变化时，同步已保存互动，使轨道/进度条上的点位实时跟随
-        // 注意：options API 的 watch key 会被 traverse 当作单个路径解析，逗号分隔写法无效，需逐个声明
+      // 编辑中的互动起始时间变化：同步已保存互动，使轨道/进度条上的点位实时跟随
+      // 注意：options API 的 watch key 会被 traverse 当作单个路径解析，逗号分隔写法无效，需逐个声明
       'interForm.sM'() { this.syncInterStartToList(); },
       'interForm.sS'() { this.syncInterStartToList(); },
       'interForm.sMs'() { this.syncInterStartToList(); },
+      // 手动修改区间起止时间：边界（轨道）实时跟随，且播放头跳到该边界；程序加载用 suppressRangeWatch 抑制
+      'rangeForm.sM'() { this.followRangeBoundary('start'); },
+      'rangeForm.sS'() { this.followRangeBoundary('start'); },
+      'rangeForm.sMs'() { this.followRangeBoundary('start'); },
+      'rangeForm.eM'() { this.followRangeBoundary('end'); },
+      'rangeForm.eS'() { this.followRangeBoundary('end'); },
+      'rangeForm.eMs'() { this.followRangeBoundary('end'); },
       // 题目增删/编辑导致高度变化时刷新模拟滚动条
       'interForm.questions': {
         deep: true,
@@ -2040,25 +2079,92 @@
         this.isNewRange = false;
         this.panelMode = 'range';
         this.activeSeg = null; // 选中区间后取消互动选中（互斥）
-        this.rangeForm = this.clone(this.ranges[idx]);
-        this.rangeSnapshot = this.clone(this.rangeForm); // 记录编辑起点，用于未保存改动检测
+        this.loadRangeForm(this.ranges[idx]);
+        this.syncRangeSnapshot(); // 进入编辑后于下一帧记录基线，规避控件规范化导致的误判
       },
-      // 区间编辑内容是否有未保存变化（对比进入编辑/上次保存时的快照）
+      // 区间编辑内容是否有未保存变化：以「进入编辑时的初始内容（rangeSnapshot）」为基线，
+      // 仅对比表单 rangeForm（标记起止、拖拽等编辑操作都会同步改写 rangeForm，故表单即单一事实源）
       isRangeDirty() {
         if (!this.rangeSnapshot) return false;
         return JSON.stringify(this.rangeForm) !== JSON.stringify(this.rangeSnapshot);
       },
+      // 进入编辑/保存/取消/删除后，于下一帧再记录快照：
+      // 待颜色选择器、数字输入框等控件完成对绑定值的规范化（如颜色大小写归一）后再定基线，
+      // 避免「未改动却因控件规范化导致 rangeForm 与快照不一致」而误判为已改动
+      syncRangeSnapshot() {
+        this.$nextTick(() => { if (this.rangeForm) this.rangeSnapshot = this.clone(this.rangeForm); });
+      },
+      // 区间是否处于编辑态（新增中或已选中某个已存在区间）
+      isRangeEditing() {
+        return this.isNewRange || (this.activeRangeIdx != null && this.activeRangeIdx >= 0);
+      },
+      // 切换前的统一确认（区间）：保存=保存后切换；取消=不保存并切换（先丢弃当前草稿/改动，再继续）
+      confirmSwitchRange(doSwitch) {
+        ElementPlus.ElMessageBox.confirm('当前编辑区间未做保存，请确认是否保存并切换？', '提示', {
+          confirmButtonText: '保存', cancelButtonText: '不保存', type: 'warning'
+        }).then(() => {
+          if (this.saveCurrent('range')) doSwitch(); // 保存校验失败则停留在当前编辑
+        }).catch(() => {
+          this.cancelCurrent('range'); // 不保存：还原/退出当前编辑
+          doSwitch();                  // 继续切换/新增
+        });
+      },
       // 点击/选择其他区间：编辑中且有未保存改动时拦截，弹窗确认「保存并切换」
       requestSelectRange(idx) {
         if (idx == null || !this.ranges[idx]) return;
-        const editing = this.isNewRange || (this.activeRangeIdx != null && this.activeRangeIdx >= 0);
-        const sameTarget = !this.isNewRange && this.activeRangeIdx === idx;
-        if (!editing || sameTarget || !this.isRangeDirty()) { this.selectRange(idx); return; }
-        ElementPlus.ElMessageBox.confirm('当前编辑区间未做保存，请确认是否保存并切换？', '提示', {
-          confirmButtonText: '保存', cancelButtonText: '取消', type: 'warning'
+        // 点回当前已选中的区间：不视为切换，直接返回
+        if (!this.isNewRange && this.activeRangeIdx === idx) return;
+        this.guardSwitch(() => this.selectRange(idx));
+      },
+      // ===== 互动未保存改动拦截（与区间一致） =====
+      isInterEditing() {
+        return this.isNewInter || (this.activeSeg != null && this.activeSeg !== '');
+      },
+      // 互动编辑内容是否有未保存变化：以「进入编辑时的初始内容」为基线，
+      // 对比切换时的表单内容；起始时间写穿到已保存互动的改动同样计入
+      isInterDirty() {
+        if (!this.interSnapshot) return false;
+        const base = JSON.stringify(this.interSnapshot);
+        if (JSON.stringify(this.interForm) !== base) return true;
+        if (!this.isNewInter && this.activeSeg) {
+          const t = this.interList.find(x => x.code === this.activeSeg);
+          if (t && JSON.stringify(t) !== base) return true; // 已保存对象被写穿
+        }
+        return false;
+      },
+      // 切换前的统一确认：保存成功才执行下一步，取消则留在当前编辑
+      confirmSwitchInter(doSwitch) {
+        ElementPlus.ElMessageBox.confirm('当前编辑互动未做保存，请确认是否保存并切换？', '提示', {
+          confirmButtonText: '保存', cancelButtonText: '不保存', type: 'warning'
         }).then(() => {
-          if (this.saveCurrent('range')) this.selectRange(idx); // 保存校验失败则停留在当前编辑
-        }).catch(() => {});
+          if (this.saveCurrent('interaction')) doSwitch(); // 保存校验失败则停留在当前编辑
+        }).catch(() => {
+          this.cancelCurrent('interaction'); // 不保存：还原/退出当前编辑
+          doSwitch();                        // 继续切换/新增
+        });
+      },
+      // 当前正在编辑的类型：'range' | 'interaction' | ''（区间与互动互斥）
+      currentEditKind() {
+        if (this.isNewRange || (this.activeRangeIdx != null && this.activeRangeIdx >= 0)) return 'range';
+        if (this.isNewInter || (this.activeSeg != null && this.activeSeg !== '')) return 'interaction';
+        return '';
+      },
+      // 统一的切换/新增守卫：新增态一律拦截确认；编辑态仅在内容有改动时拦截
+      guardSwitch(doNext) {
+        const kind = this.currentEditKind();
+        if (!kind) { doNext(); return; }
+        const isNew = kind === 'range' ? this.isNewRange : this.isNewInter;
+        const dirty = kind === 'range' ? this.isRangeDirty() : this.isInterDirty();
+        if (!isNew && !dirty) { doNext(); return; } // 编辑态且无改动 → 直接切换
+        const confirm = kind === 'range' ? this.confirmSwitchRange : this.confirmSwitchInter;
+        confirm(() => doNext());
+      },
+      // 点击/选择其他互动：编辑中且有未保存改动时拦截，弹窗确认「保存并切换」
+      requestSelectSeg(code) {
+        if (!code) return;
+        // 点回当前已选中的互动：不视为切换，直接返回
+        if (!this.isNewInter && this.activeSeg === code) return;
+        this.guardSwitch(() => this.selectSeg(code));
       },
       // ===== 区间边界拖拽 =====
       rangeStartMs(r) { return r.sM * 60000 + r.sS * 1000 + (r.sMs || 0); },
@@ -2105,9 +2211,7 @@
         }
         if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
         // 拖拽边界时让播放竖线（进度条 & 时间轴）与边界位置实时同步，同时视频按帧预览
-        this.videoCur = ms;
-        const v = this.$refs.vprev;
-        if (v && this.videoSrc) { try { v.currentTime = ms / 1000; } catch (err) {} }
+        this.seekVideo(ms);
       },
       onRangeResizeEnd() {
         window.removeEventListener('mousemove', this.onRangeResizeMove);
@@ -2126,6 +2230,9 @@
         const prevEnd = 0, nextStart = this.tlTotal;
         this._move = { idx, draft: idx === -1, start0: start, end0: end, prevEnd, nextStart, grabX: e.clientX, moved: false };
         this._rangeDragged = false;
+        this._rangeMoving = true; // 整体拖拽中：播放头只跟随起始点（见 followRangeBoundary）
+        const v = this.$refs.vprev; // 拖拽区间预览时暂停，避免播放进度覆盖预览帧
+        if (v && !v.paused) v.pause();
         document.body.style.userSelect = 'none';
         document.body.classList.add('dragging');
         window.addEventListener('mousemove', this.onRangeMove);
@@ -2133,23 +2240,22 @@
       },
       onRangeMove(e) {
         const d = this._move; if (!d) return;
+        // 小于 3px 视为点击、不触发拖拽，也不写穿区间（避免轻微抖动被误判为改动）
+        if (Math.abs(e.clientX - d.grabX) < 3) return;
         const r = d.draft ? this.rangeForm : this.ranges[d.idx]; if (!r) return;
         const delta = this.pxToMs(e.clientX) - this.pxToMs(d.grabX);
         // 左极限：start >= prevEnd；右极限：end <= nextStart（整体平移，端点均不越界 → 不会重叠）
         const maxLeft = d.prevEnd - d.start0;
         const maxRight = d.nextStart - d.end0;
         let shift = Math.max(maxLeft, Math.min(maxRight, delta));
-        if (Math.abs(shift) > 0.1) { d.moved = true; this._rangeDragged = true; }
+        d.moved = true; this._rangeDragged = true;
         const t0 = this.setTimeFromMs(d.start0 + shift);
         const t1 = this.setTimeFromMs(d.end0 + shift);
         r.sM = t0.m; r.sS = t0.s; r.sMs = t0.ms;
         r.eM = t1.m; r.eS = t1.s; r.eMs = t1.ms;
         if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
         // 整体拖拽：播放竖线（进度条 & 时间轴）跟随区间起始点，视频按帧预览
-        const startMs = d.start0 + shift;
-        this.videoCur = startMs;
-        const v = this.$refs.vprev;
-        if (v && this.videoSrc) { try { v.currentTime = startMs / 1000; } catch (err) {} }
+        this.seekVideo(d.start0 + shift);
       },
       onRangeMoveEnd() {
         window.removeEventListener('mousemove', this.onRangeMove);
@@ -2175,6 +2281,8 @@
           if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
           ElementPlus.ElMessage.warning('当前时间段与其他区间重复，不允许拖拽');
         }
+        // 整体拖拽结束：延迟复位，确保拖拽/还原期间排队的 watch 仍按"仅跟起始点"执行
+        this.$nextTick(() => { this._rangeMoving = false; });
       },
       onRangeClick(idx) {
         if (this._rangeDragged) { this._rangeDragged = false; return; } // 拖拽后抑制误触发的选中
@@ -2199,11 +2307,20 @@
         if (!v || !this.videoSrc) return;
         if (v.paused) v.play(); else v.pause();
       },
-      // 静音/取消静音
+      // 静音/取消静音（从静音恢复时若音量为0，自动恢复可用音量）
       toggleMute() {
         const v = this.$refs.vprev;
         if (!v) return;
         v.muted = !v.muted;
+        if (!v.muted && !this.videoVolume) { this.videoVolume = 100; v.volume = 1; }
+        this.videoMuted = v.muted;
+      },
+      // 拖动音量滑杆：实时调整音量；音量>0 时自动取消静音
+      onVolumeInput() {
+        const v = this.$refs.vprev;
+        if (!v) return;
+        v.volume = Math.min(1, Math.max(0, this.videoVolume / 100));
+        if (this.videoVolume > 0 && v.muted) v.muted = false;
         this.videoMuted = v.muted;
       },
       // 全屏/退出全屏（作用于视频容器）
@@ -2225,13 +2342,12 @@
       // 自定义进度条：点击/拖动定位（支持按住拖动）
       onProgDown(e) {
         const bar = e.currentTarget;
+        const v0 = this.$refs.vprev; // 拖动进度条预览时暂停，避免播放进度覆盖预览帧
+        if (v0 && !v0.paused) v0.pause();
         const seek = (ev) => {
           const rect = bar.getBoundingClientRect();
           const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
-          const ms = Math.round(frac * this.videoDur);
-          this.videoCur = ms;
-          const v = this.$refs.vprev;
-          if (v && this.videoSrc) { try { v.currentTime = ms / 1000; } catch (err) {} }
+          this.seekVideo(Math.round(frac * this.videoDur));
         };
         seek(e);
         const move = (ev) => seek(ev);
@@ -2313,6 +2429,61 @@
       setTimeFromMs(ms) {
         return { m: Math.floor(ms / 60000), s: Math.floor((ms % 60000) / 1000), ms: Math.floor(ms % 1000) };
       },
+      // 预览指定时间的视频帧：拖拽/缩放边界、修改区间起止或互动起始时联动视频预览
+      previewAt(ms) {
+        this.seekVideo(ms);
+      },
+      // 统一的视频帧定位：所有预览入口都走这里，保证画面真正跟随
+      // - readyState 未就绪时等 loadedmetadata 再定位
+      // - 上一次 seek 未完成时记录最新目标，seeked 后补齐（拖拽过快时画面不卡旧帧）
+      seekVideo(ms) {
+        const v = this.$refs.vprev;
+        if (!v || !this.videoSrc || !isFinite(ms)) return;
+        ms = Math.max(0, Math.min(ms, this.videoDur || ms));
+        this.videoCur = ms; // 进度条 & 时间轴播放头先跟随
+        if (!this._seekedBound) {
+          this._seekedBound = true;
+          v.addEventListener('seeked', () => {
+            if (this._pendingSeekMs != null) {
+              const t = this._pendingSeekMs; this._pendingSeekMs = null;
+              try { v.currentTime = t / 1000; } catch (err) {}
+            }
+          });
+        }
+        if (v.readyState < 1) {
+          v.addEventListener('loadedmetadata', () => { try { v.currentTime = ms / 1000; } catch (err) {} }, { once: true });
+          return;
+        }
+        if (v.seeking) { this._pendingSeekMs = ms; return; }
+        try { v.currentTime = ms / 1000; } catch (err) {}
+      },
+      // 面板起止时间变化写回已保存区间：轨道色块/进度条区间边界实时跟随
+      // （草稿区间轨道直接渲染 rangeForm，无需写回；仅同步 ranges，不改 rangeForm，故不会触发本 watcher 死循环）
+      syncRangeToTrack() {
+        if (this.isNewRange) return;
+        const r = this.ranges[this.activeRangeIdx];
+        if (!r) return;
+        r.sM = this.rangeForm.sM; r.sS = this.rangeForm.sS; r.sMs = this.rangeForm.sMs;
+        r.eM = this.rangeForm.eM; r.eS = this.rangeForm.eS; r.eMs = this.rangeForm.eMs;
+      },
+      // 手动修改区间起止时间：边界（轨道）跟随，同时让播放头（蓝色竖线/视频）跳到该边界
+      // 拖拽边界时拖拽逻辑已 seek，这里再补一次等价；选中/取消/保存等程序加载用 suppressRangeWatch 抑制
+      followRangeBoundary(edge) {
+        if (this.suppressRangeWatch) return;
+        // 整体拖拽区间时：播放头只跟随起始点，忽略终点那次 seek（终点字段变化也会触发本 watch）
+        if (this._rangeMoving && edge === 'end') return;
+        this.syncRangeToTrack();
+        const ms = edge === 'start'
+          ? this.rangeForm.sM * 60000 + this.rangeForm.sS * 1000 + (this.rangeForm.sMs || 0)
+          : this.rangeForm.eM * 60000 + this.rangeForm.eS * 1000 + (this.rangeForm.eMs || 0);
+        this.previewAt(ms);
+      },
+      // 程序化加载区间表单（选中/取消/保存）：先抑制，避免 watch 把播放头误跳到该区间起点
+      loadRangeForm(src) {
+        this.suppressRangeWatch = true;
+        this.rangeForm = this.clone(src);
+        this.$nextTick(() => { this.suppressRangeWatch = false; });
+      },
       markStart() {
         const t = this.setTimeFromMs(this.videoCur);
         if (this.panelMode === 'interaction') {
@@ -2356,9 +2527,7 @@
         const rect = body.getBoundingClientRect();
         const frac = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
         const ms = Math.round(frac * this.tlTotal);
-        this.videoCur = Math.min(ms, this.videoDur);
-        const v = this.$refs.vprev;
-        if (v && this.videoSrc) { try { v.currentTime = Math.min(ms, this.videoDur) / 1000; } catch (err) {} }
+        this.seekVideo(Math.min(ms, this.videoDur));
       },
       // 标尺：单击即定位，按住可拖动跟随
       onRulerDown(e) {
@@ -2376,6 +2545,8 @@
       onPlayheadDown(e) {
         e.preventDefault();
         e.stopPropagation();
+        const v = this.$refs.vprev; // 拖拽播放头预览时暂停，避免播放进度覆盖预览帧
+        if (v && !v.paused) v.pause();
         this.seekToX(e);
         const move = (ev) => this.seekToX(ev);
         const up = () => {
@@ -2425,6 +2596,7 @@
         return style;
       },
       // 互动起始时间写入已保存互动（仅编辑态）：保证轨道与进度条上的点位实时跟随表单变化
+      // 互动起始时间写入已保存互动（仅编辑态）：保证轨道与进度条上的点位实时跟随表单变化
       syncInterStartToList() {
         if (this.isNewInter || !this.activeSeg) return;
         const t = this.interList.find(x => x.code === this.activeSeg);
@@ -2444,41 +2616,56 @@
         // 已保存的名称若与类型标签不同，视为手动修改，不再被覆盖
         this.nameManuallyEdited = !!cur.name && opt && cur.name !== opt.label;
         this.interForm = this.clone(cur);
+        this.interSnapshot = this.clone(this.interForm); // 记录编辑起点，用于未保存改动检测
       },
       selectSeg(code) { this.loadInter(code); },
-      onInterSelect(code) { if (code) this.loadInter(code); },
+      onInterSelect(code) { if (code) this.requestSelectSeg(code); },
+      // 新增区间：若当前有未保存改动（区间或互动）先拦截确认
       addRange() {
+        // 新增区间过程中再点【添加区间】：草稿未改动 → 直接在当前播放处重建新区间，不打扰
+        if (this.isNewRange && !this.isRangeDirty()) { this.doAddRange(); return; }
+        this.guardSwitch(() => this.doAddRange());
+      },
+      doAddRange() {
         this.isNewRange = true; this.isNewInter = false; this.panelMode = 'range';
         this.activeRangeIdx = -1; this.activeSeg = null; // 取消互动选中（互斥），使标记终点可用
 
-        // 默认起始时间：有区间则取「最晚结束时间的下一秒」，无区间则从 00:00 起；默认时长 10s
-        let startMs = 0;
-        if (this.ranges.length) {
-          let maxEnd = 0;
-          for (const r of this.ranges) {
-            const e = r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
-            if (e > maxEnd) maxEnd = e;
-          }
-          startMs = maxEnd + 1000;
-        }
+        // 默认起始时间 = 当前播放位置；默认时长 10s（超出视频末尾则前移起点）
+        const v = this.$refs.vprev;
+        let startMs = (v && isFinite(v.currentTime) && v.currentTime > 0) ? v.currentTime * 1000 : this.videoCur;
+        if (this.videoDur && startMs + 10000 > this.videoDur) startMs = Math.max(0, this.videoDur - 10000);
         const endMs = startMs + 10000;
         const toMS = (ms) => ({ M: Math.floor(ms / 60000), S: Math.floor((ms % 60000) / 1000), Ms: Math.round(ms % 1000) });
         const s = toMS(startMs), e = toMS(endMs);
-        this.rangeForm = {
+        // 用 loadRangeForm 抑制起止字段 watcher：否则 eM/eS/eMs 的 watch 会在赋值后把播放头覆盖到终点
+        this.loadRangeForm({
           id: '', name: '', color: '#fbd9e0',
           sM: s.M, sS: s.S, sMs: s.Ms, eM: e.M, eS: e.S, eMs: e.Ms
-        };
-        this.rangeSnapshot = this.clone(this.rangeForm); // 新增起点快照
+        });
+        this.syncRangeSnapshot(); // 新增起点快照（下一帧记录，规避控件规范化）
+        this.seekVideo(startMs);  // 播放头定位到新建区间的起点
       },
+      // 新增互动：若当前有未保存改动（互动或区间）先拦截确认
       addInteraction() {
+        // 新增互动过程中再点【添加互动】：草稿未改动 → 直接在当前播放处重建新互动，不打扰
+        if (this.isNewInter && !this.isInterDirty()) { this.doAddInteraction(); return; }
+        this.guardSwitch(() => this.doAddInteraction());
+      },
+      doAddInteraction() {
         this.isNewInter = true; this.isNewRange = false; this.panelMode = 'interaction';
         this.activeSeg = ''; this.activeRangeIdx = null; // 取消区间选中（互斥）
         const blank = this.blankInter();
+        // 起始时间默认取当前播放时间：优先取视频元素实际播放位置，回退到播放头状态
+        const v = this.$refs.vprev;
+        const curMs = (v && isFinite(v.currentTime) && v.currentTime > 0) ? v.currentTime * 1000 : this.videoCur;
+        const t = this.setTimeFromMs(curMs);
+        blank.sM = t.m; blank.sS = t.s; blank.sMs = t.ms;
         // 需求2：新增时名称默认取当前选中的互动类型标签
         const def = this.findOption(blank.type) || this.findOption('ROUTINE_ANSWER');
         blank.name = def ? def.label : '';
         this.interForm = blank;
         this.nameManuallyEdited = false;
+        this.interSnapshot = this.clone(blank); // 新增起点快照
       },
       saveCurrent(kind) {
         if (kind === 'range') {
@@ -2506,8 +2693,8 @@
           } else {
             this.ranges.splice(this.activeRangeIdx, 1, data);
           }
-          this.rangeForm = this.clone(data);
-          this.rangeSnapshot = this.clone(data); // 保存后重置快照
+          this.loadRangeForm(data);
+          this.syncRangeSnapshot(); // 保存后于下一帧重置基线
         } else {
           const data = this.clone(this.interForm);
           if (!data.name) { const o = this.findOption(data.type); data.name = o ? o.label : data.type; }
@@ -2540,6 +2727,7 @@
             if (i > -1) this.interList.splice(i, 1, data);
           }
           this.interForm = this.clone(data);
+          this.interSnapshot = this.clone(data); // 保存后重置快照
         }
         this.$message.success('已保存');
         return true;
@@ -2554,7 +2742,7 @@
           } else {
             this.activeRangeIdx = -1; this.rangeForm = this.blankRange(); this.panelMode = 'interaction';
           }
-          this.rangeSnapshot = this.clone(this.rangeForm); // 删除后同步快照，避免误判改动
+          this.syncRangeSnapshot(); // 删除后同步快照，避免误判改动
           this.$message.success('已删除区间');
         } else {
           if (this.isNewInter) { this.cancelCurrent('interaction'); return; }
@@ -2566,6 +2754,7 @@
           } else {
             this.activeSeg = ''; this.interForm = this.blankInter(); this.panelMode = 'range';
           }
+          this.interSnapshot = this.clone(this.interForm); // 删除后同步快照，避免误判改动
           this.$message.success('已删除互动');
         }
       },
@@ -2575,17 +2764,22 @@
             this.isNewRange = false;
             if (this.ranges.length) {
               this.activeRangeIdx = 0;
-              this.rangeForm = this.clone(this.ranges[0]);
+              this.loadRangeForm(this.ranges[0]);
               this.panelMode = 'range';
             } else {
               this.activeRangeIdx = null;
-              this.rangeForm = this.blankRange();
+              this.loadRangeForm(this.blankRange());
               this.panelMode = 'empty';
             }
           } else {
-            this.rangeForm = this.clone(this.ranges[this.activeRangeIdx]);
+            // 还原到「进入编辑时的初始内容」：包括被标记/拖拽写穿到已保存区间的改动
+            const idx = this.activeRangeIdx;
+            if (idx != null && idx >= 0 && this.rangeSnapshot) {
+              this.ranges.splice(idx, 1, this.clone(this.rangeSnapshot));
+            }
+            this.loadRangeForm(this.rangeSnapshot ? this.rangeSnapshot : this.ranges[idx]);
           }
-          this.rangeSnapshot = this.clone(this.rangeForm); // 取消后重置快照，避免误判改动
+          this.syncRangeSnapshot(); // 取消后重置快照，避免误判改动
         } else {
           if (this.isNewInter) {
             this.isNewInter = false;
@@ -2599,9 +2793,14 @@
               this.panelMode = 'empty';
             }
           } else {
-            const cur = this.interList.find(t => t.code === this.activeSeg);
-            if (cur) this.interForm = this.clone(cur);
+            // 还原到「进入编辑时的初始内容」：包括起始时间写穿到已保存互动的改动
+            const idx = this.interList.findIndex(t => t.code === this.activeSeg);
+            if (idx > -1 && this.interSnapshot) {
+              this.interList.splice(idx, 1, this.clone(this.interSnapshot));
+              this.interForm = this.clone(this.interSnapshot);
+            }
           }
+          this.interSnapshot = this.clone(this.interForm); // 取消后重置快照，避免误判改动
         }
       },
       segColor(code) {
