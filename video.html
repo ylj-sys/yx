@@ -733,7 +733,7 @@
             </div>
 
             <div class="frow">
-              <div class="flabel flabel-narrow"><span class="req">*</span>起始时间:</div>
+              <div class="flabel flabel-narrow"><span class="req">*</span>起止时间:</div>
               <div class="fctrl">
                 <div class="time-wrap">
                   <el-input-number v-model="rangeForm.sM" :min="0" :controls="false" class="t-inp"></el-input-number>
@@ -961,7 +961,7 @@
           <div class="tl-actions">
             <el-button size="small" :disabled="!canPlayRange || isNewInter" @click="playVideo">播放区间</el-button>
             <el-button size="small" :disabled="!canMark" @click="markStart">标记起点</el-button>
-            <el-button size="small" :disabled="!canMark || activeSeg != null || isNewInter" title="互动点仅需起始时间" @click="markEnd">标记终点</el-button>
+            <el-button size="small" :disabled="!canMark || activeSeg != null || isNewInter" @click="markEnd">标记终点</el-button>
             <div class="tl-zoom">
               <span class="tl-zoom-btn" title="缩小时间轴" @click="zoomBy(-4)">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
@@ -2082,6 +2082,7 @@
         if (idx == null || !this.ranges[idx]) return;
         this.activeRangeIdx = idx;
         this.isNewRange = false;
+        this.isNewInter = false; // 切到区间：退出互动新增草稿态（草稿未改动，直接丢弃），轨道上草稿互动点取消高亮
         this.panelMode = 'range';
         this.activeSeg = null; // 选中区间后取消互动选中（互斥）
         this.loadRangeForm(this.ranges[idx]);
@@ -2158,9 +2159,9 @@
       guardSwitch(doNext) {
         const kind = this.currentEditKind();
         if (!kind) { doNext(); return; }
-        const isNew = kind === 'range' ? this.isNewRange : this.isNewInter;
         const dirty = kind === 'range' ? this.isRangeDirty() : this.isInterDirty();
-        if (!isNew && !dirty) { doNext(); return; } // 编辑态且无改动 → 直接切换
+        // 未保存改动（含新建草稿但未编辑）→ 直接切换不拦截；否则弹确认「保存并切换」
+        if (!dirty) { doNext(); return; }
         const confirm = kind === 'range' ? this.confirmSwitchRange : this.confirmSwitchInter;
         confirm(() => doNext());
       },
@@ -2615,6 +2616,7 @@
         if (!cur) return;
         this.activeSeg = code;
         this.isNewInter = false;
+        this.isNewRange = false; // 切到互动：退出区间新增草稿态（草稿未改动，直接丢弃），轨道上草稿区间取消
         this.panelMode = 'interaction';
         this.activeRangeIdx = null; // 选中互动后取消区间选中（互斥）
         const opt = this.findOption(cur.type);
@@ -2632,14 +2634,36 @@
         this.guardSwitch(() => this.doAddRange());
       },
       doAddRange() {
+        const v = this.$refs.vprev;
+        // 当前播放位置（即新建区间起点）
+        let startMs = (v && isFinite(v.currentTime) && v.currentTime > 0) ? v.currentTime * 1000 : this.videoCur;
+        const rangeStart = (r) => r.sM * 60000 + r.sS * 1000 + (r.sMs || 0);
+        const rangeEnd = (r) => r.eM * 60000 + r.eS * 1000 + (r.eMs || 0);
+
+        // 播放头落在某已有区间内（含边界）→ 不允许新增，提示返回
+        for (const r of this.ranges) {
+          const rs = rangeStart(r), re = rangeEnd(r);
+          if (startMs >= rs && startMs < re) {
+            ElementPlus.ElMessage.warning('当前位置已存在区间，无法添加区间');
+            return;
+          }
+        }
+
         this.isNewRange = true; this.isNewInter = false; this.panelMode = 'range';
         this.activeRangeIdx = -1; this.activeSeg = null; // 取消互动选中（互斥），使标记终点可用
 
-        // 默认起始时间 = 当前播放位置；默认时长 10s（超出视频末尾则前移起点）
-        const v = this.$refs.vprev;
-        let startMs = (v && isFinite(v.currentTime) && v.currentTime > 0) ? v.currentTime * 1000 : this.videoCur;
-        if (this.videoDur && startMs + 10000 > this.videoDur) startMs = Math.max(0, this.videoDur - 10000);
-        const endMs = startMs + 10000;
+        // 默认时长 10s；若会与「起始时间 > 当前播放头的最近区间」重叠，则终止于该区间起始（避免重叠）
+        let endMs = startMs + 10000;
+        let nextStart = null;
+        for (const r of this.ranges) {
+          const rs = rangeStart(r);
+          if (rs > startMs && (nextStart == null || rs < nextStart)) nextStart = rs;
+        }
+        if (nextStart != null && nextStart < endMs) endMs = nextStart;
+        // 受视频末尾约束（不移动起点，只缩短终止，保持起点=播放头）
+        if (this.videoDur && endMs > this.videoDur) endMs = this.videoDur;
+        if (endMs <= startMs) endMs = this.videoDur ? Math.min(this.videoDur, startMs + 1000) : startMs + 1000;
+
         const toMS = (ms) => ({ M: Math.floor(ms / 60000), S: Math.floor((ms % 60000) / 1000), Ms: Math.round(ms % 1000) });
         const s = toMS(startMs), e = toMS(endMs);
         // 用 loadRangeForm 抑制起止字段 watcher：否则 eM/eS/eMs 的 watch 会在赋值后把播放头覆盖到终点
