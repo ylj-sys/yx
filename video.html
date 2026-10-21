@@ -1813,8 +1813,13 @@
     },
     created() {
       // 初始不默认选中任何区间/互动；自动加载示例视频并截帧
-      // 视频源：本地文件（同目录 video.mp4），本地 seek 即时生效，便于验证帧预览；如需线上可改回 CDN 地址
-      this.videoSrc = './video.mp4';
+      // 视频源：默认线上 CDN（GitHub Pages 不支持 Git LFS，仓库里的 video.mp4 远程只是 134B 指针文件，无法播放）
+      // 支持 URL 参数 ?video=<视频地址> 覆盖（hash 内参数亦兼容），便于嵌入后台时指定真实视频
+      const qs = (s) => { try { return new URLSearchParams(s || ''); } catch (err) { return null; } };
+      const hashQ = location.hash.includes('?') ? qs(location.hash.split('?')[1]) : null;
+      this.videoSrc = qs(location.search).get('video')
+        || (hashQ && hashQ.get('video'))
+        || 'https://tospub-test.zhinengtongbu.com/jxwnrzt/video/20260916/23311ed455b469ede0c3bd1c8c07b118.mp4';
     },
     mounted() {
       this.measureTrack();
