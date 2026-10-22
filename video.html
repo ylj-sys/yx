@@ -119,10 +119,11 @@
     font-size: 11px; color: #fff; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.55);
     opacity: 0; transition: opacity .12s ease; pointer-events: none; }
   .vprog-mark:hover .vprog-mark-name,
-  .vprog-mark.active .vprog-mark-name { opacity: 1; }
+  .vprog-mark.active .vprog-mark-name,
+  .vprog-mark.draft .vprog-mark-name { opacity: 1; }
   .vprog-mark-name::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
     width: 1.5px; height: 18px; background: #2b7cff; }
-  .vprog-mark.active .vprog-mark-dot { width: 9px; height: 9px; box-shadow: 0 0 6px rgba(43,124,255,.85); }
+  .vprog-mark.active .vprog-mark-dot, .vprog-mark.draft .vprog-mark-dot { width: 9px; height: 9px; box-shadow: 0 0 6px rgba(43,124,255,.85); }
   .video-poster .subtitle { position: absolute; bottom: 46px; width: 100%; text-align: center; color: #fff;
     font-size: 17px; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 6px #000, 0 2px 3px #000; }
   .video-controls { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: rgba(0,0,0,.55);
@@ -319,9 +320,8 @@
     border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #4d7bf3; }
   .tl-playhead::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
     border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid #4d7bf3; }
-  /* 拖拽边界对齐播放头时：播放头高亮（橙色发光），三角同步变橙 */
-  .tl-playhead.aligned, .vprog-head.aligned { background: #ff7a00 !important; width: 3px;
-    box-shadow: 0 0 8px 1px rgba(255,122,0,.9); }
+  /* 拖拽边界对齐播放头时：播放头高亮（橙色，无阴影），三角同步变橙 */
+  .tl-playhead.aligned, .vprog-head.aligned { background: #ff7a00 !important; width: 3px; }
   .tl-playhead.aligned::before, .tl-playhead.aligned::after,
   .vprog-head.aligned::before, .vprog-head.aligned::after { border-top-color: #ff7a00; border-bottom-color: #ff7a00; }
 
@@ -690,7 +690,7 @@
                   </div>
                   <div class="vprog-head" :class="{ aligned: boundaryAtPlayhead }" :style="{ left: pctProg + '%' }" @mousedown="keyTarget='playhead'; keyEdge=null"><span class="ph-tip">{{ fmtShort(videoCur) }}</span></div>
                   <div v-for="(m,i) in progressInterMarks" :key="m.key"
-                       class="vprog-mark" :class="{ active: !isNewInter && activeSeg===m.code }"
+                       class="vprog-mark" :class="{ active: !isNewInter && activeSeg===m.code, draft: isNewInter && m.key==='pm-draft' }"
                        :title="m.name + '　' + m.time"
                        :style="{ left: m.left + '%' }">
                     <span class="vprog-mark-name">{{ m.name }}</span>
