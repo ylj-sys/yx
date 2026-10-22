@@ -294,8 +294,6 @@
   .tl-ranges { position: absolute; top: 0; bottom: 0; left: 0; right: 0; pointer-events: none; z-index: 5; }
   /* 拖拽区间期间强制全手掌手势，覆盖子元素自带的 pointer/ew-resize */
   body.dragging, body.dragging * { cursor: grabbing !important; }
-  /* 整体拖拽区间时隐藏进度条区域，避免遮挡视频字幕 */
-  body.dragging .vprog-wrap { display: none; }
   .tl-range-seg { position: absolute; top: 0; bottom: 0; cursor: pointer; pointer-events: auto;
     background: var(--rc, #ccc); border: 2px solid transparent; border-radius: 8px; }
   .tl-range-edge { position: absolute; top: -2px; bottom: -2px; width: 14px; cursor: ew-resize; pointer-events: none;
@@ -678,11 +676,11 @@
             </div>
             <!-- 进度条区域：视频下方黑色块（与视频同宽） -->
             <div class="vprog-wrap" v-if="videoSrc">
-                <span class="vplay-btn" :title="playing ? '暂停' : '播放'" @click.stop="togglePlay">
-                  <svg v-if="!playing" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <span class="vplay-btn" :title="(!playing || previewing) ? '播放' : '暂停'" @click.stop="togglePlay">
+                  <svg v-if="!playing || previewing" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
                   <svg v-else viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
                 </span>
-                <span class="vtime">{{ fmtShort(videoCur) }} / {{ fmtShort(videoDur) }}</span>
+                <span class="vtime">{{ fmtShort(previewing ? previewMs : videoCur) }} / {{ fmtShort(videoDur) }}</span>
                 <div class="vprog" ref="vprog" @mousedown.stop="onProgDown">
                   <div class="vprog-inner">
                     <div v-for="(s,i) in progressSegs" :key="s.key" class="vprog-seg"
@@ -988,15 +986,15 @@
           <div class="tl-actions">
             <el-button size="small" :disabled="!canPlayRange || isNewInter" @click="playVideo">播放区间</el-button>
             <div class="tl-zoom">
-              <span class="tl-zoom-btn" title="缩小时间轴" @click="zoomBy(-4)">
+              <span class="tl-zoom-btn" title="缩小时间轴" @click="zoomBy(-1)">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
                   <circle cx="10.5" cy="10.5" r="6.5"></circle>
                   <path d="M15.6 15.6 L20 20"></path>
                   <path d="M7.6 10.5 L13.4 10.5"></path>
                 </svg>
               </span>
-              <el-slider v-model="zoomLevel" :min="defaultLevel" :max="8" :step="1" :show-tooltip="false" style="width:110px;" @change="onZoomChange"></el-slider>
-              <span class="tl-zoom-btn" title="放大时间轴" @click="zoomBy(4)">
+              <el-slider v-model="zoomLevel" :min="0" :max="maxLevel" :step="1" :show-tooltip="false" style="width:110px;" @change="onZoomChange"></el-slider>
+              <span class="tl-zoom-btn" title="放大时间轴" @click="zoomBy(1)">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
                   <circle cx="10.5" cy="10.5" r="6.5"></circle>
                   <path d="M15.6 15.6 L20 20"></path>
@@ -1075,11 +1073,12 @@
           <div class="cm-req-body">
             <b>1. 互动类型分类修改：</b>分类名依次修改为 <b>测练类、语音类、其他类</b>；<b>【随机分组】</b>标签 迁移至 <b>【测练类】</b>，并且支持填写提示文本、关联题目；语音类互动支持可选关联题目。<br>
             <b>2. 互动名称设置默认值：</b>默认与所选互动标签一致，切换标签时自动更新，支持手动修改.<br>
-            <b>3. 互动已关联的题目卡片优化：</b>测练类的【关联内容】改为【关联题目】，展示与课件侧的展示、交互一致：新增支持【查看详情】、拖拽、选择有无答题时长限制（默认无，有则默认30秒）。<br>
+            <b>3. 互动配置项优化：</b>语音类互动【关联内容】改为【关联文本】，新增【关联题目】，非必填；测练类的【关联内容】改为【关联题目】，展示与课件侧的展示、交互一致：新增支持【查看详情】、拖拽、选择有无答题时长限制（默认无，有则默认30秒）。<br>
             <b>4. 互动区间优化：</b>互动区间 统一改为 互动，去掉结束时间，起始时间默认为当前播放时间。<br>
-            <b>5. 视频进度条优化：</b>位置展示在视频下方，支持展示区间和互动点，互动点名称在hover时或下方轨道选中时才展示。<br>
-            <b>6. 区间&互动展示区优化：</b>新增时间轴，支持放大缩小; 播放头竖线支持拖拽，拖拽时在视频中同步预览对应帧; 新增【播放区间】按钮; 区间轨道支持拖拽边界、拖拽整体。<br>
-            <b>7.区间&互动展示区优化（仅编辑页）：</b>新增【标记起点】、【标记终点】按钮。<br>
+            <b>5. 视频进度条优化：</b>位置展示在视频下方，新增播放头，支持展示区间和互动点，互动点名称在hover时或下方轨道选中时才展示。<br>
+            <b>6. 区间&互动展示区优化：</b>新增时间轴，支持放大缩小; 播放头支持手动拖拽、左右键调整，拖拽时在视频中同步预览对应帧，拖拽结束视频回到播放位置; 新增【播放区间】按钮; 轨道上区间支持拖拽边界、拖拽整体。<br>
+            <b>7. 区间/互动未保存提示弹窗优化: 文案区分、按钮名称优化。</b><br>
+            <b>8. 区间颜色盘-倒数2、3列位置调整。</b>
             </div>
         </div>
 
@@ -1709,8 +1708,8 @@
 <script>
   const { createApp } = Vue;
 
-  // ===== 缩放阶梯：大刻度间隔（毫秒），从最缩到最放；每点一次放大按此变化，最小 1 秒 =====
-  const ZOOM_MAJOR_STEPS = [600000, 300000, 120000, 60000, 30000, 10000, 5000, 2000, 1000];
+  // ===== 缩放阶梯：大刻度间隔（毫秒），共 6 级：10分/5分/2分/1分/30秒/10秒（从最缩到最放）=====
+  const ZOOM_MAJOR_STEPS = [600000, 300000, 120000, 60000, 30000, 10000];
   // 每个大刻度在轨道上占据的像素宽（约 140px，保证刻度文字不重叠）
   const ZOOM_MAJOR_PX = 140;
 
@@ -1744,7 +1743,7 @@
         videoCur: 0,
         videoDur: 452000,
         playRangeEnd: null,
-        zoomLevel: 8,
+        zoomLevel: 5, // 初始为最放档（10秒一大刻度），挂载后由 fitTimeline() 按视频长度自适应到铺满档
         trackWidth: 0,
         zoomTouched: false,
         videoSrc: '',
@@ -1754,6 +1753,8 @@
         videoVolume: 100,
         videoRate: 1,
         boundaryAtPlayhead: false, // 拖拽区间边界到达播放头位置时高亮播放头
+        previewing: false, // 拖拽区间/边界的预览态（剪映式）：左侧播放按钮置为暂停外观、时间读数显示边界时间
+        previewMs: 0, // 预览态下左侧时间读数显示的边界时间（ms）
         keyTarget: null, // 键盘左右键的作用目标：'playhead' | 'range' | null（null 时不响应）
         keyEdge: null, // 键盘调整区间时锁定哪条边：'left' | 'right' | null（null=整体平移）
         isFullscreen: false,
@@ -1911,6 +1912,10 @@
           if (this.levelZoom(i) <= fit) lv = i;
         }
         return lv;
+      },
+      // 最高（最放）级别索引：随档位数动态变化
+      maxLevel() {
+        return ZOOM_MAJOR_STEPS.length - 1;
       },
       // 是否可标记起/终点：已选中或正在新增区间，或已选中或正在新增互动点时启用
       // 是否可播放区间：必须真正选中一个已存在区间，且不在新增区间未完成状态下
@@ -2227,7 +2232,10 @@
         const v = this.$refs.vprev;
         this._rangeWasPlaying = v ? !v.paused : false;
         this._playheadMs = this.videoCur;      // 记录拖拽前播放头位置
-        this._previewing = true;               // 进入预览态：播放头固定不动
+        this.previewing = true;               // 进入预览态：播放头固定不动
+        this.previewMs = edge === 'left'
+          ? r.sM * 60000 + r.sS * 1000 + (r.sMs || 0)
+          : r.eM * 60000 + r.eS * 1000 + (r.eMs || 0); // 左侧时间立即显示当前边界
         if (v && v.paused) v.play().catch(() => {});
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'ew-resize';
@@ -2251,6 +2259,7 @@
         if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
         // 拖拽边界：仅让视频画面/声音预览到边界位置，播放头固定不动（松手再回原位置）
         this.seekVideo(ms, false);
+        this.previewMs = ms; // 左侧时间读取当前边界
         // 边界到达播放头位置（±250ms）→ 高亮播放头，提示对齐
         this.boundaryAtPlayhead = Math.abs(ms - this._playheadMs) <= 250;
       },
@@ -2261,7 +2270,7 @@
         document.body.style.userSelect = '';
         document.body.style.cursor = '';
         // 退出预览态：把视频/播放头恢复到拖拽前的原位置，再恢复原播放状态
-        this._previewing = false;
+        this.previewing = false;
         this.boundaryAtPlayhead = false; // 清除对齐高亮
         const v = this.$refs.vprev;
         if (v) this.seekVideo(this._playheadMs, true);
@@ -2282,7 +2291,8 @@
         const v = this.$refs.vprev;
         this._rangeWasPlaying = v ? !v.paused : false;
         this._playheadMs = this.videoCur;      // 记录拖拽前播放头位置
-        this._previewing = true;               // 进入预览态：播放头固定不动
+        this.previewing = true;               // 进入预览态：播放头固定不动
+        this.previewMs = start;               // 整体拖拽默认预览区间起点（左侧时间显示）
         if (v && v.paused) v.play().catch(() => {});
         document.body.style.userSelect = 'none';
         document.body.classList.add('dragging');
@@ -2307,6 +2317,7 @@
         if (!d.draft && this.activeRangeIdx === d.idx) this.rangeForm = this.clone(r);
         // 整体拖拽：仅让视频画面/声音预览到区间起始位置，播放头固定不动（松手再回原位置）
         this.seekVideo(d.start0 + shift, false);
+        this.previewMs = d.start0 + shift; // 左侧时间读取当前起点
         // 区间任一端点到达播放头位置（±250ms）→ 高亮播放头，提示对齐
         const sB = d.start0 + shift, eB = d.end0 + shift;
         this.boundaryAtPlayhead = Math.abs(sB - this._playheadMs) <= 250 || Math.abs(eB - this._playheadMs) <= 250;
@@ -2338,7 +2349,7 @@
         // 整体拖拽结束：延迟复位，确保拖拽/还原期间排队的 watch 仍按"仅跟起始点"执行
         this.$nextTick(() => { this._rangeMoving = false; });
         // 退出预览态：把视频/播放头恢复到拖拽前的原位置，再恢复原播放状态
-        this._previewing = false;
+        this.previewing = false;
         this.boundaryAtPlayhead = false; // 清除对齐高亮
         const v = this.$refs.vprev;
         if (v) this.seekVideo(this._playheadMs, true);
@@ -2450,11 +2461,11 @@
         window.addEventListener('mousemove', move);
         window.addEventListener('mouseup', up);
       },
-      // 时间线放大/缩小：按阶梯切换大刻度间隔；最小到 1 秒一大刻度，不能再放大
+      // 时间线放大/缩小：按阶梯切换大刻度间隔；最小到 10 秒一大刻度，不能再放大
       zoomBy(dir) {
-        const maxLv = ZOOM_MAJOR_STEPS.length - 1; // 1 秒一大刻度（最放）
+        const maxLv = ZOOM_MAJOR_STEPS.length - 1; // 10 秒一大刻度（最放）
         let lv = this.zoomLevel + (dir > 0 ? 1 : -1);
-        lv = Math.min(maxLv, Math.max(this.defaultLevel, lv));
+        lv = Math.min(maxLv, Math.max(0, lv)); // 6 档全部可达，仅钳制在 [0, maxLv]
         this.zoomLevel = lv;
         this.zoomTouched = true;
         this.centerPlayhead();
@@ -2468,8 +2479,7 @@
       measureTrack() {
         const el = this.$refs.tlScroll;
         if (el) {
-          this.trackWidth = el.clientWidth;
-          if (this.zoomLevel < this.defaultLevel) this.zoomLevel = this.defaultLevel;
+          this.trackWidth = el.clientWidth; // 仅测量宽度用于计算默认档与刻度，不再钳制档位（6 档固定可选）
         }
         const bar = this.$refs.vprog;
         if (bar) this.vprogW = bar.clientWidth;
@@ -2511,7 +2521,7 @@
       },
       onTimeUpdate(e) {
         const v = e.target;
-        if (this._previewing) return; // 拖拽区间预览中：播放头固定不动，不随视频实际进度刷新
+        if (this.previewing) return; // 拖拽区间预览中：播放头固定不动，不随视频实际进度刷新
         if (!v.seeking) this.videoCur = v.currentTime * 1000;
         // 播放区间：到达终止点自动暂停
         if (this.playRangeEnd != null && this.videoCur >= this.playRangeEnd) {
@@ -2533,8 +2543,8 @@
         const v = this.$refs.vprev;
         if (!v || !this.videoSrc || !isFinite(ms)) return;
         ms = Math.max(0, Math.min(ms, this.videoDur || ms));
-        // 拖拽预览态（_previewing）下不更新 videoCur：播放头固定不动，仅视频画面/声音随边界预览
-        if (updateHead && !this._previewing) this.videoCur = ms; // 进度条 & 时间轴播放头先跟随
+        // 拖拽预览态（previewing）下不更新 videoCur：播放头固定不动，仅视频画面/声音随边界预览
+        if (updateHead && !this.previewing) this.videoCur = ms; // 进度条 & 时间轴播放头先跟随
         if (!this._seekedBound) {
           this._seekedBound = true;
           v.addEventListener('seeked', () => {
