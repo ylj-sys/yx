@@ -1860,6 +1860,7 @@
       window.addEventListener('resize', this.refreshPickScroll);
       document.addEventListener('fullscreenchange', this.onFullscreenChange);
       window.addEventListener('keydown', this.onKeydown); // 左右方向键快退/快进 1 秒
+      window.addEventListener('keyup', this.onKeyUp); // 松开方向键：结束边界预览态，画面回位
       window.addEventListener('mousedown', this.onDocMouseDown); // 点击非播放头/边界区域：键盘左右键失效
     },
     beforeUnmount() {
@@ -1869,6 +1870,7 @@
       window.removeEventListener('mousemove', this.onPickThumbMove);
       window.removeEventListener('mouseup', this.onPickThumbUp);
       window.removeEventListener('keydown', this.onKeydown);
+      window.removeEventListener('keyup', this.onKeyUp);
       window.removeEventListener('mousedown', this.onDocMouseDown);
     },
     computed: {
@@ -2236,7 +2238,8 @@
         this.previewMs = edge === 'left'
           ? r.sM * 60000 + r.sS * 1000 + (r.sMs || 0)
           : r.eM * 60000 + r.eS * 1000 + (r.eMs || 0); // 左侧时间立即显示当前边界
-        if (v && v.paused) v.play().catch(() => {});
+        // 预览态：视频暂停并定位到边界帧（不播放，避免播放头/画面随播放前进），结束后恢复原状态
+        if (v && !v.paused) v.pause();
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'ew-resize';
         window.addEventListener('mousemove', this.onRangeResizeMove);
@@ -2274,7 +2277,7 @@
         this.boundaryAtPlayhead = false; // 清除对齐高亮
         const v = this.$refs.vprev;
         if (v) this.seekVideo(this._playheadMs, true);
-        if (v && !this._rangeWasPlaying) v.pause();
+        if (v && this._rangeWasPlaying) v.play().catch(() => {}); // 拖拽前在播放则恢复播放
       },
       // ===== 区间整体拖拽（选中状态下拖动主体移动，不与其它区间重叠） =====
       startRangeMove(e, idx) {
@@ -2293,7 +2296,8 @@
         this._playheadMs = this.videoCur;      // 记录拖拽前播放头位置
         this.previewing = true;               // 进入预览态：播放头固定不动
         this.previewMs = start;               // 整体拖拽默认预览区间起点（左侧时间显示）
-        if (v && v.paused) v.play().catch(() => {});
+        // 预览态：视频暂停并定位到起点帧（不播放，避免播放头/画面随播放前进），结束后恢复原状态
+        if (v && !v.paused) v.pause();
         document.body.style.userSelect = 'none';
         document.body.classList.add('dragging');
         window.addEventListener('mousemove', this.onRangeMove);
@@ -2353,7 +2357,7 @@
         this.boundaryAtPlayhead = false; // 清除对齐高亮
         const v = this.$refs.vprev;
         if (v) this.seekVideo(this._playheadMs, true);
-        if (v && !this._rangeWasPlaying) v.pause();
+        if (v && this._rangeWasPlaying) v.play().catch(() => {}); // 拖拽前在播放则恢复播放
       },
       onRangeClick(idx) {
         if (this._rangeDragged) { this._rangeDragged = false; return; } // 拖拽后抑制误触发的选中
@@ -2572,6 +2576,7 @@
         e.preventDefault();
         const delta = e.key === 'ArrowLeft' ? -1000 : 1000;
         if (this.keyTarget === 'playhead') {
+          this.endPreview(); // 切到播放头移动：结束边界预览态
           const v = this.$refs.vprev;
           const cur = (v && isFinite(v.currentTime)) ? v.currentTime * 1000 : this.videoCur;
           this.seekVideo(Math.round(cur + delta));
@@ -2579,12 +2584,17 @@
           this.nudgeRange(delta);
         }
       },
+      // 松开方向键：结束边界预览态，画面回到真实播放头位置（持续按住时 previewing 一直为真，播放头锁定）
+      onKeyUp(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') this.endPreview();
+      },
       // 全局 mousedown：点击「播放头 / 区间边界」之外的任意区域 → 键盘左右键失效（keyTarget 复位）
       onDocMouseDown(e) {
         const el = e.target;
         if (el && el.closest && el.closest('.tl-playhead, .vprog-head, .tl-range-edge')) return;
         this.keyTarget = null;
         this.keyEdge = null;
+        this.endPreview(); // 点击其它区域：结束边界预览态，画面回位
       },
       // 键盘调整区间：keyEdge 为 null 时整体平移；为 'left'/'right' 时只调对应边界（±1 秒，受相邻区间/时长约束）
       nudgeRange(delta) {
@@ -2603,11 +2613,12 @@
           if (os >= end && os < nextStart) nextStart = os;
         });
         const setT = (ms) => ({ m: Math.floor(ms / 60000), s: Math.floor((ms % 60000) / 1000), ms: Math.round(ms % 1000) });
+        let ms = null;
         if (this.keyEdge === 'left') {
-          const ms = Math.max(prevEnd, Math.min(end - MIN, start + delta));
+          ms = Math.max(prevEnd, Math.min(end - MIN, start + delta));
           const t = setT(ms); r.sM = t.m; r.sS = t.s; r.sMs = t.ms;
         } else if (this.keyEdge === 'right') {
-          const ms = Math.max(start + MIN, Math.min(nextStart, end + delta));
+          ms = Math.max(start + MIN, Math.min(nextStart, end + delta));
           const t = setT(ms); r.eM = t.m; r.eS = t.s; r.eMs = t.ms;
         } else {
           return; // 仅点击区间主体：整体平移不通过左右键调整（须点具体边界才可微调）
@@ -2616,6 +2627,22 @@
         this.suppressRangeWatch = true;
         if (idx >= 0) this.rangeForm = this.clone(r);
         this.$nextTick(() => { this.suppressRangeWatch = false; });
+        // 预览该边界的视频画面（暂停并定位到边界帧：播放头固定不动、左侧时间显示边界、按钮呈暂停外观，与拖拽一致）
+        const v = this.$refs.vprev;
+        this._rangeWasPlaying = v ? !v.paused : false;
+        if (v && !v.paused) v.pause();
+        this.previewing = true;
+        this.previewMs = ms;
+        this.seekVideo(ms, false);
+      },
+      // 结束键盘/拖拽预览态：画面回到真实播放头位置，左侧时间与按钮恢复正常
+      endPreview() {
+        if (!this.previewing) return;
+        if (this._resize || this._move) return; // 鼠标拖拽进行中：不干预，交由拖拽结束处理恢复
+        this.previewing = false;
+        const v = this.$refs.vprev;
+        if (v) this.seekVideo(this.videoCur, true); // videoCur 在预览期间未变，回位即恢复真实播放头画面
+        if (v && this._rangeWasPlaying) v.play().catch(() => {}); // 预览前在播放则恢复
       },
       // 面板起止时间变化写回已保存区间：轨道色块/进度条区间边界实时跟随
       // （草稿区间轨道直接渲染 rangeForm，无需写回；仅同步 ranges，不改 rangeForm，故不会触发本 watcher 死循环）
