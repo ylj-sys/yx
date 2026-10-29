@@ -365,9 +365,9 @@
   .vtag-form .el-select__selected-item,.vtag-form .el-tree-select .el-input__inner,
   .ext-form .el-select__wrapper,.ext-form .el-select__placeholder,
   .ext-form .el-select__selected-item{font-size:14px;}
-  /* 视频类型 / 适用版本 占位符统一颜色 */
-  .vtag-form .el-select__placeholder,.vtag-form .el-tree-select__placeholder,
-  .vtag-form .el-cascader__placeholder{color:#a8abb2;}
+  /* 视频类型 / 适用版本 占位符统一颜色（仅空态；选中值不受影响） */
+  .vtag-form .el-select__placeholder.is-transparent,.vtag-form .el-tree-select__placeholder.is-transparent,
+  .vtag-form .el-cascader__placeholder.is-transparent{color:#a8abb2;}
   .vt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:16px 12px;width:100%;}
   /* 视频类型下拉：弹层与选择框同宽，选项行铺满 */
   .vtype-popper{max-width:400px;}
@@ -592,7 +592,25 @@
   .page-card.video-edit .title-box{min-width:320px;max-width:624px;}
   .page-card.video-edit .title-box .title-input{height:44px;font-size:16px;font-weight:400;padding:0 94px 0 14px;}
   .page-card.video-edit .vtabs{border-bottom:0;}
-  .page-card.video-edit .req-panel{margin:0 22px 22px;}
+  .page-card.video-edit .req-panel{margin:14px 22px 22px;}
+  /* 视频编辑页：下方 视频标签 / 文件格式 / 操作记录 */
+  .page-card.video-edit .ve-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
+  .ve-cols > .panel-card{margin:0;flex:1;min-width:0;}
+  .ve-cols .ve-right{flex:1.15;min-width:0;display:flex;flex-direction:column;gap:14px;}
+  .ve-cols .ve-right .panel-card{flex:none;}
+  .ve-card-title{position:relative;padding-left:10px;line-height:22px;font-size:15px;font-weight:600;color:#1d2129;}
+  .ve-card-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:15px;border-radius:2px;background:var(--btn-blue);}
+  .ve-sub{border:1px solid #e8edf4;border-radius:8px;padding:12px 14px 14px;margin-top:12px;}
+  .ve-sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+  .ve-sec-name{font-size:14px;font-weight:600;color:#1d2129;}
+  .ve-sec-ops{display:flex;gap:8px;}
+  .ve-tag-form .el-select,.ve-tag-form .el-cascader{width:100% !important;}
+  .fmt-table .cell{padding:0 4px;}
+  .fmt-table .el-table__body .cell{color:var(--primary);}
+  .ve-card .vtag-item{flex-wrap:wrap;row-gap:4px;}
+  .ve-card .vtag-lb{flex:0 0 auto;}
+  .op-log{margin-top:12px;display:flex;flex-direction:column;gap:9px;}
+  .op-row{font-size:14px;color:#4e5969;}
 
   /* ================= 图片编辑页（查看图片） ================= */
   .img-card{margin:12px 22px 0;background:#fff;border-radius:12px;
@@ -633,13 +651,31 @@
   .courseware-edit .itype-inline .el-select{margin-left:12px;}
 
   /* ================= 学案编辑页（学案详情） ================= */
-  .page-card.lesson-edit{background:#fff;}
+  .page-card.lesson-edit{background:#eef1f6;}
   .page-card.lesson-edit .img-intro textarea{height:101px;}
   .page-card.lesson-edit .req-panel{margin:17px 22px 0;}
+  /* 学案编辑页：下方 学案标签 / 文件格式 / 操作记录 */
+  .page-card.lesson-edit .le-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
+  .le-cols > .panel-card{margin:0;flex:1.4;min-width:0;}
+  .le-cols .le-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;}
+  .le-head{display:flex;align-items:center;justify-content:space-between;}
+  .le-ops{display:flex;gap:8px;}
+  .kp-bar{display:flex;gap:24px;align-items:center;background:#f0f7ff;border:1px solid #dceafd;border-radius:8px;padding:9px 14px;margin-top:12px;flex-wrap:wrap;}
+  .kp-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .kp-name{color:#4e5969;font-size:14px;}
+  .kp-chip{background:#e8f3ff;color:var(--primary);border-radius:4px;padding:1px 8px;font-size:13px;}
+  .kp-link{color:var(--primary);font-size:13px;cursor:pointer;}
+  .le-card .vtag-item{flex-wrap:wrap;row-gap:4px;}
+  .le-card .vtag-lb{flex:0 0 auto;}
+  .le-atags{margin-top:12px;}
+  .le-fmt .el-table__body .cell{color:var(--primary);}
+  .le-act{color:var(--primary);cursor:pointer;}
 
   /* ================= 课件编辑页（课件详情） ================= */
   .page-card.courseware-edit .edit-top{padding:14px 22px 0;}
   .page-card.courseware-edit .req-panel{margin:17px 22px 0;}
+  /* 课件编辑页：下方 课件标签 / 文件格式 / 操作记录 */
+  .page-card.courseware-edit .le-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
 
   /* ================= 视频列表页 ================= */
   .vhead-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
@@ -1439,6 +1475,100 @@ const AudioEdit = {
 };
 
 /* ---------------- 视频编辑页（视频信息编辑 / 切片与批注） ---------------- */
+  /* 适用版本：级联选项（一级分组 / 二级版本 + 标注） */
+  const verTree = [
+    { value: '通用版', label: '通用版' },
+    { value: '同步教材版', label: '同步教材版', children: [
+      { value: '人教版', label: '人教版', note: '小学/语文' },
+      { value: '统编版', label: '统编版', note: '小学/语文' },
+    ] },
+  ];
+  /* 视频类型：树形选项（同步 / 备考 / 专项） */
+  const vtypeTree = [
+    { value: '同步', label: '同步', children: [
+      { value: '同步基础', label: '同步基础' },
+      { value: '同步衔接', label: '同步衔接' },
+      { value: '同步培优', label: '同步培优' },
+      { value: '同步知识点', label: '同步知识点' },
+      { value: '同步题型', label: '同步题型' },
+      { value: '同步复习', label: '同步复习', children: [
+        { value: '单元复习', label: '单元复习' },
+        { value: '期中复习', label: '期中复习' },
+        { value: '期末复习', label: '期末复习' },
+      ] },
+    ] },
+    { value: '备考', label: '备考', children: [
+      { value: '小升初冲刺', label: '小升初冲刺' },
+      { value: '中考冲刺', label: '中考冲刺', children: [
+        { value: '中考一轮复习', label: '一轮复习' },
+        { value: '中考二轮复习', label: '二轮复习' },
+        { value: '中考三轮冲刺', label: '三轮冲刺' },
+      ] },
+      { value: '高考冲刺', label: '高考冲刺', children: [
+        { value: '高考一轮复习', label: '一轮复习' },
+        { value: '高考二轮复习', label: '二轮复习' },
+        { value: '高考三轮冲刺', label: '三轮冲刺' },
+      ] },
+    ] },
+    { value: '专项', label: '专项', children: [
+      { value: '基础知识专项', label: '基础知识专项' },
+      { value: '古诗词鉴赏', label: '古诗词鉴赏' },
+      { value: '文言文阅读专项', label: '文言文阅读专项' },
+      { value: '现代文阅读专项', label: '现代文阅读专项' },
+      { value: '名著阅读与导读', label: '名著阅读与导读' },
+      { value: '写作专项', label: '写作专项' },
+    ] },
+  ];
+
+  /* 视频类型选项随视频类别：课程=同步/备考/专项树（多选）；基础配套=单词/讲题/知识点/书法（单选）；
+     素养=素养类+编程类（多选树）；幼儿暂无选项；等级考试暂仅 HSK（单选） */
+  const vtypeTreeLiteracy = [
+    { value: '人文素养', label: '人文素养' },
+    { value: '科学素养', label: '科学素养' },
+    { value: '身心健康', label: '身心健康' },
+    { value: '实践拓展', label: '实践拓展' },
+    { value: '编程基础', label: '编程基础' },
+    { value: '编程思维', label: '编程思维' },
+    { value: '算法思维', label: '算法思维' },
+    { value: '机器学习', label: '机器学习' },
+    { value: '机器人', label: '机器人' },
+    { value: '智能硬件', label: '智能硬件' },
+  ];
+  const vtypeOptsOf = (type) => {
+    if (type === '基础配套视频') return { data: ['单词', '讲题', '知识点', '书法'].map((v) => ({ value: v, label: v })), multiple: false };
+    if (type === '素养视频') return { data: vtypeTreeLiteracy, multiple: true };
+    if (type === '等级考试视频') return { data: [{ value: 'HSK', label: 'HSK' }], multiple: false };
+    if (type === '幼儿视频') return { data: [], multiple: false };
+    return { data: vtypeTree, multiple: true };
+  };
+
+  /* 学案/课件/教案的类型选项随类别：同步=同步树；专项=专项专项（扁平多选）；备考=小升初冲刺 */
+  const specialTypeTree = [
+    { value: '基础知识专项', label: '基础知识专项' },
+    { value: '古诗词鉴赏', label: '古诗词鉴赏' },
+    { value: '文言文阅读专项', label: '文言文阅读专项' },
+    { value: '现代文阅读专项', label: '现代文阅读专项' },
+    { value: '名著阅读与导读', label: '名著阅读与导读' },
+    { value: '写作专项', label: '写作专项' },
+  ];
+  const syncTypeTree = [
+    { value: '同步基础', label: '同步基础' },
+    { value: '同步衔接', label: '同步衔接' },
+    { value: '同步培优', label: '同步培优' },
+    { value: '同步知识点', label: '同步知识点' },
+    { value: '同步题型', label: '同步题型' },
+    { value: '同步复习', label: '同步复习', children: [
+      { value: '单元复习', label: '单元复习' },
+      { value: '期中复习', label: '期中复习' },
+      { value: '期末复习', label: '期末复习' },
+    ] },
+  ];
+  const typeOptsOf = (rtype) => {
+    if (rtype.startsWith('专项')) return specialTypeTree;
+    if (rtype.startsWith('备考')) return [{ value: '小升初冲刺', label: '小升初冲刺' }];
+    return syncTypeTree;
+  };
+
 const VideoEdit = {
   setup() {
     const info = reactive({
@@ -1453,14 +1583,68 @@ const VideoEdit = {
     const vtypeOptions = ['课程视频', '基础配套视频', '素养视频', '幼儿视频', '等级考试视频'];
     const vtype = ref('基础配套视频');
     const vtypeEdit = ref(false);
+    /* 视频类别字段差异（与上传成功页一致）：
+       幼儿视频：无学科/年级；素养视频：无年级；等级考试视频：无年级/适用版本；
+       基础配套视频：无适用版本；课程视频：完整字段 */
+    const isKid = computed(() => vtype.value === '幼儿视频');
+    const showGrade = computed(() => ['课程视频', '基础配套视频'].includes(vtype.value));
+    const showVer = computed(() => vtype.value === '课程视频');
+    const showLevel = computed(() => ['课程视频', '等级考试视频'].includes(vtype.value));
+    const showGoals = computed(() => vtype.value === '课程视频');
     /* 讲师信息：点击编辑后出现输入框 */
     const teacherEdit = ref(false);
     /* 需求说明条目（米黄面板，与音频编辑页一致） */
     const reqNotes = [
-      '新增【视频类别】，默认展示当前视频类别，点击编辑按钮后出现选择框，支持选择其他视频类别，选项与列表页 tab 项一致。',
+      '新增【视频类别】，默认展示当前视频类别，点击编辑按钮后出现选择框，支持选择其他视频类别，选项与列表页 tab 项一致。切换视频类别后，保留不同类别间相同标签的已选值（除「视频类型」）。',
     ];
 
-    return { info, tabs, activeTab, editing, vtype, vtypeOptions, vtypeEdit, teacherEdit, reqNotes, icons };
+    /* ---- 下方内容：视频标签（基础信息多套标签 + 拓展信息） ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    const mkVeTag = (id) => ({ id, open: false, xd: '', xk: '', vtype: [], grade: '', ver: [] });
+    /* 首套标签回显参考值（学段/学科/视频类型/年级/适用版本） */
+    const veTags = reactive([{ id: 1, open: false, xd: '小学', xk: '语文', vtype: [], grade: '五年级', ver: [['同步教材版', '统编版']] }]);
+    const addVeTag = () => veTags.push(mkVeTag(veTags.length + 1));
+    const delVeTag = (i) => {
+      if (veTags.length <= 1) { ElMsg.warning('至少保留一套标签信息'); return; }
+      veTags.splice(i, 1);
+    };
+    const setAllVeTags = (open) => veTags.forEach((t) => { t.open = open; });
+    /* 视频类型选项随视频类别联动；切换类别时清空已选视频类型（各类别选项集不同，不通用） */
+    const vtOpts = computed(() => vtypeOptsOf(vtype.value));
+    watch(vtype, () => veTags.forEach((t) => { t.vtype = []; }));
+    const onVeXdChange = (t) => { t.xk = ''; t.grade = ''; };
+    /* 视频类型树勾选联动：子选中带父、父未选删子（与上传成功页一致） */
+    const veParentOf = {};
+    (function walk(ns, p) { ns.forEach((n) => { if (p) veParentOf[n.value] = p; if (n.children) walk(n.children, n.value); }); })(vtypeTree, null);
+    const onVeVtypeChange = (t) => {
+      if (!Array.isArray(t.vtype)) return;   // 单选类别（基础配套/幼儿/等级考试）无树形联动
+      const set = new Set(t.vtype);
+      for (const v of [...set]) if (veParentOf[v]) set.add(veParentOf[v]);
+      for (const v of [...set]) if (veParentOf[v] && !set.has(veParentOf[v])) set.delete(v);
+      t.vtype = [...set];
+    };
+    const veExt = reactive({ crowd: ['学生', '教师'], level: '1', goals: ['技能掌握'], fmt: '真人出镜', layout: '横版视频' });
+    const veExtOpts = {
+      crowd: ['学生', '教师', '家长', '学校管理员'],
+      level: ['1', '2', '3', '4', '5'],
+      goals: ['认知启蒙', '知识理解', '技能掌握', '方法学习'],
+      fmt: ['真人出镜', '录屏形式', '纯动画视频', '真人+动画', '数字人讲解', 'AI生成', '直播回放'],
+      layout: ['横版视频', '竖版视频'],
+    };
+    /* ---- 文件格式 / 操作记录 ---- */
+    const fmtCols = ['m3u8', 'mp4', 'mkv', 'jwmp3', 'mp3'];
+    const fmtRows = ['240P', '480P', '720P', '1080P'].map((res) => ({ res, m3u8: '', mp4: res === '1080P' ? '357.03MB' : '', mkv: '', jwmp3: '', mp3: '' }));
+    const opLogs = [
+      { k: '创建人：', v: 'qinning' },
+      { k: '创建时间：', v: '2026-09-16 16:45:06' },
+      { k: '更新人：', v: 'yilijuan' },
+      { k: '更新时间：', v: '2026-10-27 15:13:04' },
+    ];
+
+    return { info, tabs, activeTab, editing, vtype, vtypeOptions, vtypeEdit, teacherEdit, reqNotes, icons,
+      isKid, showGrade, showVer, showLevel, showGoals, vtOpts,
+      veTags, addVeTag, delVeTag, setAllVeTags, onVeXdChange, linkOpts: linkOptsOf, vtypeTree, verTree, onVeVtypeChange, veExt, veExtOpts,
+      fmtCols, fmtRows, opLogs };
   },
   emits: ['back'],
   template: `
@@ -1548,6 +1732,123 @@ const VideoEdit = {
               <textarea maxlength="200" v-model="info.intro" placeholder="请输入视频简介"></textarea>
             </div>
             <span class="cnt">{{ info.intro.length }} / 200</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ve-cols">
+      <!-- 视频标签 -->
+      <div class="panel-card ve-card">
+        <div class="ve-card-title">视频标签</div>
+        <div class="ve-sub">
+          <div class="ve-sec-head">
+            <span class="ve-sec-name">基础信息</span>
+            <div class="ve-sec-ops">
+              <el-button size="small" @click="setAllVeTags(true)">全部展开</el-button>
+              <el-button size="small" @click="setAllVeTags(false)">全部收起</el-button>
+              <el-button size="small" type="primary" @click="addVeTag">新增</el-button>
+            </div>
+          </div>
+          <div v-for="(t, i) in veTags" :key="t.id" class="vtag-box" :class="{ open: t.open }">
+            <div class="vtag-item">
+              <span class="vtag-no">{{ i + 1 }}</span>
+              <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
+              <span v-if="!isKid" class="vtag-lb">学科：{{ t.xk || '--' }}</span>
+              <span class="vtag-lb">视频类型：{{ Array.isArray(t.vtype) ? (t.vtype.join('、') || '--') : (t.vtype || '--') }}</span>
+              <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+              <span v-if="showVer" class="vtag-lb">适用版本：{{ (t.ver || []).map(p => p[p.length - 1]).join('、') || '--' }}</span>
+              <div class="vtag-act">
+                <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
+                <span class="vtag-del" @click="delVeTag(i)">删除</span>
+              </div>
+            </div>
+            <el-form v-if="t.open" label-width="100px" class="vtag-form ve-tag-form">
+              <el-form-item label="学段：" required>
+                <el-radio-group v-model="t.xd" class="vt-grid" @change="onVeXdChange(t)">
+                  <el-radio v-for="o in ['小学', '初中', '高中', '学前教育', '中职']" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="!isKid" label="学科：" required>
+                <el-radio-group v-model="t.xk" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).xk" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="视频类型：" required>
+                <el-select v-if="!vtOpts.multiple" v-model="t.vtype" clearable filterable
+                  placeholder="请选择视频类型" style="width:100%">
+                  <el-option v-for="o in vtOpts.data" :key="o.value" :label="o.label" :value="o.value" />
+                </el-select>
+                <el-tree-select v-else v-model="t.vtype" :data="vtOpts.data" multiple check-strictly
+                  show-checkbox filterable clearable default-expand-all :render-after-expand="false"
+                  placeholder="请选择视频类型" style="width:100%" @change="onVeVtypeChange(t)" />
+              </el-form-item>
+              <el-form-item v-if="showGrade" label="年级：" required>
+                <el-radio-group v-model="t.grade" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="showVer" label="适用版本：" required>
+                <el-cascader v-model="t.ver" :options="verTree" :props="{ multiple: true }" clearable filterable
+                  placeholder="请选择适用版本" style="width:100%" popper-class="ver-popper">
+                  <template #default="{ data }">
+                    <span class="ver-node">
+                      <span>{{ data.label }}</span>
+                      <span v-if="data.note" class="ver-note">{{ data.note }}</span>
+                    </span>
+                  </template>
+                </el-cascader>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+        <div class="ve-sub">
+          <div class="ve-sec-name">拓展信息</div>
+          <el-form label-width="100px" class="ext-form">
+            <el-form-item label="适用人群：" required>
+              <el-checkbox-group v-model="veExt.crowd" class="ext-grid">
+                <el-checkbox v-for="o in veExtOpts.crowd" :key="o" :label="o">{{ o }}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+            <el-form-item v-if="showLevel" label="适用难度：" required>
+              <el-radio-group v-model="veExt.level" class="ext-grid">
+                <el-radio v-for="o in veExtOpts.level" :key="o" :label="o">难度{{ o }}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item v-if="showGoals" label="学习目标：" required>
+              <el-checkbox-group v-model="veExt.goals" class="ext-grid">
+                <el-checkbox v-for="o in veExtOpts.goals" :key="o" :label="o">{{ o }}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+            <el-form-item label="制作形式：" required>
+              <el-radio-group v-model="veExt.fmt" class="ext-grid">
+                <el-radio v-for="o in veExtOpts.fmt" :key="o" :label="o">{{ o }}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="视频版式：" required>
+              <el-radio-group v-model="veExt.layout" class="ext-grid">
+                <el-radio v-for="o in veExtOpts.layout" :key="o" :label="o">{{ o }}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+
+      <!-- 文件格式 + 操作记录 -->
+      <div class="ve-right">
+        <div class="panel-card ve-card">
+          <div class="ve-card-title">文件格式</div>
+          <el-table :data="fmtRows" border size="small" class="fmt-table">
+            <el-table-column prop="res" label="格式/分辨率" width="88" align="center" />
+            <el-table-column v-for="c in fmtCols" :key="c" :label="c" align="center" min-width="62">
+              <template #default="{ row }"><span>{{ row[c] }}</span></template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="panel-card ve-card">
+          <div class="ve-card-title">操作记录</div>
+          <div class="op-log">
+            <div v-for="l in opLogs" :key="l.k" class="op-row"><span class="op-k">{{ l.k }}</span><span>{{ l.v }}</span></div>
           </div>
         </div>
       </div>
@@ -1676,10 +1977,58 @@ const LessonEdit = {
     const ltypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为学案） */
     const reqNotes = [
-      '新增【学案类别】，默认展示当前学案类别，点击编辑按钮后出现选择框，支持选择其他学案类别，选项与列表页 tab 项一致。',
+      '新增【学案类别】，默认展示当前学案类别，点击编辑按钮后出现选择框，支持选择其他学案类别，选项与列表页 tab 项一致。切换学案类别后，保留不同类别间相同标签的已选值（除「学案类型」）。',
     ];
 
-    return { info, editing, ltype, ltypeOptions, ltypeEdit, reqNotes, icons };
+    /* ---- 下方：学案标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    /* 学案类别字段差异（与上传页一致）：备考无年级；适用版本仅同步必填 */
+    const showGrade = computed(() => ltype.value !== '备考学案');
+    const verRequired = computed(() => ltype.value === '同步学案');
+    const mkLeTag = (id) => ({ id, open: false, xd: '', xk: '', ltype: [], grade: '', term: '', ver: '', verCat: '', vers: [], verOpen: false });
+    /* 首套标签回显参考值（学段/学科/学案类型/年级/适用学期/适用版本） */
+    const leTags = reactive([{ id: 1, open: false, xd: '初中', xk: '语文', ltype: ['同步复习', '单元复习'], grade: '七年级', term: '上学期', ver: '同步教材版 / 人教版', verCat: '同步教材版', vers: ['人教版'], verOpen: false }]);
+    const addLeTag = () => leTags.push(mkLeTag(leTags.length + 1));
+    const delLeTag = (i) => {
+      if (leTags.length <= 1) { ElMsg.warning('至少保留一套标签信息'); return; }
+      leTags.splice(i, 1);
+    };
+    const setAllLeTags = (open) => leTags.forEach((t) => { t.open = open; });
+    /* 学段切换：学科/年级联动重置 */
+    const onXdChange = (t) => { t.xk = ''; t.grade = ''; };
+    /* 学案类型选项随类别；切换类别时清空已选类型（各类别选项集不同，不通用） */
+    const ltOpts = computed(() => typeOptsOf(ltype.value));
+    watch(ltype, () => leTags.forEach((t) => { t.ltype = []; }));
+    /* 版本面板：左列选分类，同步教材版右侧勾选子版本 */
+    const pickVerCat = (t, cat) => {
+      t.verCat = cat;
+      if (cat === '通用版') { t.vers = []; t.ver = '通用版'; t.verOpen = false; }
+      else if (!t.ver || !t.ver.startsWith('同步教材版')) { t.ver = '同步教材版'; }
+    };
+    const onVerChange = (t) => {
+      if (t.verCat !== '同步教材版') return;
+      t.ver = '同步教材版' + (t.vers.length ? ' / ' + t.vers.join('、') : '');
+    };
+    const leTagOpts = { xd: ['小学', '初中', '高中', '学前教育', '中职'], term: ['上学期', '下学期', '暑假', '寒假'] };
+    /* 知识点条 / 文件格式 / 操作记录 */
+    const kpMain = [{ name: '汉字', pct: '50%' }];
+    const kpSub = [{ name: '词汇', pct: '30%' }, { name: '句子', pct: '20%' }];
+    const fmtRows = [
+      { fmt: 'PDF', size: '1.63MB', act: '预览' },
+      { fmt: 'DOC', size: '75.00KB', act: '预览' },
+      { fmt: 'DOCX', size: '5.28KB', act: '预览' },
+      { fmt: 'HTML', size: '--', act: '上传' },
+    ];
+    const opLogs = [
+      { k: '创建人：', v: 'yupengfei' },
+      { k: '创建时间：', v: '2026-09-04 15:37:25' },
+      { k: '更新人：', v: 'yupengfei' },
+      { k: '更新时间：', v: '2026-10-26 19:40:29' },
+    ];
+
+    return { info, editing, ltype, ltypeOptions, ltypeEdit, reqNotes, icons,
+      showGrade, verRequired, leTags, addLeTag, delLeTag, setAllLeTags, onXdChange, linkOpts: linkOptsOf, ltOpts,
+      pickVerCat, onVerChange, leTagOpts, kpMain, kpSub, fmtRows, opLogs };
   },
   template: `
     <div class="breadcrumb">
@@ -1733,6 +2082,116 @@ const LessonEdit = {
       </div>
     </div>
 
+    <div class="le-cols">
+      <!-- 学案标签 -->
+      <div class="panel-card le-card">
+        <div class="le-head">
+          <div class="ve-card-title">学案标签</div>
+          <div class="le-ops">
+            <el-button @click="setAllLeTags(true)">全部展开</el-button>
+            <el-button @click="setAllLeTags(false)">全部收起</el-button>
+            <el-button type="primary" @click="addLeTag">新增</el-button>
+          </div>
+        </div>
+        <div class="kp-bar">
+          <div class="kp-group">
+            <span class="kp-name">主知识点：</span>
+            <span class="kp-chip" v-for="k in kpMain" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+            <a class="kp-link">更改知识点</a>
+          </div>
+          <div class="kp-group">
+            <span class="kp-name">次知识点：</span>
+            <span class="kp-chip" v-for="k in kpSub" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+          </div>
+        </div>
+        <div class="atag-wrap le-atags">
+          <div v-for="(t, i) in leTags" :key="t.id" class="vtag-box" :class="{ open: t.open }">
+            <div class="vtag-item">
+              <span class="vtag-no">{{ i + 1 }}</span>
+              <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
+              <span class="vtag-lb">学科：{{ t.xk || '--' }}</span>
+              <span class="vtag-lb">学案类型：{{ (t.ltype && t.ltype.length ? t.ltype.join('、') : '--') }}</span>
+              <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+              <span class="vtag-lb">适用学期：{{ t.term || '--' }}</span>
+              <span class="vtag-lb">适用版本：{{ t.ver || '--' }}</span>
+              <div class="vtag-act">
+                <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
+                <span class="vtag-del" @click="delLeTag(i)">删除</span>
+              </div>
+            </div>
+            <el-form v-if="t.open" label-width="100px" class="vtag-form">
+              <el-form-item label="学段：" required>
+                <el-radio-group v-model="t.xd" class="vt-grid" @change="onXdChange(t)">
+                  <el-radio v-for="o in leTagOpts.xd" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="学科：" required>
+                <el-radio-group v-model="t.xk" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).xk" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="学案类型：" required>
+                <el-tree-select v-model="t.ltype" :data="ltOpts" multiple show-checkbox check-strictly
+                  default-expand-all :render-after-expand="false" filterable placeholder="请选择学案类型"
+                  style="width:100%" />
+              </el-form-item>
+              <el-form-item v-if="showGrade" label="年级：" required>
+                <el-radio-group v-model="t.grade" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="适用版本：" :required="verRequired">
+                <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
+                  <template #reference>
+                    <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:100%" class="ver-input" />
+                  </template>
+                  <div class="ver-panel">
+                    <div class="ver-left">
+                      <div class="ver-item" :class="{ active: t.verCat === '通用版' }" @click="pickVerCat(t, '通用版')">通用版</div>
+                      <div class="ver-item" :class="{ active: t.verCat === '同步教材版' }" @click="pickVerCat(t, '同步教材版')">同步教材版<span class="arr">›</span></div>
+                    </div>
+                    <div class="ver-right" v-if="t.verCat === '同步教材版'">
+                      <div class="ver-opt" v-for="o in ['人教版', '统编版']" :key="o">
+                        <el-checkbox-group v-model="t.vers" @change="onVerChange(t)">
+                          <el-checkbox :label="o">{{ o }}</el-checkbox>
+                        </el-checkbox-group>
+                        <span class="ver-meta">{{ (t.xd || '--') + ' / ' + (t.xk || '--') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+              </el-form-item>
+              <el-form-item label="适用学期：">
+                <el-radio-group v-model="t.term" class="vt-grid">
+                  <el-radio v-for="o in leTagOpts.term" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件格式 / 操作记录 -->
+      <div class="le-right">
+        <div class="panel-card le-card">
+          <div class="ve-card-title">文件格式</div>
+          <el-table :data="fmtRows" border size="small" class="le-fmt">
+            <el-table-column prop="fmt" label="格式" align="center" />
+            <el-table-column prop="size" label="大小" align="center" />
+            <el-table-column label="操作" width="90" align="center">
+              <template #default="{ row }"><a class="le-act">{{ row.act }}</a></template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="panel-card le-card">
+          <div class="ve-card-title">操作记录</div>
+          <div class="op-log">
+            <div v-for="l in opLogs" :key="l.k" class="op-row"><span class="op-k">{{ l.k }}</span><span>{{ l.v }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 需求说明 -->
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
@@ -1763,10 +2222,59 @@ const CoursewareEdit = {
     const ctypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为课件） */
     const reqNotes = [
-      '新增【课件类别】，默认展示当前课件类别，点击编辑按钮后出现选择框，支持选择其他课件类别，选项与列表页 tab 项一致。',
+      '新增【课件类别】，默认展示当前课件类别，点击编辑按钮后出现选择框，支持选择其他课件类别，选项与列表页 tab 项一致。切换课件类别后，保留不同类别间相同标签的已选值（除「课件类型」）。',
     ];
 
-    return { info, editing, tabs, activeTab, ctype, ctypeOptions, ctypeEdit, reqNotes, icons };
+    /* ---- 下方：课件标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    /* 课件类别字段差异（与上传页一致）：同步/专项有年级；基础资源课件仅学段/学科/课件类型；
+       适用版本、适用学期除基础资源外均显示，仅同步必填适用版本 */
+    const showGrade = computed(() => ['同步课件', '专项课件'].includes(ctype.value));
+    const showVer = computed(() => ctype.value !== '基础资源课件');
+    const verRequired = computed(() => ctype.value === '同步课件');
+    const showTerm = computed(() => ctype.value !== '基础资源课件');
+    const mkLeTag = (id) => ({ id, open: false, xd: '', xk: '', ctype: [], grade: '', term: '', ver: '', verCat: '', vers: [], verOpen: false });
+    /* 首套标签回显参考值（同步课件：学段/学科/课件类型/年级/适用版本/适用学期） */
+    const leTags = reactive([{ id: 1, open: false, xd: '初中', xk: '语文', ctype: ['同步基础', '同步培优'], grade: '七年级', term: '上学期', ver: '同步教材版 / 人教版', verCat: '同步教材版', vers: ['人教版'], verOpen: false }]);
+    const addLeTag = () => leTags.push(mkLeTag(leTags.length + 1));
+    const delLeTag = (i) => {
+      if (leTags.length <= 1) { ElMsg.warning('至少保留一套标签信息'); return; }
+      leTags.splice(i, 1);
+    };
+    const setAllLeTags = (open) => leTags.forEach((t) => { t.open = open; });
+    const onXdChange = (t) => { t.xk = ''; t.grade = ''; };
+    /* 课件类型选项随类别；切换类别时清空已选类型（各类别选项集不同，不通用） */
+    const ctOpts = computed(() => typeOptsOf(ctype.value));
+    watch(ctype, () => leTags.forEach((t) => { t.ctype = []; }));
+    /* 版本面板：左列选分类，同步教材版右侧勾选子版本 */
+    const pickVerCat = (t, cat) => {
+      t.verCat = cat;
+      if (cat === '通用版') { t.vers = []; t.ver = '通用版'; t.verOpen = false; }
+      else if (!t.ver || !t.ver.startsWith('同步教材版')) { t.ver = '同步教材版'; }
+    };
+    const onVerChange = (t) => {
+      if (t.verCat !== '同步教材版') return;
+      t.ver = '同步教材版' + (t.vers.length ? ' / ' + t.vers.join('、') : '');
+    };
+    const leTagOpts = { xd: ['小学', '初中', '高中', '学前教育', '中职'], term: ['上学期', '下学期', '暑假', '寒假'] };
+    const kpMain = [{ name: '汉字', pct: '50%' }];
+    const kpSub = [{ name: '词汇', pct: '30%' }, { name: '句子', pct: '20%' }];
+    const fmtRows = [
+      { fmt: 'PDF', size: '1.63MB', act: '预览' },
+      { fmt: 'DOC', size: '75.00KB', act: '预览' },
+      { fmt: 'DOCX', size: '5.28KB', act: '预览' },
+      { fmt: 'HTML', size: '--', act: '上传' },
+    ];
+    const opLogs = [
+      { k: '创建人：', v: 'yupengfei' },
+      { k: '创建时间：', v: '2026-09-04 15:37:25' },
+      { k: '更新人：', v: 'yupengfei' },
+      { k: '更新时间：', v: '2026-10-26 19:40:29' },
+    ];
+
+    return { info, editing, tabs, activeTab, ctype, ctypeOptions, ctypeEdit, reqNotes, icons,
+      showGrade, showVer, verRequired, showTerm, leTags, addLeTag, delLeTag, setAllLeTags, onXdChange, linkOpts: linkOptsOf, ctOpts,
+      pickVerCat, onVerChange, leTagOpts, kpMain, kpSub, fmtRows, opLogs };
   },
   template: `
     <div class="breadcrumb">
@@ -1827,6 +2335,116 @@ const CoursewareEdit = {
       </div>
     </div>
 
+    <div class="le-cols">
+      <!-- 课件标签 -->
+      <div class="panel-card le-card">
+        <div class="le-head">
+          <div class="ve-card-title">课件标签</div>
+          <div class="le-ops">
+            <el-button @click="setAllLeTags(true)">全部展开</el-button>
+            <el-button @click="setAllLeTags(false)">全部收起</el-button>
+            <el-button type="primary" @click="addLeTag">新增</el-button>
+          </div>
+        </div>
+        <div class="kp-bar">
+          <div class="kp-group">
+            <span class="kp-name">主知识点：</span>
+            <span class="kp-chip" v-for="k in kpMain" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+            <a class="kp-link">更改知识点</a>
+          </div>
+          <div class="kp-group">
+            <span class="kp-name">次知识点：</span>
+            <span class="kp-chip" v-for="k in kpSub" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+          </div>
+        </div>
+        <div class="atag-wrap le-atags">
+          <div v-for="(t, i) in leTags" :key="t.id" class="vtag-box" :class="{ open: t.open }">
+            <div class="vtag-item">
+              <span class="vtag-no">{{ i + 1 }}</span>
+              <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
+              <span class="vtag-lb">学科：{{ t.xk || '--' }}</span>
+              <span class="vtag-lb">课件类型：{{ (t.ctype && t.ctype.length ? t.ctype.join('、') : '--') }}</span>
+              <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+              <span v-if="showTerm" class="vtag-lb">适用学期：{{ t.term || '--' }}</span>
+              <span v-if="showVer" class="vtag-lb">适用版本：{{ t.ver || '--' }}</span>
+              <div class="vtag-act">
+                <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
+                <span class="vtag-del" @click="delLeTag(i)">删除</span>
+              </div>
+            </div>
+            <el-form v-if="t.open" label-width="100px" class="vtag-form">
+              <el-form-item label="学段：" required>
+                <el-radio-group v-model="t.xd" class="vt-grid" @change="onXdChange(t)">
+                  <el-radio v-for="o in leTagOpts.xd" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="学科：" required>
+                <el-radio-group v-model="t.xk" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).xk" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="课件类型：" required>
+                <el-tree-select v-model="t.ctype" :data="ctOpts" multiple show-checkbox check-strictly
+                  default-expand-all :render-after-expand="false" filterable placeholder="请选择课件类型"
+                  style="width:100%" />
+              </el-form-item>
+              <el-form-item v-if="showGrade" label="年级：" required>
+                <el-radio-group v-model="t.grade" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="showVer" label="适用版本：" :required="verRequired">
+                <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
+                  <template #reference>
+                    <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:100%" class="ver-input" />
+                  </template>
+                  <div class="ver-panel">
+                    <div class="ver-left">
+                      <div class="ver-item" :class="{ active: t.verCat === '通用版' }" @click="pickVerCat(t, '通用版')">通用版</div>
+                      <div class="ver-item" :class="{ active: t.verCat === '同步教材版' }" @click="pickVerCat(t, '同步教材版')">同步教材版<span class="arr">›</span></div>
+                    </div>
+                    <div class="ver-right" v-if="t.verCat === '同步教材版'">
+                      <div class="ver-opt" v-for="o in ['人教版', '统编版']" :key="o">
+                        <el-checkbox-group v-model="t.vers" @change="onVerChange(t)">
+                          <el-checkbox :label="o">{{ o }}</el-checkbox>
+                        </el-checkbox-group>
+                        <span class="ver-meta">{{ (t.xd || '--') + ' / ' + (t.xk || '--') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+              </el-form-item>
+              <el-form-item v-if="showTerm" label="适用学期：">
+                <el-radio-group v-model="t.term" class="vt-grid">
+                  <el-radio v-for="o in leTagOpts.term" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件格式 / 操作记录 -->
+      <div class="le-right">
+        <div class="panel-card le-card">
+          <div class="ve-card-title">文件格式</div>
+          <el-table :data="fmtRows" border size="small" class="le-fmt">
+            <el-table-column prop="fmt" label="格式" align="center" />
+            <el-table-column prop="size" label="大小" align="center" />
+            <el-table-column label="操作" width="90" align="center">
+              <template #default="{ row }"><a class="le-act">{{ row.act }}</a></template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="panel-card le-card">
+          <div class="ve-card-title">操作记录</div>
+          <div class="op-log">
+            <div v-for="l in opLogs" :key="l.k" class="op-row"><span class="op-k">{{ l.k }}</span><span>{{ l.v }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 需求说明 -->
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
@@ -1855,10 +2473,55 @@ const PlanEdit = {
     const ptypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为教案） */
     const reqNotes = [
-      '新增【教案类别】，默认展示当前教案类别，点击编辑按钮后出现选择框，支持选择其他教案类别，选项与列表页 tab 项一致。',
+      '新增【教案类别】，默认展示当前教案类别，点击编辑按钮后出现选择框，支持选择其他教案类别，选项与列表页 tab 项一致。切换教案类别后，保留不同类别间相同标签的已选值（除「教案类型」）。',
     ];
 
-    return { info, editing, ptype, ptypeOptions, ptypeEdit, reqNotes, icons };
+    /* ---- 下方：教案标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    /* 教案类别字段差异（与上传页一致）：备考无年级；适用版本仅同步必填；其余字段均显示 */
+    const showGrade = computed(() => ptype.value !== '备考教案');
+    const verRequired = computed(() => ptype.value === '同步教案');
+    const mkLeTag = (id) => ({ id, open: false, xd: '', xk: '', ptype: [], grade: '', term: '', ver: '', verCat: '', vers: [], verOpen: false });
+    /* 首套标签回显参考值（同步教案：学段/学科/教案类型/年级/适用版本/适用学期） */
+    const leTags = reactive([{ id: 1, open: false, xd: '初中', xk: '语文', ptype: ['同步基础', '同步培优'], grade: '七年级', term: '上学期', ver: '同步教材版 / 人教版', verCat: '同步教材版', vers: ['人教版'], verOpen: false }]);
+    const addLeTag = () => leTags.push(mkLeTag(leTags.length + 1));
+    const delLeTag = (i) => {
+      if (leTags.length <= 1) { ElMsg.warning('至少保留一套标签信息'); return; }
+      leTags.splice(i, 1);
+    };
+    const setAllLeTags = (open) => leTags.forEach((t) => { t.open = open; });
+    const onXdChange = (t) => { t.xk = ''; t.grade = ''; };
+    /* 教案类型选项随类别；切换类别时清空已选类型（各类别选项集不同，不通用） */
+    const ptOpts = computed(() => typeOptsOf(ptype.value));
+    watch(ptype, () => leTags.forEach((t) => { t.ptype = []; }));
+    const pickVerCat = (t, cat) => {
+      t.verCat = cat;
+      if (cat === '通用版') { t.vers = []; t.ver = '通用版'; t.verOpen = false; }
+      else if (!t.ver || !t.ver.startsWith('同步教材版')) { t.ver = '同步教材版'; }
+    };
+    const onVerChange = (t) => {
+      if (t.verCat !== '同步教材版') return;
+      t.ver = '同步教材版' + (t.vers.length ? ' / ' + t.vers.join('、') : '');
+    };
+    const leTagOpts = { xd: ['小学', '初中', '高中', '学前教育', '中职'], term: ['上学期', '下学期', '暑假', '寒假'] };
+    const kpMain = [{ name: '汉字', pct: '50%' }];
+    const kpSub = [{ name: '词汇', pct: '30%' }, { name: '句子', pct: '20%' }];
+    const fmtRows = [
+      { fmt: 'PDF', size: '1.63MB', act: '预览' },
+      { fmt: 'DOC', size: '75.00KB', act: '预览' },
+      { fmt: 'DOCX', size: '5.28KB', act: '预览' },
+      { fmt: 'HTML', size: '--', act: '上传' },
+    ];
+    const opLogs = [
+      { k: '创建人：', v: 'yupengfei' },
+      { k: '创建时间：', v: '2026-09-04 15:37:25' },
+      { k: '更新人：', v: 'yupengfei' },
+      { k: '更新时间：', v: '2026-10-26 19:40:29' },
+    ];
+
+    return { info, editing, ptype, ptypeOptions, ptypeEdit, reqNotes, icons,
+      showGrade, verRequired, leTags, addLeTag, delLeTag, setAllLeTags, onXdChange, linkOpts: linkOptsOf, ptOpts,
+      pickVerCat, onVerChange, leTagOpts, kpMain, kpSub, fmtRows, opLogs };
   },
   template: `
     <div class="breadcrumb">
@@ -1907,6 +2570,116 @@ const PlanEdit = {
           <div class="intro-box">
             <textarea maxlength="200" v-model="info.intro" placeholder="请输入教案简介"></textarea>
             <span class="cnt">{{ info.intro.length }} / 200</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="le-cols">
+      <!-- 教案标签 -->
+      <div class="panel-card le-card">
+        <div class="le-head">
+          <div class="ve-card-title">教案标签</div>
+          <div class="le-ops">
+            <el-button @click="setAllLeTags(true)">全部展开</el-button>
+            <el-button @click="setAllLeTags(false)">全部收起</el-button>
+            <el-button type="primary" @click="addLeTag">新增</el-button>
+          </div>
+        </div>
+        <div class="kp-bar">
+          <div class="kp-group">
+            <span class="kp-name">主知识点：</span>
+            <span class="kp-chip" v-for="k in kpMain" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+            <a class="kp-link">更改知识点</a>
+          </div>
+          <div class="kp-group">
+            <span class="kp-name">次知识点：</span>
+            <span class="kp-chip" v-for="k in kpSub" :key="k.name">{{ k.name }} {{ k.pct }}</span>
+          </div>
+        </div>
+        <div class="atag-wrap le-atags">
+          <div v-for="(t, i) in leTags" :key="t.id" class="vtag-box" :class="{ open: t.open }">
+            <div class="vtag-item">
+              <span class="vtag-no">{{ i + 1 }}</span>
+              <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
+              <span class="vtag-lb">学科：{{ t.xk || '--' }}</span>
+              <span class="vtag-lb">教案类型：{{ (t.ptype && t.ptype.length ? t.ptype.join('、') : '--') }}</span>
+              <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+              <span class="vtag-lb">适用学期：{{ t.term || '--' }}</span>
+              <span class="vtag-lb">适用版本：{{ t.ver || '--' }}</span>
+              <div class="vtag-act">
+                <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
+                <span class="vtag-del" @click="delLeTag(i)">删除</span>
+              </div>
+            </div>
+            <el-form v-if="t.open" label-width="100px" class="vtag-form">
+              <el-form-item label="学段：" required>
+                <el-radio-group v-model="t.xd" class="vt-grid" @change="onXdChange(t)">
+                  <el-radio v-for="o in leTagOpts.xd" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="学科：" required>
+                <el-radio-group v-model="t.xk" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).xk" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="教案类型：" required>
+                <el-tree-select v-model="t.ptype" :data="ptOpts" multiple show-checkbox check-strictly
+                  default-expand-all :render-after-expand="false" filterable placeholder="请选择教案类型"
+                  style="width:100%" />
+              </el-form-item>
+              <el-form-item v-if="showGrade" label="年级：" required>
+                <el-radio-group v-model="t.grade" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="适用版本：" :required="verRequired">
+                <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
+                  <template #reference>
+                    <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:100%" class="ver-input" />
+                  </template>
+                  <div class="ver-panel">
+                    <div class="ver-left">
+                      <div class="ver-item" :class="{ active: t.verCat === '通用版' }" @click="pickVerCat(t, '通用版')">通用版</div>
+                      <div class="ver-item" :class="{ active: t.verCat === '同步教材版' }" @click="pickVerCat(t, '同步教材版')">同步教材版<span class="arr">›</span></div>
+                    </div>
+                    <div class="ver-right" v-if="t.verCat === '同步教材版'">
+                      <div class="ver-opt" v-for="o in ['人教版', '统编版']" :key="o">
+                        <el-checkbox-group v-model="t.vers" @change="onVerChange(t)">
+                          <el-checkbox :label="o">{{ o }}</el-checkbox>
+                        </el-checkbox-group>
+                        <span class="ver-meta">{{ (t.xd || '--') + ' / ' + (t.xk || '--') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </el-popover>
+              </el-form-item>
+              <el-form-item label="适用学期：">
+                <el-radio-group v-model="t.term" class="vt-grid">
+                  <el-radio v-for="o in leTagOpts.term" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 文件格式 / 操作记录 -->
+      <div class="le-right">
+        <div class="panel-card le-card">
+          <div class="ve-card-title">文件格式</div>
+          <el-table :data="fmtRows" border size="small" class="le-fmt">
+            <el-table-column prop="fmt" label="格式" align="center" />
+            <el-table-column prop="size" label="大小" align="center" />
+            <el-table-column label="操作" width="90" align="center">
+              <template #default="{ row }"><a class="le-act">{{ row.act }}</a></template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="panel-card le-card">
+          <div class="ve-card-title">操作记录</div>
+          <div class="op-log">
+            <div v-for="l in opLogs" :key="l.k" class="op-row"><span class="op-k">{{ l.k }}</span><span>{{ l.v }}</span></div>
           </div>
         </div>
       </div>
@@ -2321,6 +3094,9 @@ const VideoSuccess = {
     const mkTag = (id) => ({ id, open: true, xd: '小学', xk: '', vtype: [], grade: '', ver: [] });
     const fileTags = reactive(rows.map(() => [mkTag(1)]));
     const tags = computed(() => fileTags[curIdx.value]);   // 当前文件的基础信息
+    /* 视频类型选项随视频类别联动；切换类别时清空已选视频类型（各类别选项集不同，不通用） */
+    const vtOpts = computed(() => vtypeOptsOf(rtype.value));
+    watch(rtype, () => fileTags.forEach((arr) => arr.forEach((t) => { t.vtype = []; })));
     let tagSeq = 1;
     const addTag = () => {
       tagSeq += 1;
@@ -2340,50 +3116,6 @@ const VideoSuccess = {
     const tagOpts = {
       xd: ['小学', '初中', '高中', '学前教育', '中职'],
     };
-    /* 适用版本：级联选项（一级分组 / 二级版本 + 标注） */
-    const verTree = [
-      { value: '通用版', label: '通用版' },
-      { value: '同步教材版', label: '同步教材版', children: [
-        { value: '人教版', label: '人教版', note: '小学/语文' },
-        { value: '统编版', label: '统编版', note: '小学/语文' },
-      ] },
-    ];
-    /* 视频类型：树形选项（同步 / 备考 / 专项） */
-    const vtypeTree = [
-      { value: '同步', label: '同步', children: [
-        { value: '同步基础', label: '同步基础' },
-        { value: '同步衔接', label: '同步衔接' },
-        { value: '同步培优', label: '同步培优' },
-        { value: '同步知识点', label: '同步知识点' },
-        { value: '同步题型', label: '同步题型' },
-        { value: '同步复习', label: '同步复习', children: [
-          { value: '单元复习', label: '单元复习' },
-          { value: '期中复习', label: '期中复习' },
-          { value: '期末复习', label: '期末复习' },
-        ] },
-      ] },
-      { value: '备考', label: '备考', children: [
-        { value: '小升初冲刺', label: '小升初冲刺' },
-        { value: '中考冲刺', label: '中考冲刺', children: [
-          { value: '中考一轮复习', label: '一轮复习' },
-          { value: '中考二轮复习', label: '二轮复习' },
-          { value: '中考三轮冲刺', label: '三轮冲刺' },
-        ] },
-        { value: '高考冲刺', label: '高考冲刺', children: [
-          { value: '高考一轮复习', label: '一轮复习' },
-          { value: '高考二轮复习', label: '二轮复习' },
-          { value: '高考三轮冲刺', label: '三轮冲刺' },
-        ] },
-      ] },
-      { value: '专项', label: '专项', children: [
-        { value: '基础知识专项', label: '基础知识专项' },
-        { value: '古诗词鉴赏', label: '古诗词鉴赏' },
-        { value: '文言文阅读专项', label: '文言文阅读专项' },
-        { value: '现代文阅读专项', label: '现代文阅读专项' },
-        { value: '名著阅读与导读', label: '名著阅读与导读' },
-        { value: '写作专项', label: '写作专项' },
-      ] },
-    ];
     /* 父子关系映射：用于勾选联动（父可单独选，子必须带父） */
     const parentOf = {};
     (function walk(ns, p) {
@@ -2396,6 +3128,7 @@ const VideoSuccess = {
       return [...set];
     };
     const onVtypeChange = (t) => {
+      if (!Array.isArray(t.vtype)) return;   // 单选类别（基础配套/幼儿/等级考试）无树形联动
       const n = normalizeVtype(t.vtype);
       const same = n.length === t.vtype.length && n.every((x, i) => x === t.vtype[i]);
       if (!same) t.vtype = n;
@@ -2432,7 +3165,7 @@ const VideoSuccess = {
       if (bad) { ElMsg.warning(!bad.vtype || !bad.vtype.length ? '请选择视频类型' : '请选择适用版本'); return; }
       ElMsg.success('校验通过，已完成');
     };
-    return { rtype, isKid, showGrade, showVer, showLevel, showGoals, batchEdit, batchVisible, confirmBatch, cancelBatch, toggleBatch, types, row, rows, curIdx, teacherOpts, teacherPickerOpen, tFilter, tPage, tSize, tSelTemp, tFiltered, tpaged, queryTeachers, resetTeachers, openTeacherPicker, toggleTeacher, confirmTeachers, teacherInfoOpen, teacherDetail, tTypeText, openTeacherInfo, resOpts, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, vtypeTree, onVtypeChange, verTree, ext, extOpts, icons, onFinish, onCellBlur };
+    return { rtype, isKid, showGrade, showVer, showLevel, showGoals, vtOpts, batchEdit, batchVisible, confirmBatch, cancelBatch, toggleBatch, types, row, rows, curIdx, teacherOpts, teacherPickerOpen, tFilter, tPage, tSize, tSelTemp, tFiltered, tpaged, queryTeachers, resetTeachers, openTeacherPicker, toggleTeacher, confirmTeachers, teacherInfoOpen, teacherDetail, tTypeText, openTeacherInfo, resOpts, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, vtypeTree, onVtypeChange, verTree, ext, extOpts, icons, onFinish, onCellBlur };
   },
   template: `
     <div class="breadcrumb">
@@ -2531,7 +3264,7 @@ const VideoSuccess = {
             <span class="vtag-no">{{ i + 1 }}</span>
             <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
             <span v-if="!isKid" class="vtag-lb">学科：{{ t.xk || '--' }}</span>
-            <span class="vtag-lb">视频类型：{{ (t.vtype || []).join('、') || '--' }}</span>
+            <span class="vtag-lb">视频类型：{{ Array.isArray(t.vtype) ? (t.vtype.join('、') || '--') : (t.vtype || '--') }}</span>
             <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
             <span v-if="showVer" class="vtag-lb">适用版本：{{ (t.ver || []).map(p => p[p.length - 1]).join('、') || '--' }}</span>
             <div class="vtag-act">
@@ -2551,9 +3284,13 @@ const VideoSuccess = {
               </el-radio-group>
             </el-form-item>
             <el-form-item label="视频类型：" required>
-              <el-tree-select v-model="t.vtype" :data="vtypeTree" multiple check-strictly show-checkbox filterable
-                :render-after-expand="false" placeholder="请选择视频类型" style="width:360px" popper-class="vtype-popper"
-                @change="onVtypeChange(t)" />
+              <el-select v-if="!vtOpts.multiple" v-model="t.vtype" clearable filterable
+                placeholder="请选择视频类型" style="width:360px">
+                <el-option v-for="o in vtOpts.data" :key="o.value" :label="o.label" :value="o.value" />
+              </el-select>
+              <el-tree-select v-else v-model="t.vtype" :data="vtOpts.data" multiple check-strictly
+                show-checkbox filterable clearable :render-after-expand="false" placeholder="请选择视频类型"
+                style="width:360px" popper-class="vtype-popper" @change="onVtypeChange(t)" />
             </el-form-item>
             <el-form-item v-if="showGrade" label="年级：">
               <el-radio-group v-model="t.grade" class="vt-grid">
@@ -2954,19 +3691,9 @@ const LessonSuccess = {
       xd: ['小学', '初中', '高中', '学前教育', '中职'],
       term: ['上学期', '下学期', '暑假', '寒假'],
     };
-    /* 学案类型：树形选项（含「同步复习」分组） */
-    const ltypeTree = [
-      { value: '同步基础', label: '同步基础' },
-      { value: '同步衔接', label: '同步衔接' },
-      { value: '同步培优', label: '同步培优' },
-      { value: '同步知识点', label: '同步知识点' },
-      { value: '同步题型', label: '同步题型' },
-      { value: '同步复习', label: '同步复习', children: [
-        { value: '单元复习', label: '单元复习' },
-        { value: '期中复习', label: '期中复习' },
-        { value: '期末复习', label: '期末复习' },
-      ] },
-    ];
+    /* 学案类型选项随类别：同步=同步树，专项=专项集，备考=小升初冲刺 */
+    const ltOpts = computed(() => typeOptsOf(rtype.value));
+    watch(rtype, () => fileTags.forEach((arr) => arr.forEach((t) => { t.ltype = []; })));
     const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
     const onCellBlur = (e) => { const el = e.target; if (el) { el.scrollLeft = 0; el.scrollTop = 0; } };
     /* 点击完成：名称必填；学案类型必填，同步学案另校验适用版本 */
@@ -2977,7 +3704,7 @@ const LessonSuccess = {
       if (bad) { ElMsg.warning(!bad.ltype || !bad.ltype.length ? '请选择学案类型' : '请选择适用版本'); return; }
       ElMsg.success('校验通过，已完成');
     };
-    return { rtype, showGrade, verRequired, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ltypeTree, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
+    return { rtype, showGrade, verRequired, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ltOpts, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
   },
   template: `
     <div class="breadcrumb">
@@ -3070,7 +3797,7 @@ const LessonSuccess = {
             <el-form-item label="学案类型：" required>
               <el-tree-select
                 v-model="t.ltype"
-                :data="ltypeTree"
+                :data="ltOpts"
                 multiple
                 show-checkbox
                 check-strictly
@@ -3161,19 +3888,9 @@ const CoursewareSuccess = {
       xd: ['小学', '初中', '高中', '学前教育', '中职'],
       term: ['上学期', '下学期', '暑假', '寒假'],
     };
-    /* 课件类型：树形选项（含「同步复习」分组） */
-    const ctypeTree = [
-      { value: '同步基础', label: '同步基础' },
-      { value: '同步衔接', label: '同步衔接' },
-      { value: '同步培优', label: '同步培优' },
-      { value: '同步知识点', label: '同步知识点' },
-      { value: '同步题型', label: '同步题型' },
-      { value: '同步复习', label: '同步复习', children: [
-        { value: '单元复习', label: '单元复习' },
-        { value: '期中复习', label: '期中复习' },
-        { value: '期末复习', label: '期末复习' },
-      ] },
-    ];
+    /* 课件类型选项随类别：同步=同步树，专项=专项集，备考=小升初冲刺 */
+    const ctOpts = computed(() => typeOptsOf(rtype.value));
+    watch(rtype, () => fileTags.forEach((arr) => arr.forEach((t) => { t.ctype = []; })));
     /* 版本面板：左列选分类，同步教材版右侧勾选子版本 */
     const pickVerCat = (t, cat) => {
       t.verCat = cat;
@@ -3200,7 +3917,7 @@ const CoursewareSuccess = {
       batchEdit.value = true; batchVisible.value = false;
     };
     const cancelBatch = () => { batchEdit.value = false; batchVisible.value = false; };
-    return { rtype, showGrade, showVer, verRequired, showTerm, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ctypeTree, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
+    return { rtype, showGrade, showVer, verRequired, showTerm, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ctOpts, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
   },
   template: `
     <div class="breadcrumb">
@@ -3293,7 +4010,7 @@ const CoursewareSuccess = {
             <el-form-item label="课件类型：" required>
               <el-tree-select
                 v-model="t.ctype"
-                :data="ctypeTree"
+                :data="ctOpts"
                 multiple
                 show-checkbox
                 check-strictly
@@ -3380,19 +4097,9 @@ const PlanSuccess = {
       xd: ['小学', '初中', '高中', '学前教育', '中职'],
       term: ['上学期', '下学期', '暑假', '寒假'],
     };
-    /* 教案类型：树形选项（含「同步复习」分组） */
-    const ptypeTree = [
-      { value: '同步基础', label: '同步基础' },
-      { value: '同步衔接', label: '同步衔接' },
-      { value: '同步培优', label: '同步培优' },
-      { value: '同步知识点', label: '同步知识点' },
-      { value: '同步题型', label: '同步题型' },
-      { value: '同步复习', label: '同步复习', children: [
-        { value: '单元复习', label: '单元复习' },
-        { value: '期中复习', label: '期中复习' },
-        { value: '期末复习', label: '期末复习' },
-      ] },
-    ];
+    /* 教案类型选项随类别：同步=同步树，专项=专项集，备考=小升初冲刺 */
+    const ptOpts = computed(() => typeOptsOf(rtype.value));
+    watch(rtype, () => fileTags.forEach((arr) => arr.forEach((t) => { t.ptype = []; })));
     /* 版本面板：左列选分类，同步教材版右侧勾选子版本 */
     const pickVerCat = (t, cat) => {
       t.verCat = cat;
@@ -3419,7 +4126,7 @@ const PlanSuccess = {
       batchEdit.value = true; batchVisible.value = false;
     };
     const cancelBatch = () => { batchEdit.value = false; batchVisible.value = false; };
-    return { rtype, showGrade, verRequired, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ptypeTree, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
+    return { rtype, showGrade, verRequired, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ptOpts, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
   },
   template: `
     <div class="breadcrumb">
@@ -3512,7 +4219,7 @@ const PlanSuccess = {
             <el-form-item label="教案类型：" required>
               <el-tree-select
                 v-model="t.ptype"
-                :data="ptypeTree"
+                :data="ptOpts"
                 multiple
                 show-checkbox
                 check-strictly
@@ -3946,7 +4653,7 @@ const ResourceUpload = {
         <ul class="req-list">
           <li>1. 内容标签区优化
             <ul class="req-sub">
-              <li>顶部切换音频类别时，内容标签区需配置的标签联动变更；</li>
+              <li>顶部切换音频类别时，内容标签区需配置的标签联动变更，不同类别间相同标签的已选值保留（除「视频类型」）；</li>
               <li>分为【讲师信息】区、【基础信息】区和【拓展信息】区；</li>
               <li>【讲师信息】区交互与视频编辑页一致，支持在弹窗中选择讲师、查看已选讲师信息；</li>
               <li>【基础信息】区的标签及交互与编辑页一致，支持配置多套标签，默认展开一套标签，学段默认选中【小学】；</li>
@@ -4018,7 +4725,7 @@ const ResourceUpload = {
         <ul class="req-list">
           <li>1. 内容标签区优化
             <ul class="req-sub">
-              <li>顶部切换学案类别时，内容标签区需配置的标签联动变更；</li>
+              <li>顶部切换学案类别时，内容标签区需配置的标签联动变更，不同类别间相同标签的已选值保留（除「学案类型」）；</li>
               <li>默认展开一套标签，标签、交互与学案编辑页一致，学段默认选中【小学】；</li>
               <li>勾选「批量编辑」后，可对上传成功的全部学案的内容标签进行批量编辑。</li>
             </ul>
@@ -4037,7 +4744,7 @@ const ResourceUpload = {
         <ul class="req-list">
           <li>1. 内容标签区优化
             <ul class="req-sub">
-              <li>顶部切换课件类别时，内容标签区需配置的标签联动变更；</li>
+              <li>顶部切换课件类别时，内容标签区需配置的标签联动变更，不同类别间相同标签的已选值保留（除「课件类型」）；</li>
               <li>默认展开一套标签，标签、交互与课件编辑页一致，学段默认选中【小学】；</li>
               <li>勾选「批量编辑」后，可对上传成功的全部课件的内容标签进行批量编辑。</li>
             </ul>
@@ -4056,7 +4763,7 @@ const ResourceUpload = {
         <ul class="req-list">
           <li>1. 内容标签区优化
             <ul class="req-sub">
-              <li>顶部切换教案类别时，内容标签区需配置的标签联动变更；</li>
+              <li>顶部切换教案类别时，内容标签区需配置的标签联动变更，不同类别间相同标签的已选值保留（除「教案类型」）；</li>
               <li>默认展开一套标签，标签、交互与教案编辑页一致，学段默认选中【小学】；</li>
               <li>勾选「批量编辑」后，可对上传成功的全部教案的内容标签进行批量编辑。</li>
             </ul>
