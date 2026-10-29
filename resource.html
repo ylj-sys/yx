@@ -150,7 +150,7 @@
     font-size:16px;font-weight:600;color:var(--text-1);}
   .up-tip-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
     width:4px;height:16px;border-radius:2px;background:var(--btn-blue);}
-  .up-tip-body{font-size:15px;line-height:26px;color:var(--text-2);}
+  .up-tip-body{font-size:15px;line-height:26px;color:var(--text-2);white-space:pre-line;}
 
   /* Element Plus 选择框：输入框与下拉选项文字 16px */
   .el-select .el-select__wrapper{font-size:16px;}
@@ -1947,8 +1947,21 @@ const XD_LINK = {
 const linkOptsOf = (xd) => XD_LINK[xd] || XD_LINK['小学'];
 
 
-/* 上传说明：随所选类型联动生成 */
+/* 上传说明：随所选类型联动生成。音频/学案/课件/教案共用三行模板（仅类别名/格式/大小/id前缀不同）；
+   图片各类别固定文案；视频沿用通用模板 */
 const upTipOf = (kind, type) => {
+  const tpl = {
+    audio: { noun: '音频', fmt: 'mp3、jwmp3两种范围内', size: '500MB', idName: '题目id' },
+    lesson: { noun: '学案', fmt: 'pdf、doc、docx三种范围内', size: '500MB', idName: '学案id' },
+    courseware: { noun: '课件', fmt: 'ppt、pptx两种范围内', size: '1.0GB', idName: '课件id' },
+    plan: { noun: '教案', fmt: 'pdf、doc、docx三种范围内', size: '500MB', idName: '教案id' },
+  }[kind];
+  if (tpl) {
+    return `当前上传文件种类为${type}下专用${tpl.noun}资源，需注意文件格式限制在${tpl.fmt}，文件大小控制在${tpl.size}以内；\n新增上传时可通过内容id_文件名的形式进行命名；\n增加格式时可通过${tpl.idName}_文件名的的形式进行命名；`;
+  }
+  if (kind === 'image') {
+    return '支持批量添加 JPG、PNG、WEBP、GIF、AVIF，单个文件≤20MB。文件及修改保留在本次页面会话中。';
+  }
   const meta = {
     video: { noun: '视频', fmt: '.mp4文件', size: '1GB' },
     audio: { noun: '音频', fmt: '.mp3、.wmp3文件', size: '500MB' },
@@ -2216,12 +2229,14 @@ const VideoSuccess = {
     const confirmBatch = () => {
       const srcTags = fileTags[curIdx.value].map((x) => JSON.parse(JSON.stringify(x)));
       const srcExt = JSON.parse(JSON.stringify(fileExt[curIdx.value]));
+      const srcTeacher = [...rows[curIdx.value].teacher];
       fileTags.forEach((arr, i) => {
         if (i !== curIdx.value) { arr.splice(0, arr.length, ...srcTags.map((x) => JSON.parse(JSON.stringify(x)))); }
       });
       fileExt.forEach((e, i) => {
         if (i !== curIdx.value) { Object.assign(e, JSON.parse(JSON.stringify(srcExt))); }
       });
+      rows.forEach((r, i) => { if (i !== curIdx.value) r.teacher = [...srcTeacher]; });
       batchEdit.value = true; batchVisible.value = false;
     };
     /* 点击批量编辑：已勾选则直接取消（不弹气泡），未勾选则弹出确认 */
@@ -2232,13 +2247,15 @@ const VideoSuccess = {
     const cancelBatch = () => { batchEdit.value = false; batchVisible.value = false; };
     /* 批量编辑开启时：当前文件覆盖其他文件，且任一修改实时同步到全部文件 */
     watch(
-      () => batchEdit.value && JSON.stringify({ t: fileTags[curIdx.value], e: fileExt[curIdx.value] }),
+      () => batchEdit.value && JSON.stringify({ t: fileTags[curIdx.value], e: fileExt[curIdx.value], m: rows[curIdx.value].teacher }),
       () => {
         if (!batchEdit.value) return;
         const srcTags = fileTags[curIdx.value].map((x) => JSON.parse(JSON.stringify(x)));
         const srcExt = JSON.parse(JSON.stringify(fileExt[curIdx.value]));
         fileTags.forEach((arr, i) => { if (i !== curIdx.value) { arr.splice(0, arr.length, ...srcTags.map((x) => JSON.parse(JSON.stringify(x)))); } });
         fileExt.forEach((e, i) => { if (i !== curIdx.value) { Object.assign(e, JSON.parse(JSON.stringify(srcExt))); } });
+        const srcTeacher = [...rows[curIdx.value].teacher];
+        rows.forEach((r, i) => { if (i !== curIdx.value) r.teacher = [...srcTeacher]; });
       }
     );
     const types = ['课程视频', '基础配套视频', '素养视频', '幼儿视频', '等级考试视频'];
