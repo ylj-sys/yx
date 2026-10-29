@@ -639,6 +639,14 @@
   .itype-inline{display:inline-flex;align-items:center;gap:7px;}
   .itype-inline .lb{color:#8b93a3;font-size:16px;flex:0 0 auto;margin-right: 8px;}
   .page-card.img-edit .req-panel{margin:17px 22px 0;}
+  /* 图片编辑页：下方 内容标签 / 文件格式 */
+  .ie-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
+  .ie-cols > .panel-card{margin:0;flex:1;min-width:0;}
+  .ie-card .ie-form{margin-top:10px;}
+  /* 卡内应用场景按钮：等间距整齐换行（去尾随边距，行距一致） */
+  .ie-card .scene-btns,.au-card .scene-btns{display:flex;flex-wrap:wrap;gap:10px;}
+  .ie-card .scene-btns .el-radio-button,.ie-card .scene-btns .el-checkbox-button,
+  .au-card .scene-btns .el-radio-button,.au-card .scene-btns .el-checkbox-button{margin-right:0;}
   /* 学案编辑页：学案类别冒号与文字贴紧、图标/选择框保持12px（不影响课件） */
   .lesson-edit .itype-inline{gap:0;}
   .lesson-edit .itype-inline .val{color:var(--text-1);font-size:16px;}
@@ -676,6 +684,11 @@
   .page-card.courseware-edit .req-panel{margin:17px 22px 0;}
   /* 课件编辑页：下方 课件标签 / 文件格式 / 操作记录 */
   .page-card.courseware-edit .le-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
+  /* 音频编辑页：下方 内容标签 / 文件格式 */
+  .au-card{min-width:0;}
+  .au-card .ve-card-title{display:block;}
+  .au-card .wtag-form{margin-top:10px;}
+  .au-card .scene-btns{display:flex;flex-wrap:wrap;row-gap:10px;}
 
   /* ================= 视频列表页 ================= */
   .vhead-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
@@ -1354,14 +1367,31 @@ const AudioEdit = {
     /* 波形条高度（确定性伪随机） */
     const waves = Array.from({ length: 56 }, (_, i) => Math.round(8 + Math.abs(Math.sin(i * 0.9)) * 38));
 
-    /* 内容标签（学段/学科/年级） */
-    let bSeed = 1;
-    const buildBasic = () => ({ id: bSeed, open: false, stage: '', subject: '', grade: '' });
-    const basicRows = reactive([Object.assign(buildBasic(), { stage: '小学', subject: '语文', grade: '一年级' })]);
-    const setAllBasic = (open) => basicRows.forEach((r) => { r.open = open; });
-    const addBasic = () => { bSeed++; const r = buildBasic(); r.open = true; basicRows.push(r); };
-    const removeBasic = (r) => { const i = basicRows.indexOf(r); if (i > -1) basicRows.splice(i, 1); };
+    /* ---- 下方：内容标签（与上传成功页一致，按类别区分） + 文件格式 ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    /* 题库音频：多套标签（学段/学科/年级），至少保留一套 */
+    let tSeq = 1;
+    const mkTag = (id) => ({ id, open: false, xd: '小学', xk: '', grade: '' });
+    const tags = reactive([Object.assign(mkTag(1), { xd: '小学', xk: '语文', grade: '一年级' })]);
+    const addTag = () => { tSeq += 1; tags.push(mkTag(tSeq)); };
+    const delTag = (i) => {
+      if (tags.length <= 1) { ElMsg.warning('至少保留一套标签信息'); return; }
+      tags.splice(i, 1);
+    };
+    const setAllTags = (open) => tags.forEach((t) => { t.open = open; });
+    /* 学段切换：学科/年级联动重置（清空，不默认选） */
+    const onXdChange = (t) => { t.xk = ''; t.grade = ''; };
+    const tagOpts = { xd: ['小学', '初中', '高中', '学前教育', '中职'] };
+    /* 英语词库音频：词条类型 + 应用场景（按钮式单选），单表单不分套；初值空（不选中） */
+    const wtag = reactive({ dtype: '', scene: '' });
+    const wdtypeOpts = ['单词', '短语', '谚语'];
+    const wsceneOpts = ['英式发音', '美式发音', '例句音频', '译文音频', '词组音频', '教材例句音频', '联想记忆音频'];
+    /* 古诗文音频：作品类型 + 应用场景（按钮式单选）；初值空（不选中） */
+    const gtag = reactive({ wtype: '', scene: '' });
+    const gwtypeOpts = ['诗', '词', '赋', '散曲', '文言文'];
+    const gsceneOpts = ['全文音频', '分段音频', '译文音频'];
 
+    /* 文件格式 */
     const formats = reactive([
       { name: 'jwmp3', size: '--' },
       { name: 'mp3', size: '3.17MB' },
@@ -1381,10 +1411,10 @@ const AudioEdit = {
     const atypeEdit = ref(false);
     /* 需求说明条目（占位文案，按实际填写） */
     const reqNotes = [
-      '新增【音频类别】，默认展示当前音频类别，点击编辑按钮后出现选择框，支持选择其他音频类别，选项与列表页 tab 项一致。',
+      '新增【音频类别】，默认展示当前音频类别，点击编辑按钮后出现选择框，支持选择其他音频类别，选项与列表页 tab 项一致。切换音频类别后，音频标签配置项随之变更。',
     ];
 
-    return { info, waves, basicRows, setAllBasic, addBasic, removeBasic, formats, records, playing, editing, atype, atypeOptions, atypeEdit, reqNotes, icons };
+    return { info, waves, tags, addTag, delTag, setAllTags, onXdChange, tagOpts, linkOpts: linkOptsOf, wtag, wdtypeOpts, wsceneOpts, gtag, gwtypeOpts, gsceneOpts, formats, records, playing, editing, atype, atypeOptions, atypeEdit, reqNotes, icons };
   },
   template: `
     <div class="breadcrumb">
@@ -1460,6 +1490,84 @@ const AudioEdit = {
           </div>
         </div>
       </div>
+      </div>
+
+      <!-- 底部：内容标签 / 文件格式 -->
+      <div class="panel-card le-card au-card">
+        <div class="le-head">
+          <div class="ve-card-title">内容标签</div>
+          <div class="le-ops" v-if="atype === '题库音频'">
+            <el-button @click="setAllTags(true)">全部展开</el-button>
+            <el-button @click="setAllTags(false)">全部收起</el-button>
+            <el-button type="primary" @click="addTag">新增</el-button>
+          </div>
+        </div>
+        <el-form v-if="atype === '英语词库音频'" label-width="100px" class="imgtag-form wtag-form au-wtag">
+          <el-form-item label="词条类型：" required>
+            <el-select v-model="wtag.dtype" placeholder="请选择" style="width:220px">
+              <el-option v-for="o in wdtypeOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="应用场景：" required>
+            <el-radio-group v-model="wtag.scene" class="scene-btns">
+              <el-radio-button v-for="o in wsceneOpts" :key="o" :label="o">{{ o }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <el-form v-else-if="atype === '古诗文音频'" label-width="100px" class="imgtag-form wtag-form au-wtag">
+          <el-form-item label="作品类型：" required>
+            <el-select v-model="gtag.wtype" placeholder="请选择" style="width:220px">
+              <el-option v-for="o in gwtypeOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="应用场景：" required>
+            <el-radio-group v-model="gtag.scene" class="scene-btns">
+              <el-radio-button v-for="o in gsceneOpts" :key="o" :label="o">{{ o }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <div v-else class="atag-wrap le-atags">
+          <div v-for="(t, i) in tags" :key="t.id" class="vtag-box" :class="{ open: t.open }">
+            <div class="vtag-item">
+              <span class="vtag-no">{{ i + 1 }}</span>
+              <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
+              <span class="vtag-lb">学科：{{ t.xk || '--' }}</span>
+              <span class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+              <div class="vtag-act">
+                <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
+                <span class="vtag-del" @click="delTag(i)">删除</span>
+              </div>
+            </div>
+            <el-form v-if="t.open" label-width="100px" class="vtag-form">
+              <el-form-item label="学段：" required>
+                <el-radio-group v-model="t.xd" class="vt-grid" @change="onXdChange(t)">
+                  <el-radio v-for="o in tagOpts.xd" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="学科：" required>
+                <el-radio-group v-model="t.xk" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).xk" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="年级：" required>
+                <el-radio-group v-model="t.grade" class="vt-grid">
+                  <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card le-card au-card">
+        <div class="ve-card-title">文件格式</div>
+        <el-table :data="formats" border size="small" class="le-fmt">
+          <el-table-column prop="name" label="格式" align="center" />
+          <el-table-column prop="size" label="大小" align="center" />
+          <el-table-column label="文件" align="center">
+            <template #default="{ row }"><a class="le-act">预览</a></template>
+          </el-table-column>
+        </el-table>
       </div>
 
       <!-- 底部：需求说明 -->
@@ -1881,10 +1989,32 @@ const ImageEdit = {
     const itypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为图片） */
     const reqNotes = [
-      '新增【图片类别】，默认展示当前图片类别，点击编辑按钮后出现选择框，支持选择其他图片类别，选项与列表页 tab 项一致。',
+      '新增【图片类别】，默认展示当前图片类别，点击编辑按钮后出现选择框，支持选择其他图片类别，选项与列表页 tab 项一致。切换图片类别后，图片标签配置项随之变更。',
     ];
 
-    return { info, editing, itype, itypeOptions, itypeEdit, reqNotes, icons };
+    /* ---- 下方：内容标签（与上传成功页一致，按类别区分） + 文件格式 ---- */
+    const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
+    /* 英语词库（默认）：词条类型 + 应用场景（按钮式多选） */
+    const itag = reactive({ dtype: '单词', scene: ['义项配图'] });
+    const dtypeOpts = ['单词', '短语', '谚语'];
+    const sceneOpts = ['义项配图', '词书插图', '词书封面'];
+    /* 古诗文：作品类型 + 应用场景（按钮式单选）；初值空（不选中） */
+    const gtag = reactive({ wtype: '', scene: '' });
+    const wtypeOpts = ['诗', '词', '赋', '散曲', '文言文'];
+    const gsceneOpts = ['作品封面', '分段配图', '思维导图', '赏析配图', '文集封面', '全文插图'];
+    /* 作者：图片类型 + 朝代（选填）+ 应用场景；初值空（不选中） */
+    const atag = reactive({ itype: '', dynasty: '', scene: [] });
+    const aitypeOpts = ['人物图像'];
+    const dynastyOpts = ['先秦', '秦汉', '三国魏晋', '南北朝', '隋', '唐', '五代十国', '宋', '元', '明', '清'];
+    const asceneOpts = ['作者人物图像'];
+
+    /* 文件格式 */
+    const formats = reactive([
+      { name: 'gif', size: '--' },
+    ]);
+
+    return { info, editing, itype, itypeOptions, itypeEdit, reqNotes, icons,
+      itag, dtypeOpts, sceneOpts, gtag, wtypeOpts, gsceneOpts, atag, aitypeOpts, dynastyOpts, asceneOpts, formats };
   },
   template: `
     <div class="breadcrumb">
@@ -1947,6 +2077,65 @@ const ImageEdit = {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 底部：内容标签 / 文件格式 -->
+    <div class="ie-cols">
+      <div class="panel-card le-card ie-card">
+        <div class="ve-card-title">内容标签</div>
+        <el-form v-if="itype === '作者'" label-width="100px" class="imgtag-form ie-form">
+          <el-form-item label="图片类型：" required>
+            <el-select v-model="atag.itype" placeholder="请选择" style="width:220px">
+              <el-option v-for="o in aitypeOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="朝代：">
+            <el-select v-model="atag.dynasty" placeholder="请选择" filterable style="width:220px">
+              <el-option v-for="o in dynastyOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="应用场景：" required>
+            <el-checkbox-group v-model="atag.scene" class="scene-btns">
+              <el-checkbox-button v-for="o in asceneOpts" :key="o" :label="o">{{ o }}</el-checkbox-button>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
+        <el-form v-else-if="itype === '古诗文'" label-width="100px" class="imgtag-form ie-form">
+          <el-form-item label="作品类型：" required>
+            <el-select v-model="gtag.wtype" placeholder="请选择" style="width:220px">
+              <el-option v-for="o in wtypeOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="应用场景：" required>
+            <el-radio-group v-model="gtag.scene" class="scene-btns">
+              <el-radio-button v-for="o in gsceneOpts" :key="o" :label="o">{{ o }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <el-form v-else label-width="100px" class="imgtag-form ie-form">
+          <el-form-item label="词条类型：" required>
+            <el-select v-model="itag.dtype" placeholder="请选择" style="width:220px">
+              <el-option v-for="o in dtypeOpts" :key="o" :label="o" :value="o" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="应用场景：" required>
+            <el-checkbox-group v-model="itag.scene" class="scene-btns">
+              <el-checkbox-button v-for="o in sceneOpts" :key="o" :label="o">{{ o }}</el-checkbox-button>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <div class="panel-card le-card ie-card">
+        <div class="ve-card-title">文件格式</div>
+        <el-table :data="formats" border size="small" class="le-fmt">
+          <el-table-column prop="name" label="格式" align="center" />
+          <el-table-column prop="size" label="大小" align="center" />
+          <el-table-column label="文件" align="center">
+            <template #default="{ row }"><a class="le-act">预览</a></template>
+          </el-table-column>
+        </el-table>
       </div>
     </div>
 
