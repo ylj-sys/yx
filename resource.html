@@ -334,6 +334,8 @@
   .atag-ops{margin-left:auto;display:flex;align-items:center;gap:10px;}
   .atag-ops .batch-edit{margin-left:10px;}
   .atag-wrap{margin-top:12px;}
+  /* 英语词库/古诗文音频：文件卡片与下方标签表单的间距 */
+  .wtag-form{margin-top:24px;}
 
   /* 视频标签：基础信息 / 拓展信息 */
   .vtag-card{border:1px solid #e8edf4;border-radius:8px;background:#fff;padding:16px 10px;margin:14px 0 0 5px;}
@@ -2744,18 +2746,18 @@ const AudioSuccess = {
       xd: ['小学', '初中', '高中', '学前教育', '中职'],
     };
     const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
-    /* 英语词库音频：词条类型 + 应用场景（按钮式多选），单表单不分套 */
-    const wtag = reactive({ dtype: '', scene: [] });
+    /* 英语词库音频：词条类型 + 应用场景（按钮式单选），单表单不分套 */
+    const wtag = reactive({ dtype: '', scene: '' });
     const wdtypeOpts = ['单词', '短语', '谚语'];
     const wsceneOpts = ['英式发音', '美式发音', '例句音频', '译文音频', '词组音频', '教材例句音频', '联想记忆音频'];
-    /* 古诗文音频：作品类型 + 应用场景（按钮式多选） */
-    const gtag = reactive({ wtype: '', scene: [] });
+    /* 古诗文音频：作品类型 + 应用场景（按钮式单选） */
+    const gtag = reactive({ wtype: '', scene: '' });
     const gwtypeOpts = ['诗', '词', '赋', '散曲', '文言文'];
     const gsceneOpts = ['全文音频', '分段音频', '译文音频'];
     /* 蓝卡副标题：随已选标签以 · 分隔汇总 */
     const cardSub = computed(() => {
-      if (rtype.value === '古诗文音频') return [gtag.wtype, ...gtag.scene].filter(Boolean).join(' · ');
-      return [wtag.dtype, ...wtag.scene].filter(Boolean).join(' · ');
+      if (rtype.value === '古诗文音频') return [gtag.wtype, gtag.scene].filter(Boolean).join(' · ');
+      return [wtag.dtype, wtag.scene].filter(Boolean).join(' · ');
     });
     /* 名称/简介失焦后滚动位置回到文字开头 */
     const onCellBlur = (e) => { const el = e.target; if (el) { el.scrollLeft = 0; el.scrollTop = 0; } };
@@ -2765,10 +2767,10 @@ const AudioSuccess = {
       if (empty.length) { ElMsg.warning(`还有 ${empty.length} 个音频未填写名称`); return; }
       if (rtype.value === '英语词库音频') {
         if (!wtag.dtype) { ElMsg.warning('请选择词条类型'); return; }
-        if (!wtag.scene.length) { ElMsg.warning('请选择应用场景'); return; }
+        if (!wtag.scene) { ElMsg.warning('请选择应用场景'); return; }
       } else if (rtype.value === '古诗文音频') {
         if (!gtag.wtype) { ElMsg.warning('请选择作品类型'); return; }
-        if (!gtag.scene.length) { ElMsg.warning('请选择应用场景'); return; }
+        if (!gtag.scene) { ElMsg.warning('请选择应用场景'); return; }
       }
       ElMsg.success('校验通过，已完成');
     };
@@ -2809,10 +2811,12 @@ const AudioSuccess = {
       </el-table>
 
       <div class="sec-title mt-lg"><span>内容标签</span>
-        <div v-if="rtype === '题库音频'" class="vtag-ops atag-ops">
-          <el-button @click="setAllTags(true)">全部展开</el-button>
-          <el-button @click="setAllTags(false)">全部收起</el-button>
-          <el-button type="primary" @click="addTag">新增</el-button>
+        <div class="vtag-ops atag-ops">
+          <template v-if="rtype === '题库音频'">
+            <el-button @click="setAllTags(true)">全部展开</el-button>
+            <el-button @click="setAllTags(false)">全部收起</el-button>
+            <el-button type="primary" @click="addTag">新增</el-button>
+          </template>
           <el-popover placement="left" :width="300" trigger="manual" v-model:visible="batchVisible" popper-class="batch-pop">
             <template #reference>
               <el-checkbox :model-value="batchEdit" class="batch-edit" @click.prevent="toggleBatch">批量编辑</el-checkbox>
@@ -2837,28 +2841,28 @@ const AudioSuccess = {
         </div>
       </div>
 
-      <el-form v-if="rtype === '英语词库音频'" label-width="100px" class="imgtag-form">
+      <el-form v-if="rtype === '英语词库音频'" label-width="100px" class="imgtag-form wtag-form">
         <el-form-item label="词条类型：" required>
           <el-select v-model="wtag.dtype" placeholder="请选择" style="width:220px">
             <el-option v-for="o in wdtypeOpts" :key="o" :label="o" :value="o" />
           </el-select>
         </el-form-item>
         <el-form-item label="应用场景：" required>
-          <el-checkbox-group v-model="wtag.scene" class="scene-btns">
-            <el-checkbox-button v-for="o in wsceneOpts" :key="o" :label="o">{{ o }}</el-checkbox-button>
-          </el-checkbox-group>
+          <el-radio-group v-model="wtag.scene" class="scene-btns">
+            <el-radio-button v-for="o in wsceneOpts" :key="o" :label="o">{{ o }}</el-radio-button>
+          </el-radio-group>
         </el-form-item>
       </el-form>
-      <el-form v-else-if="rtype === '古诗文音频'" label-width="100px" class="imgtag-form">
+      <el-form v-else-if="rtype === '古诗文音频'" label-width="100px" class="imgtag-form wtag-form">
         <el-form-item label="作品类型：" required>
           <el-select v-model="gtag.wtype" placeholder="请选择" style="width:220px">
             <el-option v-for="o in gwtypeOpts" :key="o" :label="o" :value="o" />
           </el-select>
         </el-form-item>
         <el-form-item label="应用场景：" required>
-          <el-checkbox-group v-model="gtag.scene" class="scene-btns">
-            <el-checkbox-button v-for="o in gsceneOpts" :key="o" :label="o">{{ o }}</el-checkbox-button>
-          </el-checkbox-group>
+          <el-radio-group v-model="gtag.scene" class="scene-btns">
+            <el-radio-button v-for="o in gsceneOpts" :key="o" :label="o">{{ o }}</el-radio-button>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <div v-else class="atag-wrap">
@@ -2908,6 +2912,9 @@ const LessonSuccess = {
     const batchEdit = ref(false);
     const batchVisible = ref(false);
     const types = ['同步学案', '专项学案', '备考学案'];
+    /* 学案类别字段差异：同步/专项有年级（适用版本仅同步必填），备考无年级 */
+    const showGrade = computed(() => rtype.value !== '备考学案');
+    const verRequired = computed(() => rtype.value === '同步学案');
     const row = reactive({ name: 'lesson1', size: '1.02mb', intro: '', fmt1: 'pdf', progress: '读取成功' });
     const row2 = reactive({ name: 'lesson2', size: '580kb', intro: '', fmt1: 'doc', progress: '读取成功' });
     const rows = [row, row2];
@@ -2962,15 +2969,15 @@ const LessonSuccess = {
     ];
     const ElMsg = (window.ElementPlus && window.ElementPlus.ElMessage) || window.ElMessage;
     const onCellBlur = (e) => { const el = e.target; if (el) { el.scrollLeft = 0; el.scrollTop = 0; } };
-    /* 点击完成：仅校验表格中学案名称为必填 */
+    /* 点击完成：名称必填；学案类型必填，同步学案另校验适用版本 */
     const onFinish = () => {
       const empty = rows.filter((r) => !r.name || !String(r.name).trim());
       if (empty.length) { ElMsg.warning(`还有 ${empty.length} 个学案未填写名称`); return; }
-      const bad = fileTags.flat().find((t) => !t.ltype || !t.ltype.length || !t.ver);
-      if (bad) { ElMsg.warning(!bad.ltype || !bad.ltype.length ? '请选择学案类型' : '请选择版本'); return; }
+      const bad = fileTags.flat().find((t) => !t.ltype || !t.ltype.length || (verRequired.value && !t.ver));
+      if (bad) { ElMsg.warning(!bad.ltype || !bad.ltype.length ? '请选择学案类型' : '请选择适用版本'); return; }
       ElMsg.success('校验通过，已完成');
     };
-    return { rtype, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ltypeTree, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
+    return { rtype, showGrade, verRequired, batchEdit, batchVisible, confirmBatch, cancelBatch, types, row, rows, curIdx, tags, addTag, delTag, setAllTags, tagOpts, onXdChange, linkOpts: linkOptsOf, ltypeTree, pickVerCat, onVerChange, icons, onFinish, onCellBlur };
   },
   template: `
     <div class="breadcrumb">
@@ -3041,9 +3048,9 @@ const LessonSuccess = {
             <span class="vtag-lb">学段：{{ t.xd || '--' }}</span>
             <span class="vtag-lb">学科：{{ t.xk || '--' }}</span>
             <span class="vtag-lb">学案类型：{{ (t.ltype && t.ltype.length ? t.ltype.join('、') : '--') }}</span>
-            <span class="vtag-lb">年级：{{ t.grade || '--' }}</span>
+            <span v-if="showGrade" class="vtag-lb">年级：{{ t.grade || '--' }}</span>
             <span class="vtag-lb">适用学期：{{ t.term || '--' }}</span>
-            <span class="vtag-lb">版本：{{ t.ver || '--' }}</span>
+            <span class="vtag-lb">适用版本：{{ t.ver || '--' }}</span>
             <div class="vtag-act">
               <span class="vtag-link" @click="t.open = !t.open">{{ t.open ? '收起' : '展开' }}</span>
               <span class="vtag-del" @click="delTag(i)">删除</span>
@@ -3070,19 +3077,19 @@ const LessonSuccess = {
                 default-expand-all
                 :render-after-expand="false"
                 filterable
-                placeholder="请选择"
+                placeholder="请选择学案类型"
                 style="width:620px"
               />
             </el-form-item>
-            <el-form-item label="年级：" required>
+            <el-form-item v-if="showGrade" label="年级：" required>
               <el-radio-group v-model="t.grade" class="vt-grid">
                 <el-radio v-for="o in linkOpts(t.xd).grade" :key="o" :label="o">{{ o }}</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="版本：" required>
+            <el-form-item label="适用版本：" :required="verRequired">
               <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
                 <template #reference>
-                  <el-input :model-value="t.ver" readonly placeholder="请选择" style="width:620px" class="ver-input" />
+                  <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:620px" class="ver-input" />
                 </template>
                 <div class="ver-panel">
                   <div class="ver-left">
@@ -3293,7 +3300,7 @@ const CoursewareSuccess = {
                 default-expand-all
                 :render-after-expand="false"
                 filterable
-                placeholder="请选择"
+                placeholder="请选择课件类型"
                 style="width:620px"
               />
             </el-form-item>
@@ -3305,7 +3312,7 @@ const CoursewareSuccess = {
             <el-form-item v-if="showVer" label="适用版本：" :required="verRequired">
               <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
                 <template #reference>
-                  <el-input :model-value="t.ver" readonly placeholder="请选择" style="width:620px" class="ver-input" />
+                  <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:620px" class="ver-input" />
                 </template>
                 <div class="ver-panel">
                   <div class="ver-left">
@@ -3512,7 +3519,7 @@ const PlanSuccess = {
                 default-expand-all
                 :render-after-expand="false"
                 filterable
-                placeholder="请选择"
+                placeholder="请选择教案类型"
                 style="width:620px"
               />
             </el-form-item>
@@ -3524,7 +3531,7 @@ const PlanSuccess = {
             <el-form-item label="适用版本：" :required="verRequired">
               <el-popover placement="bottom-start" :width="660" trigger="click" popper-class="ver-pop" v-model:visible="t.verOpen">
                 <template #reference>
-                  <el-input :model-value="t.ver" readonly placeholder="请选择" style="width:620px" class="ver-input" />
+                  <el-input :model-value="t.ver" readonly placeholder="请选择适用版本" style="width:620px" class="ver-input" />
                 </template>
                 <div class="ver-panel">
                   <div class="ver-left">
@@ -3950,7 +3957,8 @@ const ResourceUpload = {
           <li>2. 异常说明
             <ul class="req-sub">
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示；</li>
-              <li>基础信息标签至少配置一套，点击【删除】时校验，未通过时拦截并提示。</li>
+              <li>基础信息标签至少配置一套，点击【删除】时校验，未通过时拦截并提示；</li>
+              <li>基础信息标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
         </ul>
@@ -3984,7 +3992,8 @@ const ResourceUpload = {
           <li>2. 异常说明
             <ul class="req-sub">
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示；</li>
-              <li>【题库音频】至少配置一套标签，点击【删除】时校验，未通过时拦截并提示。</li>
+              <li>【题库音频】至少配置一套标签，点击【删除】时校验，未通过时拦截并提示；</li>
+              <li>【题库音频】最多配置20套标签，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
         </ul>
@@ -4017,7 +4026,8 @@ const ResourceUpload = {
           <li>2. 异常说明
             <ul class="req-sub">
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示；</li>
-              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示。</li>
+              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示；</li>
+              <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
         </ul>
@@ -4035,7 +4045,8 @@ const ResourceUpload = {
           <li>2. 异常说明
             <ul class="req-sub">
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示；</li>
-              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示。</li>
+              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示；</li>
+              <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
         </ul>
@@ -4053,7 +4064,8 @@ const ResourceUpload = {
           <li>2. 异常说明
             <ul class="req-sub">
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示；</li>
-              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示。</li>
+              <li>标签至少配置一套，点击【删除】时校验，未通过时拦截并提示；</li>
+              <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
         </ul>
