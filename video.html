@@ -3125,18 +3125,18 @@
         basic: { name: '围绕中心意思写（习题课件）', dir: '教学资源 / 语文 / 五年级', intro: '' },
         // 各类型的卡片配置（勾选即生成对应卡片）
         typeMeta: {
-          '跟读测评': { icon: '🗣', iconBg: '#eef4ff', desc: '学生跟随范读音频逐句跟读，系统自动评测发音并评分', contentText: '', questions: [] },
-          '语音测评': { icon: '🎙', iconBg: '#e8f7ee', desc: '唤起设备话筒进行录音，录音完成后调用 AI 测评接口进行评分', contentText: '', questions: [] },
-          '答题': { icon: '📝', iconBg: '#eef4ff', desc: '纯答题、仅关联题库中题目', questions: [
+          '跟读测评': { icon: '🗣', iconBg: '#eef4ff', desc: '设备端唤起设备话筒进行录音，弹出语音测评界面，完成后调用智言算法进行语音测评', contentText: '', questions: [] },
+          '语音测评': { icon: '🎙', iconBg: '#e8f7ee', desc: '在对应的PPT页，唤起设备话筒进行录音答题，录音完成后调用AI测评接口进行评分', contentText: '', questions: [] },
+          '答题': { icon: '📝', iconBg: '#eef4ff', desc: '进行答题互动，支持配置题目，设置每道题的答题时长', questions: [
             { id: '2109481523827703811', type: '较易', stem: '补写出下列句子中的空缺部分。', options: [], answer: '', analysis: '略', timeLimited: false, durationMin: 0, durationSec: 30 },
           ] },
-          '分组': { icon: '👥', iconBg: '#f0f1ff', desc: '到达时间点后随机进行分组，按分组对比答题情况', questions: [],
+          '分组': { icon: '👥', iconBg: '#f0f1ff', desc: '对学生随机分组答题，按照分组进行答题情况对比，支持配题目', questions: [],
             extraFields: [ { label: '分组数量', value: 4 } ] },
-          '抢答': { icon: '⚡', iconBg: '#fde2e2', desc: '达到时间点后，学生可以进行答题抢答', questions: [],
+          '抢答': { icon: '⚡', iconBg: '#fde2e2', desc: '点击抢答，学生可以进行答题抢答', questions: [],
             extraFields: [ { label: '抢答人数', value: 1 } ] },
-          '指定学生': { icon: '🙋', iconBg: '#eef9f0', desc: '到达时间点后教师可以指定学生进行作答', questions: [] },
-          '随机挑人': { icon: '🎯', iconBg: '#fdeef0', desc: '课堂游戏-随机挑人进行答题', questions: [] },
-          '课间休息': { icon: '☕', iconBg: '#f4f6fa', desc: '到达时间点后进入课间休息倒计时', questions: [],
+          '指定学生': { icon: '🙋', iconBg: '#eef9f0', desc: '教师可以指定学生进行答题', questions: [] },
+          '随机挑人': { icon: '🎯', iconBg: '#fdeef0', desc: '随机挑选学生进行答题', questions: [] },
+          '课间休息': { icon: '☕', iconBg: '#f4f6fa', desc: '出现倒计时，课堂暂停的场景', questions: [],
             extraFields: [ { label: '休息时长（分）', value: 5 } ] },
         },
         detailVisible: false,
