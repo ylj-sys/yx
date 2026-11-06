@@ -522,6 +522,10 @@
   /* 有序项下的子项（冒号后的说明） */
   .req-sub{margin:2px 0 4px;padding:0 0 0 8px;list-style:disc;}
   .req-sub li{text-indent:0;font-size:14px;color:#8a6d3b;line-height:1.9;}
+  /* 编辑页需求说明：a. / b. / c. 子项 */
+  .req-list > li .req-sub-a{margin:0 0 4px;padding:0;list-style:none;}
+  .req-sub-a > li{padding-left:0;text-indent:0;font-size:15px;color:#b98a2e;line-height:1.9;}
+  .req-sub-a > li i{font-style:normal;margin-right:5px;font-weight:400;color:inherit;}
   .req-panel .atype-row{margin:0 0 7px;}
   .req-panel .atype-row .lb{color:#b98a2e;}
 
@@ -642,6 +646,8 @@
   /* 图片编辑页：下方 内容标签 / 文件格式 */
   .ie-cols{display:flex;gap:14px;align-items:stretch;margin:14px 22px 0;}
   .ie-cols > .panel-card{margin:0;flex:1;min-width:0;}
+  .ie-cols > .ie-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;}
+  .ie-col > .panel-card{margin:0;flex:none;}
   .ie-card .ie-form{margin-top:10px;}
   /* 卡内应用场景按钮：等间距整齐换行（去尾随边距，行距一致） */
   .ie-card .scene-btns,.au-card .scene-btns{display:flex;flex-wrap:wrap;gap:10px;}
@@ -689,6 +695,43 @@
   .au-card .ve-card-title{display:block;}
   .au-card .wtag-form{margin-top:10px;}
   .au-card .scene-btns{display:flex;flex-wrap:wrap;row-gap:10px;}
+  /* 音频编辑页 · 关联内容 */
+  .aul-card{min-width:0;}
+  .aul-count{margin-left:6px;font-size:14px;font-weight:400;color:#8b93a3;}
+  .aul-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 0 40px;}
+  .aul-empty-ico{display:inline-flex;}
+  .aul-empty-ico svg{width:118px;height:102px;display:block;}
+  .aul-empty-txt{margin-top:10px;font-size:15px;color:#9aa5b6;}
+  .aul-empty-sm{padding:26px 0 30px;}
+  .aul-empty-sm .aul-empty-txt{margin-top:0;}
+  .aul-list{margin-top:12px;display:flex;flex-direction:column;gap:12px;}
+  .aul-item{border:1px solid #e8edf4;border-radius:8px;background:#fff;overflow:hidden;}
+  .aul-quiz-head{
+    display:flex;flex-wrap:wrap;gap:6px 26px;padding:11px 16px;
+    background:#f5f9ff;border-bottom:1px solid #eaf1fb;font-size:14px;color:#98a1ae;
+  }
+  .aul-kv em{font-style:normal;color:#5f6875;}
+  .aul-quiz-body{padding:13px 16px 12px;}
+  .aul-title{font-size:17px;color:#1d2129;}
+  .aul-detail{
+    margin-top:10px;padding:9px 12px;border-radius:6px;background:#f7f9fc;
+    font-size:14px;color:#5f6875;line-height:1.7;
+  }
+  .aul-foot{display:flex;align-items:center;flex-wrap:wrap;gap:8px 22px;margin-top:14px;font-size:14px;color:#98a1ae;}
+  .aul-tag{padding:1px 8px;border-radius:4px;background:#eaf2ff;color:var(--primary);font-size:13px;}
+  .aul-foot-right{margin-left:auto;display:flex;align-items:center;gap:20px;}
+  .aul-exp{display:inline-flex;align-items:center;gap:6px;color:#5f6875;cursor:pointer;user-select:none;}
+  .aul-cv{
+    display:inline-block;width:7px;height:7px;
+    border-right:1.4px solid currentColor;border-bottom:1.4px solid currentColor;
+    transform:rotate(45deg) translate(-1px,-1px);transition:transform .2s;
+  }
+  .aul-cv.up{transform:rotate(-135deg) translate(-1px,-1px);}
+  .aul-act{color:var(--primary);cursor:pointer;}
+  .aul-mini{display:flex;align-items:center;gap:16px;padding:12px 16px;}
+  .aul-mini-main{flex:1;min-width:0;}
+  .aul-mini-id{font-size:14px;color:#98a1ae;}
+  .aul-mini-title{margin-top:8px;font-size:16px;color:#1d2129;}
 
   /* ================= 视频列表页 ================= */
   .vhead-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
@@ -814,6 +857,10 @@
   .info-title{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:600;color:var(--text-1);}
   .edit-ico{display:inline-flex;color:var(--btn-blue);cursor:pointer;}
   .edit-ico svg{width:19px;height:19px;display:block;}
+  /* 已关联内容的资源：类别编辑按钮禁用 */
+  .edit-ico.is-disabled{opacity:.4;cursor:not-allowed;filter:grayscale(1);}
+  /* 需求说明内的演示开关 */
+  .req-switch{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:14px;color:#8a6d3b;}
   .info-grid{display:grid;grid-template-columns:auto 1fr;gap:17px 29px;margin-top:19px;justify-content:start;}
   .info-item{display:flex;align-items:center;gap:2px;font-size:16px;white-space:nowrap;}
   .info-item .lb{color:#8b93a3;}
@@ -950,6 +997,16 @@ const icons = {
       '<path d="M24 33.5V15.5M18.6 20.9 24 15.5l5.4 5.4" stroke="#c8cfda" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
     '</svg>',
   back: svg('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>', { w: 2 }),
+  emptyBox:
+    '<svg viewBox="0 0 120 104" fill="none">' +
+      '<ellipse cx="60" cy="53" rx="50" ry="45" fill="#eef4fe"/>' +
+      '<path d="M60 26 92 42 60 58 28 42 60 26Z" fill="#cfe0fb"/>' +
+      '<path d="M32 46v22l26 13 26-13V46L60 59 32 46Z" fill="#dbe9fd"/>' +
+      '<path d="M32 46l26 13 26-13M32 68l26 13 26-13" stroke="#b7d1f7" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<path d="m97 30 2.2 4.8 4.8 2.2-4.8 2.2-2.2 4.8-2.2-4.8-4.8-2.2 4.8-2.2L97 30Z" fill="#cfe0fb"/>' +
+      '<path d="m24 22 1.6 3.5 3.5 1.6-3.5 1.6-1.6 3.5-1.6-3.5-3.5-1.6 3.5-1.6L24 22Z" fill="#dce8fc"/>' +
+      '<circle cx="99" cy="66" r="2.4" fill="#dce8fc"/>' +
+    '</svg>',
   pencil: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>', { w: 1.8 }),
   editSq: '<img src="icon_xg.png" alt="编辑" style="width:19px;height:19px;display:block;object-fit:contain;" />',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.4v13.2L19 12Z"/></svg>',
@@ -1409,12 +1466,43 @@ const AudioEdit = {
     const atypeOptions = ['题库音频', '英语词库音频', '古诗文音频'];
     const atype = ref('题库音频');
     const atypeEdit = ref(false);
+    /* 该音频是否已关联内容（已关联则类别不可更换） */
+    const linked = ref(false);
+    watch(linked, (v) => { if (v) atypeEdit.value = false; });
+
+    /* ---- 关联内容：未关联时为空，关联后按音频类别展示不同类型的业务引用 ---- */
+    const quizLinks = reactive([
+      {
+        id: '2085190997628682242', type: '听力题', diff: '较易', struct: '单选（题组题）',
+        title: '听力', tag: '基础题', updated: '2026-08-07 21:41:06', papers: 1,
+        stem: '听录音，选出你听到的句子。', open: false,
+      },
+    ]);
+    const wordLinks = reactive([
+      { id: '2120000004428800001', kind: '单词', title: 'softened' },
+    ]);
+    const poemLinks = reactive([
+      { id: '2100069797734649858', title: '史记' },
+    ]);
+    const links = computed(() => {
+      if (!linked.value) return [];
+      if (atype.value === '英语词库音频') return wordLinks;
+      if (atype.value === '古诗文音频') return poemLinks;
+      return quizLinks;
+    });
     /* 需求说明条目（占位文案，按实际填写） */
     const reqNotes = [
-      '新增【音频类别】，默认展示当前音频类别，点击编辑按钮后出现选择框，支持选择其他音频类别，选项与列表页 tab 项一致。切换音频类别后，音频标签配置项随之变更。',
+      {
+        text: '新增【音频类别】，默认展示当前音频类别，点击编辑按钮后出现选择框，支持选择其他音频类别，选项与列表页 tab 项一致。',
+        subs: [
+          '切换音频类别后，音频标签配置项随之变更；',
+          '类别更换前后的上下架状态保持一致；',
+          '已存在关联内容的音频禁止更换类别，类别更换按钮禁用，hover 时提示“该音频已存在关联内容，无法更换类别”。',
+        ],
+      },
     ];
 
-    return { info, waves, tags, addTag, delTag, setAllTags, onXdChange, tagOpts, linkOpts: linkOptsOf, wtag, wdtypeOpts, wsceneOpts, gtag, gwtypeOpts, gsceneOpts, formats, records, playing, editing, atype, atypeOptions, atypeEdit, reqNotes, icons };
+    return { info, waves, tags, addTag, delTag, setAllTags, onXdChange, tagOpts, linkOpts: linkOptsOf, wtag, wdtypeOpts, wsceneOpts, gtag, gwtypeOpts, gsceneOpts, formats, records, playing, editing, atype, atypeOptions, atypeEdit, linked, links, reqNotes, icons };
   },
   template: `
     <div class="breadcrumb">
@@ -1479,7 +1567,10 @@ const AudioEdit = {
           </el-select>
           <template v-else>
             <span class="val">{{ atype }}</span>
-            <span class="edit-ico" title="编辑音频类别" @click="atypeEdit = true" v-html="icons.editSq"></span>
+            <el-tooltip v-if="linked" content="该音频已存在关联内容，无法更换类别" placement="top" effect="dark">
+              <span class="edit-ico is-disabled" v-html="icons.editSq"></span>
+            </el-tooltip>
+            <span v-else class="edit-ico" title="编辑音频类别" @click="atypeEdit = true" v-html="icons.editSq"></span>
           </template>
         </div>
         <div class="intro-row">
@@ -1493,6 +1584,7 @@ const AudioEdit = {
       </div>
 
       <!-- 底部：内容标签 / 文件格式 -->
+      <div class="edit-col">
       <div class="panel-card le-card au-card">
         <div class="le-head">
           <div class="ve-card-title">内容标签</div>
@@ -1559,6 +1651,70 @@ const AudioEdit = {
         </div>
       </div>
 
+      <!-- 关联内容：未关联时为空，关联后按音频类别展示不同业务引用 -->
+      <div class="panel-card le-card au-card aul-card">
+        <div class="ve-card-title">关联内容<span class="aul-count">{{ links.length }}个</span></div>
+
+        <div v-if="!links.length" class="aul-empty">
+          <span class="aul-empty-ico" v-html="icons.emptyBox"></span>
+          <div class="aul-empty-txt">暂无关联内容</div>
+        </div>
+
+        <div v-else class="aul-list">
+          <!-- 题库音频：试题 -->
+          <template v-if="atype === '题库音频'">
+            <div v-for="it in links" :key="it.id" class="aul-item">
+              <div class="aul-quiz-head">
+                <span class="aul-kv">ID：<em>{{ it.id }}</em></span>
+                <span class="aul-kv">试题类型：<em>{{ it.type }}</em></span>
+                <span class="aul-kv">难度：<em>{{ it.diff }}</em></span>
+                <span class="aul-kv">试题结构：<em>{{ it.struct }}</em></span>
+              </div>
+              <div class="aul-quiz-body">
+                <div class="aul-title">{{ it.title }}</div>
+                <div v-if="it.open" class="aul-detail">题干：{{ it.stem }}</div>
+                <div class="aul-foot">
+                  <span class="aul-tag">{{ it.tag }}</span>
+                  <span class="aul-meta">更新：{{ it.updated }}</span>
+                  <span class="aul-meta">组卷次数：{{ it.papers }}</span>
+                  <span class="aul-foot-right">
+                    <span class="aul-exp" @click="it.open = !it.open">
+                      {{ it.open ? '收起' : '展开' }}<span class="aul-cv" :class="{ up: it.open }"></span>
+                    </span>
+                    <a class="aul-act">查看详情</a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- 英语词库音频：词条 -->
+          <template v-else-if="atype === '英语词库音频'">
+            <div v-for="it in links" :key="it.id" class="aul-item aul-mini">
+              <div class="aul-mini-main">
+                <div class="aul-mini-id">ID：{{ it.kind }} · {{ it.id }}</div>
+                <div class="aul-mini-title">{{ it.title }}</div>
+              </div>
+              <a class="aul-act">查看词条</a>
+            </div>
+          </template>
+
+          <!-- 古诗文音频：作品 -->
+          <template v-else>
+            <div v-for="it in links" :key="it.id" class="aul-item aul-mini">
+              <div class="aul-mini-main">
+                <div class="aul-mini-id">ID：{{ it.id }}</div>
+                <div class="aul-mini-title">{{ it.title }}</div>
+              </div>
+              <a class="aul-act">查看作品</a>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      </div>
+
+      <div class="edit-col">
       <div class="panel-card le-card au-card">
         <div class="ve-card-title">文件格式</div>
         <el-table :data="formats" border size="small" class="le-fmt">
@@ -1569,13 +1725,22 @@ const AudioEdit = {
           </el-table-column>
         </el-table>
       </div>
+      </div>
 
       <!-- 底部：需求说明 -->
       <div class="panel-card req-panel">
         <div class="req-title">需求说明</div>
         <ul class="req-list">
-          <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+          <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+            <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+              <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+            </ul>
+          </li>
         </ul>
+        <div class="req-switch">
+          <el-switch v-model="linked" size="small" />
+          <span>演示：该音频已关联内容</span>
+        </div>
       </div>
     </div>
     </div>
@@ -1703,7 +1868,13 @@ const VideoEdit = {
     const teacherEdit = ref(false);
     /* 需求说明条目（米黄面板，与音频编辑页一致） */
     const reqNotes = [
-      '新增【视频类别】，默认展示当前视频类别，点击编辑按钮后出现选择框，支持选择其他视频类别，选项与列表页 tab 项一致。切换视频类别后，保留不同类别间相同标签的已选值（除「视频类型」）。',
+      {
+        text: '新增【视频类别】，默认展示当前视频类别，点击编辑按钮后出现选择框，支持选择其他视频类别，选项与列表页 tab 项一致。',
+        subs: [
+          '切换视频类别后，视频标签配置项随之变更，保留不同类别间相同标签的已选值（除「视频类型」）；',
+          '类别更换前后的上下架状态保持一致。',
+        ],
+      },
     ];
 
     /* ---- 下方内容：视频标签（基础信息多套标签 + 拓展信息） ---- */
@@ -1965,7 +2136,11 @@ const VideoEdit = {
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
       <ul class="req-list">
-        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+          <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+            <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     </div>
@@ -1987,9 +2162,36 @@ const ImageEdit = {
     const itypeOptions = ['英语词库', '古诗文', '作者'];
     const itype = ref('英语词库');
     const itypeEdit = ref(false);
+    /* 该图片是否已关联内容（已关联则类别不可更换） */
+    const linked = ref(false);
+    watch(linked, (v) => { if (v) itypeEdit.value = false; });
+
+    /* ---- 关联内容：未关联时为空，关联后按图片类别展示关联的业务数据 ---- */
+    const wordLinks = reactive([
+      { id: '2118234906571063298', kind: '词书', title: '一本词书' },
+    ]);
+    const poemLinks = reactive([
+      { id: '2105227761974120492', title: '登高' },
+    ]);
+    const authorLinks = reactive([
+      { id: '1038450528149525', dynasty: '先秦', title: '韩非子' },
+    ]);
+    const links = computed(() => {
+      if (!linked.value) return [];
+      if (itype.value === '古诗文') return poemLinks;
+      if (itype.value === '作者') return authorLinks;
+      return wordLinks;
+    });
     /* 需求说明条目（与音频编辑页一致，资源词适配为图片） */
     const reqNotes = [
-      '新增【图片类别】，默认展示当前图片类别，点击编辑按钮后出现选择框，支持选择其他图片类别，选项与列表页 tab 项一致。切换图片类别后，图片标签配置项随之变更。',
+      {
+        text: '新增【图片类别】，默认展示当前图片类别，点击编辑按钮后出现选择框，支持选择其他图片类别，选项与列表页 tab 项一致。',
+        subs: [
+          '切换图片类别后，图片标签配置项随之变更；',
+          '类别更换前后的上下架状态保持一致；',
+          '已存在关联内容的图片禁止更换类别，类别更换按钮禁用，hover 时提示“该图片已存在关联内容，无法更换类别”。',
+        ],
+      },
     ];
 
     /* ---- 下方：内容标签（与上传成功页一致，按类别区分） + 文件格式 ---- */
@@ -2013,7 +2215,7 @@ const ImageEdit = {
       { name: 'gif', size: '--' },
     ]);
 
-    return { info, editing, itype, itypeOptions, itypeEdit, reqNotes, icons,
+    return { info, editing, itype, itypeOptions, itypeEdit, linked, links, reqNotes, icons,
       itag, dtypeOpts, sceneOpts, gtag, wtypeOpts, gsceneOpts, atag, aitypeOpts, dynastyOpts, asceneOpts, formats };
   },
   template: `
@@ -2065,7 +2267,10 @@ const ImageEdit = {
             </el-select>
             <template v-else>
               <span class="val">{{ itype }}</span>
-              <span class="edit-ico" title="编辑图片类别" @click="itypeEdit = true" v-html="icons.editSq"></span>
+              <el-tooltip v-if="linked" content="该图片已存在关联内容，无法更换类别" placement="top" effect="dark">
+                <span class="edit-ico is-disabled" v-html="icons.editSq"></span>
+              </el-tooltip>
+              <span v-else class="edit-ico" title="编辑图片类别" @click="itypeEdit = true" v-html="icons.editSq"></span>
             </template>
           </div>
 
@@ -2080,8 +2285,9 @@ const ImageEdit = {
       </div>
     </div>
 
-    <!-- 底部：内容标签 / 文件格式 -->
+    <!-- 底部：内容标签 / 关联内容 / 文件格式 -->
     <div class="ie-cols">
+      <div class="ie-col">
       <div class="panel-card le-card ie-card">
         <div class="ve-card-title">内容标签</div>
         <el-form v-if="itype === '作者'" label-width="100px" class="imgtag-form ie-form">
@@ -2127,6 +2333,52 @@ const ImageEdit = {
         </el-form>
       </div>
 
+      <!-- 关联内容：未关联时为空，关联后按图片类别展示不同业务引用 -->
+      <div class="panel-card le-card ie-card aul-card">
+        <div class="ve-card-title">关联内容<span class="aul-count">{{ links.length }}个</span></div>
+
+        <div v-if="!links.length" class="aul-empty aul-empty-sm">
+          <div class="aul-empty-txt">暂无关联内容</div>
+        </div>
+
+        <div v-else class="aul-list">
+          <!-- 英语词库：词书 -->
+          <template v-if="itype === '英语词库'">
+            <div v-for="it in links" :key="it.id" class="aul-item aul-mini">
+              <div class="aul-mini-main">
+                <div class="aul-mini-id">ID：{{ it.kind }} · {{ it.id }}</div>
+                <div class="aul-mini-title">{{ it.title }}</div>
+              </div>
+              <a class="aul-act">查看词书</a>
+            </div>
+          </template>
+
+          <!-- 古诗文：作品 -->
+          <template v-else-if="itype === '古诗文'">
+            <div v-for="it in links" :key="it.id" class="aul-item aul-mini">
+              <div class="aul-mini-main">
+                <div class="aul-mini-id">ID：{{ it.id }}</div>
+                <div class="aul-mini-title">{{ it.title }}</div>
+              </div>
+              <a class="aul-act">查看作品</a>
+            </div>
+          </template>
+
+          <!-- 作者：作者 -->
+          <template v-else>
+            <div v-for="it in links" :key="it.id" class="aul-item aul-mini">
+              <div class="aul-mini-main">
+                <div class="aul-mini-id">ID：{{ it.id }} · {{ it.dynasty }}</div>
+                <div class="aul-mini-title">{{ it.title }}</div>
+              </div>
+              <a class="aul-act">查看作者</a>
+            </div>
+          </template>
+        </div>
+      </div>
+      </div>
+
+      <div class="ie-col">
       <div class="panel-card le-card ie-card">
         <div class="ve-card-title">文件格式</div>
         <el-table :data="formats" border size="small" class="le-fmt">
@@ -2137,14 +2389,23 @@ const ImageEdit = {
           </el-table-column>
         </el-table>
       </div>
+      </div>
     </div>
 
     <!-- 需求说明 -->
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
       <ul class="req-list">
-        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+          <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+            <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+          </ul>
+        </li>
       </ul>
+      <div class="req-switch">
+        <el-switch v-model="linked" size="small" />
+        <span>演示：该图片已关联内容</span>
+      </div>
     </div>
     </div>
   `,
@@ -2166,7 +2427,13 @@ const LessonEdit = {
     const ltypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为学案） */
     const reqNotes = [
-      '新增【学案类别】，默认展示当前学案类别，点击编辑按钮后出现选择框，支持选择其他学案类别，选项与列表页 tab 项一致。切换学案类别后，保留不同类别间相同标签的已选值（除「学案类型」）。',
+      {
+        text: '新增【学案类别】，默认展示当前学案类别，点击编辑按钮后出现选择框，支持选择其他学案类别，选项与列表页 tab 项一致。',
+        subs: [
+          '切换学案类别后，学案标签配置项随之变更，保留不同类别间相同标签的已选值（除学案类型）；',
+          '类别更换前后的上下架状态保持一致。',
+        ],
+      },
     ];
 
     /* ---- 下方：学案标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
@@ -2385,7 +2652,11 @@ const LessonEdit = {
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
       <ul class="req-list">
-        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+          <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+            <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     </div>
@@ -2411,7 +2682,13 @@ const CoursewareEdit = {
     const ctypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为课件） */
     const reqNotes = [
-      '新增【课件类别】，默认展示当前课件类别，点击编辑按钮后出现选择框，支持选择其他课件类别，选项与列表页 tab 项一致。切换课件类别后，保留不同类别间相同标签的已选值（除「课件类型」）。',
+      {
+        text: '新增【课件类别】，默认展示当前课件类别，点击编辑按钮后出现选择框，支持选择其他课件类别，选项与列表页 tab 项一致。',
+        subs: [
+          '切换课件类别后，课件标签配置项随之变更，保留不同类别间相同标签的已选值（除「课件类型」）；',
+          '类别更换前后的上下架状态保持一致。',
+        ],
+      },
     ];
 
     /* ---- 下方：课件标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
@@ -2638,7 +2915,11 @@ const CoursewareEdit = {
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
       <ul class="req-list">
-        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+          <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+            <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     </template>
@@ -2662,7 +2943,12 @@ const PlanEdit = {
     const ptypeEdit = ref(false);
     /* 需求说明条目（与音频编辑页一致，资源词适配为教案） */
     const reqNotes = [
-      '新增【教案类别】，默认展示当前教案类别，点击编辑按钮后出现选择框，支持选择其他教案类别，选项与列表页 tab 项一致。切换教案类别后，保留不同类别间相同标签的已选值（除「教案类型」）。',
+      {
+        text: '新增【教案类型】选择框，默认选中当前教案类型，支持修改为其他教案类型，选项与列表页 tab 项一致。',
+        subs: [
+          '切换教案类别后，教案标签配置项随之变更，保留不同类别间相同标签的已选值（除「教案类型」）。',
+        ],
+      },
     ];
 
     /* ---- 下方：教案标签（与上传页一致，按类别显隐） + 文件格式 / 操作记录 ---- */
@@ -2878,7 +3164,11 @@ const PlanEdit = {
     <div class="panel-card req-panel">
       <div class="req-title">需求说明</div>
       <ul class="req-list">
-        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t }}</li>
+        <li v-for="(t, i) in reqNotes" :key="i">{{ i + 1 }}. {{ t.text }}
+          <ul v-if="t.subs && t.subs.length" class="req-sub-a">
+            <li v-for="(s, j) in t.subs" :key="j"><i>{{ 'abcdefgh'[j] }}.</i>{{ s }}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     </div>
@@ -4857,6 +5147,7 @@ const ResourceUpload = {
               <li>基础信息标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 视频上传成功后，返回列表页，列表页选中该视频类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="isUpload && cfgKey === 'video'" class="panel-card req-panel req-note">
@@ -4892,6 +5183,7 @@ const ResourceUpload = {
               <li>【题库音频】最多配置20套标签，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 音频上传成功后，返回列表页，列表页选中该音频类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="page === 'success' && cfgKey === 'image'" class="panel-card req-panel req-note">
@@ -4907,6 +5199,7 @@ const ResourceUpload = {
               <li>带红*标签必填，点击【完成】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 图片上传成功后，返回列表页，列表页选中该图片类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="page === 'success' && cfgKey === 'lesson'" class="panel-card req-panel req-note">
@@ -4926,6 +5219,7 @@ const ResourceUpload = {
               <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 学案上传成功后，返回列表页，列表页选中该学案类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="page === 'success' && cfgKey === 'courseware'" class="panel-card req-panel req-note">
@@ -4945,6 +5239,7 @@ const ResourceUpload = {
               <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 课件上传成功后，返回列表页，列表页选中该课件类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="page === 'success' && cfgKey === 'plan'" class="panel-card req-panel req-note">
@@ -4964,6 +5259,7 @@ const ResourceUpload = {
               <li>标签最多配置20套，点击【新增】时校验，未通过时拦截并提示。</li>
             </ul>
           </li>
+          <li>3. 教案上传成功后，返回列表页，列表页选中该教案类别对应的 tab，并展示最新数据。</li>
         </ul>
       </div>
       <div v-if="isUpload && cfgKey === 'image'" class="panel-card req-panel req-note">
