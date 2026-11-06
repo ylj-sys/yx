@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>九学王内容中台 · 知识体系 · 教材列表</title>
+<script src="https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/vue-router@4.4.5/dist/vue-router.global.prod.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-plus@2.8.8/dist/index.css" />
+<script src="https://unpkg.com/element-plus@2.8.8/dist/index.full.min.js"></script>
+<script src="https://unpkg.com/element-plus@2.8.8/dist/locale/zh-cn.js"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    /* --primary:#2f7cf6; */
+    /* --primary-hover:#1f6ce8; */
+    --green:#00b389;
+    --text-1:#1f2430;
+    --text-2:#3a4353;
+    --text-3:#7d8798;
+    --line:#eef2f7;
+    /* --el-color-primary:#2f7cf6; */
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+    font-size:16px;
+    color:var(--text-2);
+    background:
+      url('body-bg.jpg') center top / cover no-repeat fixed,
+      linear-gradient(180deg,#eef4fc 0%,#f6faff 58%,#fbfdff 100%);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  #app{height:100%;}
+  .shell{display:flex;flex-direction:column;height:100%;}
+
+  /* ================= 顶部导航 ================= */
+  .topbar{
+    height:62px;flex:0 0 62px;display:flex;align-items:center;
+    padding:0 20px 0 26px;background:transparent;position:relative;z-index:2;
+  }
+  .logo{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:700;color:#1f2430;white-space:nowrap;}
+  .logo .mark{
+    width:24px;height:24px;border-radius:6px;flex:0 0 24px;
+    background:conic-gradient(from 205deg,#2b7cff,#22b6e0,#7a5fd0,#2b7cff);
+  }
+  .topnav{display:flex;align-items:center;gap:26px;flex:1;height:100%;margin-left:28px;min-width:0;}
+  .nav-item{
+    position:relative;display:inline-flex;align-items:center;gap:6px;height:100%;
+    font-size:16px;color:var(--text-2);cursor:pointer;white-space:nowrap;
+  }
+  .nav-item:hover{color:var(--primary);}
+  .nav-item.is-active{color:var(--primary);font-weight:600;}
+  .nav-item.is-active::after{
+    content:"";position:absolute;left:24px;right:4px;bottom:7px;
+    height:2px;border-radius:2px;background:var(--primary);
+  }
+  .nav-ico{display:inline-flex;width:17px;height:17px;color:#7f8899;}
+  .nav-ico svg{width:17px;height:17px;display:block;}
+  .nav-item:hover .nav-ico{color:var(--primary);}
+  .nav-more{color:#98a1b0;letter-spacing:1px;cursor:pointer;font-size:17px;}
+
+  .topbar-right{display:flex;align-items:center;gap:11px;}
+  .pill{
+    height:31px;padding:0 18px;border:1px solid #dce1e9;border-radius:17px;background:#fff;
+    font-size:15px;color:var(--text-2);cursor:pointer;font-family:inherit;
+  }
+  .pill:hover{border-color:var(--primary);color:var(--primary);}
+  .help{display:inline-flex;width:21px;height:21px;color:#94a0b1;cursor:pointer;}
+  .help svg{width:21px;height:21px;display:block;}
+  .help:hover{color:var(--primary);}
+  .user{display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .avatar{
+    width:26px;height:26px;border-radius:50%;flex:0 0 26px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:12px;color:#8a5a2b;background:linear-gradient(145deg,#ffe0c9,#e8ac82);
+  }
+  .uname{font-size:16px;color:var(--text-2);}
+
+  /* ================= 左侧菜单 ================= */
+  .layout{flex:1;display:flex;min-height:0;}
+  .sidebar{width:218px;flex:0 0 218px;padding:6px 0 16px;overflow-y:auto;}
+  .menu-item{
+    display:flex;align-items:center;justify-content:space-between;
+    height:52px;padding:0 20px 0 30px;margin:1px 14px;
+    font-size:16px;color:var(--text-2);cursor:pointer;border-radius:10px;
+  }
+  .menu-item:hover{color:var(--primary);}
+  .menu-item.group{color:var(--text-1);}
+  .menu-item.group-open,.menu-item.group-open:hover{color:var(--green);}
+  .menu-item.sub{padding-left:30px;}
+  .menu-item.current,.menu-item.current:hover{
+    color:var(--primary);font-weight:500;background:#fff;
+    box-shadow:0 2px 10px rgba(28,64,120,.06);
+  }
+  .chev{display:inline-flex;color:#c0c7d3;transition:transform .18s;}
+  .chev svg{width:12px;height:12px;display:block;}
+  .chev.open{transform:rotate(180deg);}
+
+  /* ================= 主区域 ================= */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;padding:0 22px 18px 0;overflow:hidden;}
+  .page-card{
+    flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+    background:#fff;border-radius:12px;box-shadow:0 2px 14px rgba(19,45,80,.05);
+  }
+  .breadcrumb{padding:26px 24px 16px;font-size:16px;color:#98a1ae;display:flex;gap:8px;flex-wrap:wrap;}
+  .breadcrumb .sep{color:#ccd3dd;}
+
+  .toolbar{display:flex;align-items:center;gap:12px;padding:0 24px;}
+  /* 演示模式：放在工具栏右侧空白区域 */
+  .demo-mode{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  .demo-label{font-size:16px;color:var(--text-2);}
+
+  /* 查询条件 */
+  .filter-bar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:22px 24px 0 32px;}
+  .filter-grid{display:grid;grid-template-columns:repeat(3,minmax(176px,236px));gap:20px 22px;}
+  .fitem{display:flex;align-items:center;min-width:0;}
+  .fitem .lb{flex:0 0 88px;font-size:16px;color:var(--text-2);text-align:right;}
+  .fitem .el-select{flex:1;min-width:0;}
+  .search-box{width:206px;flex:0 1 206px;min-width:150px;margin-top:1px;}
+
+  /* 表格 */
+  .table-wrap{flex:1;min-height:0;margin:14px 24px 0;display:flex;flex-direction:column;}
+  .tb{flex:1;min-height:0;width:100%;font-size:15px;}
+  .tb.el-table{
+    --el-table-border-color:#eef2f7;--el-table-header-bg-color:#f7f9fc;
+    --el-table-row-hover-bg-color:#f7fbff;--el-table-text-color:#5f6875;
+    --el-table-header-text-color:#5f6875;
+  }
+  .tb .el-table__cell{padding:5px 0;}
+  .tb .el-table__header .el-table__cell{padding:6px 0;}
+  .tb .el-table__header th{color:#5f6875;font-weight:500;font-size:15px;background:#f7f9fc;}
+  .tb .el-table__cell .cell{padding-left:14px;padding-right:12px;}
+  /* 固定列：白底 + 两侧轻阴影，与设计稿一致 */
+  .tb .el-table__header th.el-table-fixed-column--left,
+  .tb .el-table__header th.el-table-fixed-column--right{background:#f7f9fc;}
+  .tb .el-table__body .el-table-fixed-column--left,
+  .tb .el-table__body .el-table-fixed-column--right{background:#fff;}
+  .tb td.el-table-fixed-column--right{box-shadow:inset 10px 0 8px -8px rgba(29,33,41,.14);}
+  .tb td.el-table-fixed-column--left{box-shadow:inset -10px 0 8px -8px rgba(29,33,41,.14);}
+
+  .name-cell{color:#1d2129;}
+  .ops{display:flex;align-items:center;gap:16px;}
+  .link{color:var(--primary);cursor:pointer;font-size:15px;white-space:nowrap;}
+  .link:hover{color:var(--primary-hover);text-decoration:underline;}
+  .link.is-disabled{color:#c0c4cc;cursor:not-allowed;}
+  .link.is-disabled:hover{text-decoration:none;color:#c0c4cc;}
+  /* 表格内状态：小圆点 + 文字 */
+  .st{display:inline-flex;align-items:center;gap:6px;color:#5f6875;white-space:nowrap;}
+  .st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .st.up{color:#22b07d;}
+  .st.down{color:#98a1ae;}
+
+  .pager{display:flex;justify-content:flex-end;padding:12px 24px 14px;}
+  .pager .el-pagination{font-size:14px;}
+
+  /* ================= 教材详情（编辑页） ================= */
+  .detail-head{display:flex;align-items:center;gap:30px;padding:0 24px;min-height:34px;}
+  .detail-title{font-size:22px;font-weight:700;color:var(--text-1);}
+  .detail-meta{font-size:15px;color:#8b93a3;white-space:nowrap;}
+  .dtabs{display:flex;gap:12px;padding:16px 24px 0;}
+  .dtab{
+    height:44px;padding:0 44px;display:inline-flex;align-items:center;
+    border:1px solid #e4e9f2;border-radius:4px;background:#fff;
+    font-size:16px;color:#5a6478;cursor:pointer;transition:.18s;
+  }
+  .dtab:hover{color:var(--primary);border-color:#bcd4fb;}
+  .dtab.is-active{color:var(--text-1);font-weight:600;border-color:var(--primary);}
+  .dtoolbar{display:flex;align-items:center;gap:12px;padding:16px 24px 0;}
+  .dtoolbar .grow{margin-left:auto;}
+  .dtable-wrap{flex:1;min-height:0;margin:14px 24px 0;display:flex;flex-direction:column;}
+  .dtb{flex:1;min-height:0;width:100%;font-size:16px;}
+  .dtb.el-table{--el-table-border-color:#e6ecf6;--el-table-header-bg-color:#f2f6fd;--el-table-row-hover-bg-color:#f7fbff;}
+  .dtb .el-table__cell{padding:18px 0;}
+  .dtb .el-table__header .el-table__cell{padding:9px 0;}
+  .dtb .el-table__header th{color:var(--text-1);font-weight:500;font-size:16px;background:#f2f6fd;}
+  .dtb .el-table__cell .cell{padding-left:14px;padding-right:10px;}
+  .dtb .el-table__expand-icon{color:#9aa5b6;}
+  .dir-name{color:var(--text-2);}
+  .dir-ops{display:flex;align-items:center;gap:16px;}
+  .dir-ops .link.danger{color:#f0564a;}
+  .dir-ops .link.danger:hover{color:#e33f32;}
+  .dfooter{display:flex;justify-content:center;gap:12px;padding:18px 0 30px;}
+
+  /* 导入目录弹窗：沿用 el-dialog / el-form 默认样式 */
+  .import-dialog .el-dialog__footer{padding-top:0;}
+  /* 批量导入：底部按钮与上方表格之间留出间距 */
+  .batch-dialog .el-dialog__footer{padding-top:20px;}
+  .file-row{display:flex;align-items:center;flex-wrap:nowrap;gap:16px;width:100%;}
+  .file-row .el-upload{flex:0 0 auto;}
+  .file-tip{flex:0 1 auto;font-size:14px;color:#909399;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-tip.has-file{color:#2f7cf6;}
+  .mode-tip{width:100%;margin-top:4px;font-size:13px;line-height:1.5;color:#909399;}
+  .req-star{color:#f0564a;margin-left:4px;}
+  .file-row .el-button{height:40px;padding:0 22px;font-size:16px;}
+  .batch-count{margin:4px 0 10px;font-size:14px;color:#5a6478;}
+  .batch-count .link{font-size:14px;margin-left:4px;}
+  /* 批量导入失败明细 */
+  .batch-fail{margin-top:20px;}
+  .batch-fail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .batch-fail-title{display:flex;align-items:center;font-size:16px;font-weight:600;color:#1d2129;}
+  .batch-fail-title::before{content:"";width:4px;height:16px;border-radius:2px;background:#f56c6c;margin-right:8px;}
+  .batch-fail-count{margin-left:6px;font-weight:400;font-size:15px;color:#8a93a0;}
+  .batch-table.batch-fail-table td .cell{color:#f56c6c;word-break:break-all;}
+  .batch-table{
+    margin-top:0;font-size:15px;
+    --el-table-header-bg-color:#f7f8fa;--el-table-border-color:#ebeef5;
+  }
+  .batch-table th .cell{color:#606266;font-weight:400;}
+  .batch-table td .cell{color:#5f6875;}
+
+  /* 空页占位 */
+  .empty-page{flex:1;display:flex;align-items:center;justify-content:center;}
+
+  /* Element Plus 局部微调 */
+  .bico{display:inline-flex;width:15px;height:15px;margin-right:7px;}
+  .bico svg{width:15px;height:15px;display:block;}
+  .s-ico{display:inline-flex;width:16px;height:16px;color:#b6becb;}
+  .s-ico svg{width:16px;height:16px;display:block;}
+  .el-button{font-size:16px;height:34px;border-radius:4px;}
+  .el-select .el-select__wrapper{min-height:34px;font-size:16px;border-radius:4px;}
+  .el-input .el-input__wrapper{min-height:34px;border-radius:4px;}
+  .el-input .el-input__inner{font-size:16px;}
+  .el-pagination{--el-pagination-font-size:15px;font-size:15px;}
+
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-thumb{background:#d7dde6;border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const { createApp, ref, reactive, computed } = Vue;
+const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
+const ElMsg = ElementPlus.ElMessage;
+const ElBox = ElementPlus.ElMessageBox;
+
+/* ---------------- 图标 ---------------- */
+const svg = (inner, opt) => {
+  const o = opt || {};
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (o.w || 1.8) +
+    '" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+};
+
+const icons = {
+  /* 知识体系（彩色书） */
+  book:
+    '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+      '<defs><linearGradient id="bookGrad" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#14c2b0"/><stop offset="1" stop-color="#2f7cf6"/>' +
+      '</linearGradient></defs>' +
+      '<g stroke="url(#bookGrad)">' +
+        '<path d="M4.6 5.9A2.4 2.4 0 0 1 7 3.5h12.2v15.3H7A2.4 2.4 0 0 0 4.6 21V5.9Z"/>' +
+        '<path d="M4.6 18.8A2.4 2.4 0 0 1 7 16.4h12.2"/>' +
+      '</g>' +
+    '</svg>',
+  tag: svg('<path d="M20.3 13.1 13.1 20.3a1.8 1.8 0 0 1-2.6 0L3.2 13V3.2h9.8l7.3 7.3a1.8 1.8 0 0 1 0 2.6Z"/><circle cx="7.6" cy="7.6" r="1.3"/>'),
+  mapping: svg('<circle cx="6" cy="6.4" r="2.3"/><circle cx="6" cy="17.6" r="2.3"/><circle cx="18" cy="12" r="2.3"/><path d="M8.3 6.4h4.2a3 3 0 0 1 3 3v.5M8.3 17.6h4.2a3 3 0 0 0 3-3v-.5"/>'),
+  layers: svg('<path d="M12 3.3 3.4 7.5 12 11.7l8.6-4.2L12 3.3Z"/><path d="m3.4 12 8.6 4.2 8.6-4.2"/><path d="m3.4 16.2 8.6 4.2 8.6-4.2"/>'),
+  service: svg('<path d="M12 3.4 5.2 6v5.6c0 4.2 2.9 7.5 6.8 8.7 3.9-1.2 6.8-4.5 6.8-8.7V6L12 3.4Z"/><path d="M9.6 12h4.8"/>'),
+  help: svg('<circle cx="12" cy="12" r="8.4"/><path d="M9.7 9.7a2.4 2.4 0 1 1 3.2 2.3c-.6.3-.9.9-.9 1.6v.2"/><circle cx="12" cy="17.1" r=".9" fill="currentColor" stroke="none"/>'),
+  chevron: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 4.6 3 3 3-3"/></svg>',
+  plus: svg('<path d="M12 5.5v13M5.5 12h13"/>', { w: 2 }),
+  upload: svg('<path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 15v3.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V15"/>', { w: 1.7 }),
+  download: svg('<path d="M12 4v11.5M7.5 11 12 15.5 16.5 11"/><path d="M4.5 15v3.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V15"/>', { w: 1.7 }),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>', { w: 1.9 }),
+};
+
+/* ---------------- 顶部导航 ---------------- */
+const TopBar = {
+  setup() {
+    const menus = [
+      { key: 'knowledge', label: '知识体系', icon: 'book' },
+      { key: 'attr', label: '属性与标签', icon: 'tag' },
+      { key: 'mapping', label: '映射关系', icon: 'mapping' },
+      { key: 'asset', label: '内容资产库', icon: 'layers' },
+      { key: 'open', label: '开放服务', icon: 'service' },
+    ];
+    const active = ref('knowledge');
+    return { menus, active, icons };
+  },
+  template: `
+    <header class="topbar">
+      <div class="logo"><span class="mark"></span><span>九学王内容中台</span></div>
+      <nav class="topnav">
+        <a v-for="m in menus" :key="m.key" class="nav-item"
+           :class="{ 'is-active': active === m.key }" @click="active = m.key">
+          <span class="nav-ico" v-html="icons[m.icon]"></span>
+          <span>{{ m.label }}</span>
+        </a>
+        <span class="nav-more">···</span>
+      </nav>
+      <div class="topbar-right">
+        <button class="pill">接口文档</button>
+        <button class="pill">工作台</button>
+        <span class="help" title="帮助中心" v-html="icons.help"></span>
+        <div class="user">
+          <span class="avatar">易</span>
+          <span class="uname">易丽娟</span>
+        </div>
+      </div>
+    </header>
+  `,
+};
+
+/* ---------------- 左侧菜单 ---------------- */
+const SideMenu = {
+  setup() {
+    const menu = reactive([
+      {
+        label: '教材管理', open: true, kids: true,
+        children: [
+          { label: '教材列表', path: '/textbook' },
+        ],
+      },
+      { label: '学科知识体系', path: '/subject', kids: true, open: false, children: [] },
+      { label: '考点知识体系', path: '/exam-point', kids: true, open: false, children: [] },
+      { label: '教材知识体系', path: '/textbook-system', kids: true, open: false, children: [] },
+    ]);
+    const route = useRoute();
+    const router = useRouter();
+    const isCurrent = (c) => !!c.path && route.path === c.path;
+    const go = (c) => {
+      if (c.path) { router.push(c.path); return; }
+      if (c.kids) c.open = !c.open;
+    };
+    const toggle = (g) => { if (g.kids) g.open = !g.open; };
+    return { menu, isCurrent, go, toggle, icons };
+  },
+  template: `
+    <aside class="sidebar">
+      <div v-for="g in menu" :key="g.label">
+        <div class="menu-item group" :class="{ 'group-open': g.open }"
+             @click="g.children && g.children.length ? toggle(g) : go(g)">
+          <span>{{ g.label }}</span>
+          <span v-if="g.kids" class="chev" :class="{ open: g.open }" v-html="icons.chevron"></span>
+        </div>
+        <template v-if="g.open">
+          <div v-for="c in g.children" :key="c.label" class="menu-item sub"
+               :class="{ current: isCurrent(c) }" @click="go(c)">{{ c.label }}</div>
+        </template>
+      </div>
+    </aside>
+  `,
+};
+
+/* ---------------- 教材列表 ---------------- */
+const TextbookList = {
+  setup() {
+    const filters = reactive([
+      { label: '学段', value: '', options: ['小学', '初中', '高中'] },
+      { label: '学科', value: '', options: ['语文', '数学', '英语', '生物学', '道德与法治', '科学', '历史', '物理', '化学'] },
+      { label: '年级', value: '', options: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级', '七年级', '八年级', '九年级', '高一', '高二', '高三'] },
+      { label: '学制', value: '', options: ['六三制', '五四制', '三年制'] },
+      { label: '出版社', value: '', options: ['人民教育出版社', '北京出版社', '广东教育出版社', '湖南教育出版社', '江苏教育出版社'] },
+      { label: '版本', value: '', options: ['统编版', '北京版', '粤教粤科版', '湘鲁版', '粤教沪外版', '苏教版', '北师大版'] },
+      { label: '改版时间', value: '', options: ['2026年', '2025年', '2024年'] },
+      { label: '期数', value: '', options: ['第1期', '第2期', '第3期'] },
+      { label: '状态', value: '', options: ['已上架', '已下架'] },
+    ]);
+    const keyword = ref('');
+    const router = useRouter();
+
+    const rows = ref([
+      { name: '测试教材', ver: '北京版', sys: '六三制', stage: '初中', subject: '生物学', grade: '九年级', vol: '上册',
+        verNo: '2024', isbn: '978-7-303-12345-6', status: '已上架', revTime: '2026-03-12', issues: '第1期', onlineVer: '2.4', midVer: '2.4',
+        rid: '2118173240886046722', createTime: '2026-02-18 10:22:41', creator: '易丽娟', updateTime: '2026-03-12 16:40:02', updater: '易丽娟', canUpdate: true },
+    ]);
+
+    const total = ref(1);
+    const page = ref(1);
+    const pageSize = ref(10);
+
+    const onAdd = () => ElMsg.info('新增教材');
+    /* 批量导入弹窗：仅支持 zip 文件；导入成功后固定追加两条教材数据（内容来自教材2/教材3.xlsx） */
+    const batchOpen = ref(false);
+    const batchFile = ref('');
+    const onImport = () => { batchFile.value = ''; batchErrors.value = []; failFile.value = ''; batchOpen.value = true; };
+    const onBatchFile = (f) => {
+      if (!f || !f.name) return;
+      if (!/\.zip$/i.test(f.name)) { ElMsg.warning('仅支持 zip 文件格式'); return; }
+      batchFile.value = f.name;
+      batchErrors.value = [];
+      failFile.value = '';
+    };
+    const onBatchRemove = () => { batchFile.value = ''; batchErrors.value = []; failFile.value = ''; };
+    /* 导入结果演示模式：全部成功 / 部分成功 / 全部失败 */
+    const batchMode = ref('全部成功');
+    /* 导入失败明细（选择文件后点击确定时展示，弹窗不关闭） */
+    const batchErrors = ref([]);
+    /* 失败统计：失败教材本数（按文件去重）+ 明细条数 */
+    const failBooks = computed(() => new Set(batchErrors.value.map((e) => e.file)).size);
+    const failItems = computed(() => batchErrors.value.length);
+    /* 失败文件下拉筛选：默认不选中（展示全部明细） */
+    const failFile = ref('');
+    const failFileOptions = computed(() => [...new Set(batchErrors.value.map((e) => e.file))]);
+    const filteredErrors = computed(() => (failFile.value
+      ? batchErrors.value.filter((e) => e.file === failFile.value)
+      : batchErrors.value));
+    const ERR_PUB = { file: '教材2.xlsx', row: '第2行', reason: '未找到出版社[广东教育出版社,上海外语教育出版社]' };
+    const ERR_ISBN = { file: '教材3.xlsx', row: '第2行', reason: 'ISBN编码[224]已存在，请确认唯一性' };
+    const FIXED_IMPORT_ROWS = [
+      { name: '测试批量导入教材1', ver: '粤教沪外版', sys: '', stage: '小学', subject: '英语', grade: '一年级', vol: '上册', verNo: '2024', isbn: '221', canUpdate: true, canPreview: false },
+      { name: '测试批量导入教材2', ver: '北京版', sys: '', stage: '小学', subject: '语文', grade: '二年级', vol: '下册', verNo: '2019', isbn: '224', canUpdate: true, canPreview: false },
+    ];
+    const onBatchConfirm = () => {
+      if (!batchFile.value) { ElMsg.warning('请先选择导入文件'); return; }
+      failFile.value = '';
+      /* 全部失败：两条都失败，列表不新增，弹窗保留并展示失败明细 */
+      if (batchMode.value === '全部失败') {
+        batchErrors.value = [ERR_PUB, ERR_ISBN];
+        ElMsg.error('导入成功 0 个，失败 2 个');
+        return;
+      }
+      const okRows = batchMode.value === '部分成功' ? FIXED_IMPORT_ROWS.slice(0, 1) : FIXED_IMPORT_ROWS;
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const ts = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      /* 新导入的教材：线上版本尚未发布为空、中台版本 1.0、预览不可用 */
+      const added = okRows.map((b, idx) => ({
+        ...b, status: '已上架', revTime: ts.slice(0, 10), issues: '第1期', onlineVer: '', midVer: '1.0',
+        rid: '2118' + Date.now() + idx, createTime: ts, creator: '易丽娟', updateTime: ts, updater: '易丽娟',
+      }));
+      rows.value = [...rows.value, ...added];
+      total.value = rows.value.length;
+      page.value = 1;
+      /* 部分成功：成功 1 条入列表，失败 1 条在弹窗内展示，弹窗不关闭 */
+      if (batchMode.value === '部分成功') {
+        batchErrors.value = [ERR_ISBN];
+        ElMsg.warning('导入成功 1 个，失败 1 个');
+        return;
+      }
+      batchErrors.value = [];
+      batchOpen.value = false;
+      ElMsg.success('导入成功 ' + added.length + ' 个，失败 0 个');
+    };
+    /* 下载导入模板：用 SheetJS 真实生成 xlsx，表头与解析映射一致 */
+    const onTemplate = () => {
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['教材名称', '版本', '学制', '学段', '学科', '年级', '册次', '版本号', 'ISBN', '状态', '改版时间', '期数', '线上版本', '中台版本', 'ID', '创建时间', '创建人', '更新时间', '更新人'],
+        ['示例教材', '人教版', '六三制', '初中', '语文', '七年级', '上册', '2024', '978-7-107-12345-6', '已上架', '2026-01-01', '第1期', '2.5', '2.4', '2118173240886046700', '2026-01-01 08:00:00', '易丽娟', '2026-01-01 08:00:00', '易丽娟'],
+      ]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '教材导入模板');
+      XLSX.writeFile(wb, '教材导入模板.xlsx');
+      ElMsg.success('模板已下载');
+    };
+    const onPreview = (row) => { if (row.canPreview !== false) ElMsg.info('预览：' + row.name); };
+    const onEdit = (row) => router.push({ path: '/textbook/edit', query: { name: row.name } });
+    const onUpdate = (row) => { if (row.canUpdate) ElMsg.success('已更新：' + row.name); };
+    const onOffline = (row) => {
+      ElBox.confirm('确认下架《' + row.name + '》？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => ElMsg.success('已下架'))
+        .catch(() => {});
+    };
+
+    return {
+      filters, keyword, rows, total, page, pageSize, icons,
+      onAdd, onImport, onTemplate, onPreview, onEdit, onUpdate, onOffline,
+      batchOpen, batchFile, batchMode, batchErrors, failBooks, failItems, failFile, failFileOptions, filteredErrors,
+      onBatchFile, onBatchRemove, onBatchConfirm,
+    };
+  },
+  template: `
+    <section class="main">
+      <div class="page-card">
+        <div class="breadcrumb">
+          <span>知识体系</span><span class="sep">/</span>
+          <span>教材管理</span><span class="sep">/</span>
+          <span>教材列表</span>
+        </div>
+
+        <div class="toolbar">
+          <el-button type="primary">
+            <span class="bico" v-html="icons.plus" />新增教材
+          </el-button>
+          <el-button @click="onImport">
+            <span class="bico" v-html="icons.upload" />批量导入
+          </el-button>
+          <el-button @click="onTemplate">
+            <span class="bico" v-html="icons.download" />下载导入模板
+          </el-button>
+          <div class="demo-mode">
+            <span class="demo-label">演示模式</span>
+            <el-radio-group v-model="batchMode">
+              <el-radio-button value="全部成功">全部成功</el-radio-button>
+              <el-radio-button value="部分成功">部分成功</el-radio-button>
+              <el-radio-button value="全部失败">全部失败</el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-grid">
+            <div class="fitem" v-for="f in filters" :key="f.label">
+              <span class="lb">{{ f.label }}：</span>
+              <el-select v-model="f.value" placeholder="请选择" clearable>
+                <el-option v-for="o in f.options" :key="o" :label="o" :value="o" />
+              </el-select>
+            </div>
+          </div>
+          <el-input v-model="keyword" class="search-box" placeholder="请输入" clearable>
+            <template #prefix><span class="s-ico" v-html="icons.search" /></template>
+          </el-input>
+        </div>
+
+        <div class="table-wrap">
+          <el-table :data="rows" class="tb" height="100%" border>
+            <el-table-column prop="name" label="教材名称" width="240" fixed="left" show-overflow-tooltip>
+              <template #default="{ row }"><span class="name-cell">{{ row.name }}</span></template>
+            </el-table-column>
+            <el-table-column prop="ver" label="版本" width="120" show-overflow-tooltip />
+            <el-table-column prop="sys" label="学制" width="96" />
+            <el-table-column prop="stage" label="学段" width="96" />
+            <el-table-column prop="subject" label="学科" width="104" show-overflow-tooltip />
+            <el-table-column prop="grade" label="年级" width="96" />
+            <el-table-column prop="vol" label="册次" width="112" show-overflow-tooltip />
+            <el-table-column prop="verNo" label="版本号" width="96" show-overflow-tooltip />
+            <el-table-column prop="isbn" label="ISBN" width="156" show-overflow-tooltip />
+            <el-table-column prop="status" label="状态" width="96">
+              <template #default="{ row }">
+                <span class="st" :class="row.status === '已上架' ? 'up' : 'down'">{{ row.status }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="revTime" label="改版时间" width="116" show-overflow-tooltip />
+            <el-table-column prop="issues" label="期数" width="80" show-overflow-tooltip />
+            <el-table-column prop="onlineVer" label="线上版本" width="104" show-overflow-tooltip />
+            <el-table-column prop="midVer" label="中台版本" width="104" show-overflow-tooltip />
+            <el-table-column prop="rid" label="ID" width="180" show-overflow-tooltip />
+            <el-table-column prop="createTime" label="创建时间" width="158" show-overflow-tooltip />
+            <el-table-column prop="creator" label="创建人" width="96" show-overflow-tooltip />
+            <el-table-column prop="updateTime" label="更新时间" width="158" show-overflow-tooltip />
+            <el-table-column prop="updater" label="更新人" width="96" show-overflow-tooltip />
+            <el-table-column label="操作" width="200" fixed="right">
+              <template #default="{ row }">
+                <div class="ops">
+                  <span class="link" :class="{ 'is-disabled': row.canPreview === false }" @click="onPreview(row)">预览</span>
+                  <span class="link" @click="onEdit(row)">编辑</span>
+                  <span class="link" :class="{ 'is-disabled': !row.canUpdate }" @click="onUpdate(row)">更新</span>
+                  <span class="link" @click="onOffline(row)">下架</span>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
+        <div class="pager">
+          <el-pagination
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
+            :total="total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            background />
+        </div>
+      </div>
+
+      <el-dialog v-model="batchOpen" title="批量导入" width="720px" align-center class="import-dialog batch-dialog"
+                 :close-on-click-modal="false">
+        <el-form label-width="84px">
+          <el-form-item>
+            <template #label>
+              <span>选择文件</span><span class="req-star">*</span>
+            </template>
+            <div class="file-row">
+              <el-upload :auto-upload="false" :show-file-list="false" accept=".zip" :on-change="onBatchFile">
+                <el-button type="primary"><span class="bico" v-html="icons.plus" />选择文件</el-button>
+              </el-upload>
+              <span class="file-tip">仅支持 zip 文件格式</span>
+            </div>
+          </el-form-item>
+        </el-form>
+
+        <el-table v-if="batchFile" :data="[{ name: batchFile }]" border size="small" class="batch-table">
+          <el-table-column prop="name" label="文件" min-width="200" show-overflow-tooltip />
+          <el-table-column label="操作" width="110">
+            <template #default="{ row }">
+              <span class="link" @click="onBatchRemove(row)">删除</span>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 导入失败明细：部分成功 / 全部失败时展示，弹窗保持打开 -->
+        <div v-if="batchErrors.length" class="batch-fail">
+          <div class="batch-fail-head">
+            <span class="batch-fail-title">失败明细<span class="batch-fail-count">（共 {{ failBooks }} 个文件，{{ failItems }} 条明细）</span></span>
+            <el-select v-model="failFile" size="small" class="batch-fail-select" style="width:170px" placeholder="请选择">
+              <el-option v-for="f in failFileOptions" :key="f" :label="f" :value="f" />
+            </el-select>
+          </div>
+          <el-table :data="filteredErrors" border size="small" class="batch-table batch-fail-table">
+            <el-table-column prop="file" label="文件名称" width="150" show-overflow-tooltip />
+            <el-table-column prop="row" label="所在行" width="100" />
+            <el-table-column prop="reason" label="失败原因" min-width="220" />
+          </el-table>
+        </div>
+        <template #footer>
+          <el-button @click="batchOpen = false">取消</el-button>
+          <el-button type="primary" @click="onBatchConfirm">确定</el-button>
+        </template>
+      </el-dialog>
+    </section>
+  `,
+};
+
+/* ---------------- 教材详情（编辑页） ---------------- */
+let dirSeq = 100;
+const TextbookDetail = {
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const title = computed(() => route.query.name || '测试教材');
+    const meta = { id: '2118173240886046722', ver: '2.4' };
+
+    const tabs = ['基本信息', '教材目录', '题库目录'];
+    const activeTab = ref('教材目录');
+
+    const tree = ref([
+      { id: '1', name: 'chapter_test1', level: '一级章节' },
+      { id: '2', name: 'chapter_test2', level: '一级章节' },
+      { id: '3', name: 'chapter_test3', level: '一级章节', children: [
+        { id: '3-1', name: 'chapter_test_3_1', level: '二级章节' },
+      ] },
+      { id: '4', name: 'chapter_test4', level: '一级章节', children: [
+        { id: '4-1', name: 'chapter_test_4_1()', level: '二级章节' },
+      ] },
+    ]);
+    const refresh = () => { tree.value = [...tree.value]; };
+
+    const nextLevel = (lv) => (lv === '一级章节' ? '二级章节' : lv === '二级章节' ? '三级章节' : '四级章节');
+
+    const onAdd = () => {
+      ElBox.prompt('请输入目录名称', '添加章节', { inputPlaceholder: '如 chapter_test5' })
+        .then(({ value }) => {
+          tree.value.push({ id: 'd' + dirSeq++, name: value || '未命名章节', level: '一级章节' });
+          refresh();
+          ElMsg.success('已添加章节');
+        })
+        .catch(() => {});
+    };
+    const onImport = () => { importOpen.value = true; };
+    /* 导入目录弹窗 */
+    const importOpen = ref(false);
+    const importMode = ref('append');
+    const modeTip = computed(() => (importMode.value === 'append'
+      ? '保留现有目录，在目录末尾追加导入的章节'
+      : '清空现有目录，使用导入文件重新生成目录'));
+    const importFile = ref('');
+    const onFileChange = (f) => { importFile.value = (f && f.name) || ''; };
+    const onFileRemove = () => { importFile.value = ''; };
+    const onImportConfirm = () => {
+      if (!importFile.value) { ElMsg.warning('请先选择导入文件'); return; }
+      const demo = () => [
+        { id: 'i' + dirSeq++, name: '导入章节_1', level: '一级章节', children: [
+          { id: 'i' + dirSeq++, name: '导入章节_1_1', level: '二级章节' },
+        ] },
+        { id: 'i' + dirSeq++, name: '导入章节_2', level: '一级章节' },
+      ];
+      if (importMode.value === 'cover') {
+        tree.value = demo();
+      } else {
+        tree.value.push(...demo());
+      }
+      refresh();
+      importOpen.value = false;
+      ElMsg.success('目录导入成功');
+    };
+    const onTemplate = () => ElMsg.info('下载导入模板');
+    const onExport = () => ElMsg.info('导出目录');
+    const onAddChild = (row) => {
+      ElBox.prompt('请输入子章节名称', '添加子章节', { inputPlaceholder: '如 ' + row.name + '_1' })
+        .then(({ value }) => {
+          if (!row.children) row.children = [];
+          row.children.push({ id: 'd' + dirSeq++, name: value || '未命名章节', level: nextLevel(row.level) });
+          refresh();
+          ElMsg.success('已添加子章节');
+        })
+        .catch(() => {});
+    };
+    const onRename = (row) => {
+      ElBox.prompt('请输入目录名称', '修改目录', { inputValue: row.name })
+        .then(({ value }) => {
+          row.name = value || row.name;
+          refresh();
+          ElMsg.success('修改成功');
+        })
+        .catch(() => {});
+    };
+    const removeNode = (list, id) =>
+      list.filter((n) => n.id !== id).map((n) => (n.children ? { ...n, children: removeNode(n.children, id) } : n));
+    const onDelete = (row) => {
+      ElBox.confirm('确认删除「' + row.name + '」？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => {
+          tree.value = removeNode(tree.value, row.id);
+          ElMsg.success('已删除');
+        })
+        .catch(() => {});
+    };
+    const onBack = () => router.push('/textbook');
+    const onSave = () => ElMsg.success('保存成功');
+
+    return {
+      title, meta, tabs, activeTab, tree, icons,
+      onAdd, onImport, onTemplate, onExport, onAddChild, onRename, onDelete, onBack, onSave,
+      importOpen, importMode, modeTip, importFile, onFileChange, onFileRemove, onImportConfirm,
+    };
+  },
+  template: `
+    <section class="main">
+      <div class="page-card">
+        <div class="breadcrumb">
+          <span>知识体系</span><span class="sep">/</span>
+          <span>教材管理</span><span class="sep">/</span>
+          <span>教材详情</span>
+        </div>
+
+        <div class="detail-head">
+          <span class="detail-title">{{ title }}</span>
+          <span class="detail-meta">ID：{{ meta.id }}</span>
+          <span class="detail-meta">中台版本：{{ meta.ver }}</span>
+        </div>
+
+        <div class="dtabs">
+          <span v-for="t in tabs" :key="t" class="dtab" :class="{ 'is-active': activeTab === t }"
+                @click="activeTab = t">{{ t }}</span>
+        </div>
+
+        <template v-if="activeTab === '教材目录'">
+          <div class="dtoolbar">
+            <el-button type="primary" @click="onAdd"><span class="bico" v-html="icons.plus" />添加章节</el-button>
+            <el-button @click="onImport"><span class="bico" v-html="icons.upload" />导入目录</el-button>
+            <el-button @click="onTemplate"><span class="bico" v-html="icons.download" />下载导入模板</el-button>
+            <el-button class="grow" @click="onExport"><span class="bico" v-html="icons.upload" />导出目录</el-button>
+          </div>
+
+          <div class="dtable-wrap">
+            <el-table :data="tree" class="dtb" row-key="id" border default-expand-all
+                      :tree-props="{ children: 'children' }" height="100%">
+              <el-table-column prop="name" label="目录名称" min-width="400">
+                <template #default="{ row }"><span class="dir-name">{{ row.name }}</span></template>
+              </el-table-column>
+              <el-table-column prop="level" label="目录层级" width="300" />
+              <el-table-column label="基础操作" width="246">
+                <template #default="{ row }">
+                  <div class="dir-ops">
+                    <span class="link" @click="onAddChild(row)">添加子章节</span>
+                    <span class="link" @click="onRename(row)">修改</span>
+                    <span class="link danger" @click="onDelete(row)">删除</span>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </template>
+
+        <div v-else class="empty-page">
+          <el-empty :description="activeTab + ' · 页面建设中'" />
+        </div>
+
+        <div class="dfooter">
+          <el-button @click="onBack">返回</el-button>
+          <el-button type="primary" @click="onSave">保存</el-button>
+        </div>
+      </div>
+
+      <el-dialog v-model="importOpen" title="导入目录" width="520px" align-center class="import-dialog" :close-on-click-modal="false">
+        <el-form label-width="84px">
+          <el-form-item label="导入方式" required>
+            <el-radio-group v-model="importMode">
+              <el-radio value="append">追加</el-radio>
+              <el-radio value="cover">覆盖</el-radio>
+            </el-radio-group>
+            <div class="mode-tip">{{ modeTip }}</div>
+          </el-form-item>
+          <el-form-item label="选择文件" required>
+            <div class="file-row">
+              <el-upload :auto-upload="false" :show-file-list="false" accept=".xls,.xlsx" :on-change="onFileChange">
+                <el-button type="primary">选择文件</el-button>
+              </el-upload>
+              <span class="file-tip" :class="{ 'has-file': importFile }">{{ importFile || '仅限 xls / xlsx 文件格式' }}</span>
+            </div>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="importOpen = false">取消</el-button>
+          <el-button type="primary" @click="onImportConfirm">确定</el-button>
+        </template>
+      </el-dialog>
+    </section>
+  `,
+};
+
+/* ---------------- 其它菜单占位页 ---------------- */
+const EmptyPage = {
+  props: { title: { type: String, default: '' } },
+  setup() {
+    return { icons };
+  },
+  template: `
+    <section class="main">
+      <div class="page-card">
+        <div class="breadcrumb">
+          <span>知识体系</span><span class="sep">/</span><span>{{ title }}</span>
+        </div>
+        <div class="empty-page">
+          <el-empty :description="title + ' · 页面建设中'" />
+        </div>
+      </div>
+    </section>
+  `,
+};
+
+/* ---------------- 路由 ---------------- */
+const routes = [
+  { path: '/', redirect: '/textbook' },
+  { path: '/textbook', component: TextbookList },
+  { path: '/textbook/edit', component: TextbookDetail },
+  { path: '/subject', component: EmptyPage, props: { title: '学科知识体系' } },
+  { path: '/exam-point', component: EmptyPage, props: { title: '考点知识体系' } },
+  { path: '/textbook-system', component: EmptyPage, props: { title: '教材知识体系' } },
+  { path: '/:pathMatch(.*)*', redirect: '/textbook' },
+];
+const router = createRouter({ history: createWebHashHistory(), routes });
+
+const App = {
+  components: { TopBar, SideMenu },
+  template: `
+    <div class="shell">
+      <top-bar />
+      <div class="layout">
+        <side-menu />
+        <router-view />
+      </div>
+    </div>
+  `,
+};
+
+createApp(App).use(router).use(ElementPlus, { locale: ElementPlusLocaleZhCn }).mount('#app');
+</script>
+</body>
+</html>
