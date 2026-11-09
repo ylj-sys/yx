@@ -109,10 +109,10 @@
   .breadcrumb{padding:26px 24px 16px;font-size:16px;color:#98a1ae;display:flex;gap:8px;flex-wrap:wrap;}
   .breadcrumb .sep{color:#ccd3dd;}
 
-  .toolbar{display:flex;align-items:center;gap:12px;padding:0 24px;}
+  .toolbar{display:flex;align-items:center;flex-wrap:wrap;row-gap:10px;gap:12px;padding:0 24px;}
   /* 演示模式：放在工具栏右侧空白区域 */
   .demo-mode{margin-left:auto;display:flex;align-items:center;gap:12px;}
-  .demo-label{font-size:16px;color:var(--text-2);}
+  .demo-label{font-size:16px;color:var(--text-2);white-space:nowrap;}
 
   /* 查询条件 */
   .filter-bar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:22px 24px 0 32px;}
@@ -203,7 +203,7 @@
   .batch-fail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
   .batch-fail-title{display:flex;align-items:center;font-size:16px;font-weight:600;color:#1d2129;}
   .batch-fail-title::before{content:"";width:4px;height:16px;border-radius:2px;background:#f56c6c;margin-right:8px;}
-  .batch-fail-count{margin-left:6px;font-weight:400;font-size:15px;color:#8a93a0;}
+  .batch-fail-count{margin-left:6px;font-weight:400;font-size:15px;color:#909399;}
   .batch-table.batch-fail-table td .cell{color:#f56c6c;word-break:break-all;}
   .batch-table{
     margin-top:0;font-size:15px;
@@ -431,7 +431,7 @@ const TextbookList = {
       /* 部分成功：成功 1 条入列表，失败 1 条在弹窗内展示，弹窗不关闭 */
       if (batchMode.value === '部分成功') {
         batchErrors.value = [ERR_ISBN];
-        ElMsg.warning('导入成功 1 个，失败 1 个');
+        ElMsg.error('导入成功 1 个，失败 1 个');
         return;
       }
       batchErrors.value = [];
@@ -485,7 +485,7 @@ const TextbookList = {
             <span class="bico" v-html="icons.download" />下载导入模板
           </el-button>
           <div class="demo-mode">
-            <span class="demo-label">演示模式</span>
+            <span class="demo-label">【批量导入】演示模式</span>
             <el-radio-group v-model="batchMode">
               <el-radio-button value="全部成功">全部成功</el-radio-button>
               <el-radio-button value="部分成功">部分成功</el-radio-button>
@@ -575,7 +575,7 @@ const TextbookList = {
           </el-form-item>
         </el-form>
 
-        <el-table v-if="batchFile" :data="[{ name: batchFile }]" border size="small" class="batch-table">
+        <el-table v-if="batchFile" :data="[{ name: batchFile }]" border size="small" class="batch-table" show-overflow-tooltip >
           <el-table-column prop="name" label="文件" min-width="200" show-overflow-tooltip />
           <el-table-column label="操作" width="110">
             <template #default="{ row }">
@@ -588,14 +588,14 @@ const TextbookList = {
         <div v-if="batchErrors.length" class="batch-fail">
           <div class="batch-fail-head">
             <span class="batch-fail-title">失败明细<span class="batch-fail-count">（共 {{ failBooks }} 个文件，{{ failItems }} 条明细）</span></span>
-            <el-select v-model="failFile" size="small" class="batch-fail-select" style="width:170px" placeholder="请选择">
+            <el-select v-model="failFile" size="small" class="batch-fail-select" style="width:200px" placeholder="请选择失败文件" clearable filterable>
               <el-option v-for="f in failFileOptions" :key="f" :label="f" :value="f" />
             </el-select>
           </div>
-          <el-table :data="filteredErrors" border size="small" class="batch-table batch-fail-table">
+          <el-table :data="filteredErrors" border size="small" class="batch-table batch-fail-table" show-overflow-tooltip>
             <el-table-column prop="file" label="文件名称" width="150" show-overflow-tooltip />
-            <el-table-column prop="row" label="所在行" width="100" />
-            <el-table-column prop="reason" label="失败原因" min-width="220" />
+            <el-table-column prop="row" label="所在行" width="100" show-overflow-tooltip/>
+            <el-table-column prop="reason" label="失败原因" min-width="220" show-overflow-tooltip/>
           </el-table>
         </div>
         <template #footer>
