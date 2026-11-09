@@ -376,18 +376,23 @@ const TextbookList = {
     const pageSize = ref(10);
 
     const onAdd = () => ElMsg.info('新增教材');
-    /* 批量导入弹窗：仅支持 zip 文件；导入成功后固定追加两条教材数据（内容来自教材2/教材3.xlsx） */
+    /* 批量导入弹窗：支持 zip/rar/xls/xlsx 文件；导入成功后固定追加两条教材数据（内容来自教材2/教材3.xlsx） */
     const batchOpen = ref(false);
-    const batchFile = ref('');
-    const onImport = () => { batchFile.value = ''; batchErrors.value = []; failFile.value = ''; batchOpen.value = true; };
+    /* 支持多选文件：batchFiles 保存已选文件名列表 */
+    const batchFiles = ref([]);
+    const onImport = () => { batchFiles.value = []; batchErrors.value = []; failFile.value = ''; batchOpen.value = true; };
     const onBatchFile = (f) => {
       if (!f || !f.name) return;
-      if (!/\.zip$/i.test(f.name)) { ElMsg.warning('仅支持 zip 文件格式'); return; }
-      batchFile.value = f.name;
+      if (!/\.(zip|rar|xls|xlsx)$/i.test(f.name)) { ElMsg.warning('仅支持 zip、rar、xls、xlsx 文件格式'); return; }
+      if (!batchFiles.value.includes(f.name)) batchFiles.value = [...batchFiles.value, f.name];
       batchErrors.value = [];
       failFile.value = '';
     };
-    const onBatchRemove = () => { batchFile.value = ''; batchErrors.value = []; failFile.value = ''; };
+    const onBatchRemove = (row) => {
+      batchFiles.value = batchFiles.value.filter((n) => n !== row.name);
+      batchErrors.value = [];
+      failFile.value = '';
+    };
     /* 导入结果演示模式：全部成功 / 部分成功 / 全部失败 */
     const batchMode = ref('全部成功');
     /* 导入失败明细（选择文件后点击确定时展示，弹窗不关闭） */
@@ -401,18 +406,25 @@ const TextbookList = {
     const filteredErrors = computed(() => (failFile.value
       ? batchErrors.value.filter((e) => e.file === failFile.value)
       : batchErrors.value));
-    const ERR_PUB = { file: '教材2.xlsx', row: '第2行', reason: '未找到出版社[广东教育出版社,上海外语教育出版社]' };
-    const ERR_ISBN = { file: '教材3.xlsx', row: '第2行', reason: 'ISBN编码[224]已存在，请确认唯一性' };
+    /* 失败明细的文件名取自实际所选文件（取前两个，不足时复用第一个） */
+    const makeErrors = () => {
+      const f0 = batchFiles.value[0] || '教材2.xlsx';
+      const f1 = batchFiles.value[1] || f0;
+      return [
+        { file: f0, row: '第2行', reason: '未找到出版社[广东教育出版社,上海外语教育出版社]' },
+        { file: f1, row: '第2行', reason: 'ISBN编码[224]已存在，请确认唯一性' },
+      ];
+    };
     const FIXED_IMPORT_ROWS = [
       { name: '测试批量导入教材1', ver: '粤教沪外版', sys: '', stage: '小学', subject: '英语', grade: '一年级', vol: '上册', verNo: '2024', isbn: '221', canUpdate: true, canPreview: false },
       { name: '测试批量导入教材2', ver: '北京版', sys: '', stage: '小学', subject: '语文', grade: '二年级', vol: '下册', verNo: '2019', isbn: '224', canUpdate: true, canPreview: false },
     ];
     const onBatchConfirm = () => {
-      if (!batchFile.value) { ElMsg.warning('请先选择导入文件'); return; }
+      if (!batchFiles.value.length) { ElMsg.warning('请先选择导入文件'); return; }
       failFile.value = '';
       /* 全部失败：两条都失败，列表不新增，弹窗保留并展示失败明细 */
       if (batchMode.value === '全部失败') {
-        batchErrors.value = [ERR_PUB, ERR_ISBN];
+        batchErrors.value = makeErrors();
         ElMsg.error('导入成功 0 个，失败 2 个');
         return;
       }
@@ -430,7 +442,7 @@ const TextbookList = {
       page.value = 1;
       /* 部分成功：成功 1 条入列表，失败 1 条在弹窗内展示，弹窗不关闭 */
       if (batchMode.value === '部分成功') {
-        batchErrors.value = [ERR_ISBN];
+        batchErrors.value = [makeErrors()[1]];
         ElMsg.error('导入成功 1 个，失败 1 个');
         return;
       }
@@ -461,7 +473,7 @@ const TextbookList = {
     return {
       filters, keyword, rows, total, page, pageSize, icons,
       onAdd, onImport, onTemplate, onPreview, onEdit, onUpdate, onOffline,
-      batchOpen, batchFile, batchMode, batchErrors, failBooks, failItems, failFile, failFileOptions, filteredErrors,
+      batchOpen, batchFiles, batchMode, batchErrors, failBooks, failItems, failFile, failFileOptions, filteredErrors,
       onBatchFile, onBatchRemove, onBatchConfirm,
     };
   },
@@ -567,15 +579,15 @@ const TextbookList = {
               <span>选择文件</span><span class="req-star">*</span>
             </template>
             <div class="file-row">
-              <el-upload :auto-upload="false" :show-file-list="false" accept=".zip" :on-change="onBatchFile">
+              <el-upload :multiple="true" :auto-upload="false" :show-file-list="false" accept=".zip,.rar,.xls,.xlsx" :on-change="onBatchFile">
                 <el-button type="primary"><span class="bico" v-html="icons.plus" />选择文件</el-button>
               </el-upload>
-              <span class="file-tip">仅支持 zip 文件格式</span>
+              <span class="file-tip">仅支持 zip、rar、xls、xlsx 文件格式</span>
             </div>
           </el-form-item>
         </el-form>
 
-        <el-table v-if="batchFile" :data="[{ name: batchFile }]" border size="small" class="batch-table" show-overflow-tooltip >
+        <el-table v-if="batchFiles.length" :data="batchFiles.map((n) => ({ name: n }))" border size="small" class="batch-table" show-overflow-tooltip >
           <el-table-column prop="name" label="文件" min-width="200" show-overflow-tooltip />
           <el-table-column label="操作" width="110">
             <template #default="{ row }">
