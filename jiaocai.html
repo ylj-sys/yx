@@ -111,7 +111,9 @@
 
   .toolbar{display:flex;align-items:center;flex-wrap:wrap;row-gap:10px;gap:12px;padding:0 24px;}
   /* 演示模式：放在工具栏右侧空白区域 */
-  .demo-mode{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  .demo-mode{display:flex;align-items:center;flex-wrap:wrap;row-gap:10px;gap:12px;}
+  /* 批量导入演示模式：单独占一行并右对齐 */
+  .toolbar .demo-mode{flex:0 0 100%;justify-content:flex-end;}
   .demo-label{font-size:16px;color:var(--text-2);white-space:nowrap;}
 
   /* 查询条件 */
@@ -169,7 +171,7 @@
   }
   .dtab:hover{color:var(--primary);border-color:#bcd4fb;}
   .dtab.is-active{color:var(--text-1);font-weight:600;border-color:var(--primary);}
-  .dtoolbar{display:flex;align-items:center;gap:12px;padding:16px 24px 0;}
+  .dtoolbar{display:flex;align-items:center;flex-wrap:wrap;row-gap:10px;gap:12px;padding:16px 24px 0;}
   .dtoolbar .grow{margin-left:auto;}
   .dtable-wrap{flex:1;min-height:0;margin:14px 24px 0;display:flex;flex-direction:column;}
   .dtb{flex:1;min-height:0;width:100%;font-size:16px;}
@@ -186,7 +188,7 @@
   .dfooter{display:flex;justify-content:center;gap:12px;padding:18px 0 30px;}
 
   /* 导入目录弹窗：沿用 el-dialog / el-form 默认样式 */
-  .import-dialog .el-dialog__footer{padding-top:0;}
+  .import-dialog .el-dialog__footer{padding-top:16px;}
   /* 批量导入：底部按钮与上方表格之间留出间距 */
   .batch-dialog .el-dialog__footer{padding-top:20px;}
   .file-row{display:flex;align-items:center;flex-wrap:nowrap;gap:16px;width:100%;}
@@ -194,6 +196,8 @@
   .file-tip{flex:0 1 auto;font-size:14px;color:#909399;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .file-tip.has-file{color:#2f7cf6;}
   .mode-tip{width:100%;margin-top:4px;font-size:13px;line-height:1.5;color:#909399;}
+  .dtoolbar-right{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;row-gap:10px;gap:12px;}
+  .dtoolbar-right .el-radio-group{flex-wrap:nowrap;}
   .req-star{color:#f0564a;margin-left:4px;}
   .file-row .el-button{height:40px;padding:0 22px;font-size:16px;}
   .batch-count{margin:4px 0 10px;font-size:14px;color:#5a6478;}
@@ -204,7 +208,7 @@
   .batch-fail-title{display:flex;align-items:center;font-size:16px;font-weight:600;color:#1d2129;}
   .batch-fail-title::before{content:"";width:4px;height:16px;border-radius:2px;background:#f56c6c;margin-right:8px;}
   .batch-fail-count{margin-left:6px;font-weight:400;font-size:15px;color:#909399;}
-  .batch-table.batch-fail-table td .cell{color:#f56c6c;word-break:break-all;}
+  .batch-table.batch-fail-table td .cell{color:#f56c6c;white-space:normal;word-break:normal;overflow-wrap:anywhere;line-height:1.5;}
   .batch-table{
     margin-top:0;font-size:15px;
     --el-table-header-bg-color:#f7f8fa;--el-table-border-color:#ebeef5;
@@ -428,6 +432,34 @@ const TextbookList = {
         ElMsg.error('导入成功 0 个，失败 2 个');
         return;
       }
+      /* 单/多文件校验类失败：导入失败并在失败明细中记录 */
+      const f0 = batchFiles.value[0] || '教材导入.xlsx';
+      const f1 = batchFiles.value[1] || '教材导入2.xlsx';
+      const failMap = {
+        '文件为空': [
+          { file: f0, row: '-', reason: '导入文件内容为空，未读取到任何教材数据' },
+        ],
+        '模板不一致': [
+          { file: f0, row: '-', reason: '文件与模板不一致' },
+        ],
+        '字段校验不通过': [
+          { file: f0, row: '第3行', reason: '未找到出版社[广东教育出版社,上海外语教育出版社]' },
+        ],
+        'ISBN与已有重复': [
+          { file: f0, row: '第2行', reason: 'ISBN编码[111111]已存在，请确认唯一性' },
+        ],
+        /* 内部重复：不同上传文件出现相同 ISBN，按理不同文件 ISBN 应不同 */
+        'ISBN内部重复': [
+          { file: f0, row: '第2行', reason: 'ISBN[224]与文件「' + f1 + '」重复，请确认唯一性' },
+          { file: f1, row: '第2行', reason: 'ISBN[224]与文件「' + f0 + '」重复，请确认唯一性' },
+        ],
+      };
+      if (failMap[batchMode.value]) {
+        batchErrors.value = failMap[batchMode.value];
+        failFile.value = '';
+        ElMsg.error('导入成功 0 个，失败 ' + batchErrors.value.length + ' 个');
+        return;
+      }
       const okRows = batchMode.value === '部分成功' ? FIXED_IMPORT_ROWS.slice(0, 1) : FIXED_IMPORT_ROWS;
       const now = new Date();
       const pad = (n) => String(n).padStart(2, '0');
@@ -497,11 +529,16 @@ const TextbookList = {
             <span class="bico" v-html="icons.download" />下载导入模板
           </el-button>
           <div class="demo-mode">
-            <span class="demo-label">【批量导入】演示模式</span>
-            <el-radio-group v-model="batchMode">
+            <span class="demo-label">演示模式</span>
+            <el-radio-group v-model="batchMode" size="small">
               <el-radio-button value="全部成功">全部成功</el-radio-button>
               <el-radio-button value="部分成功">部分成功</el-radio-button>
               <el-radio-button value="全部失败">全部失败</el-radio-button>
+              <el-radio-button value="文件为空">文件为空</el-radio-button>
+              <el-radio-button value="模板不一致">模板不一致</el-radio-button>
+              <el-radio-button value="字段校验不通过">字段校验不通过</el-radio-button>
+              <el-radio-button value="ISBN与已有重复">ISBN与已有重复</el-radio-button>
+              <el-radio-button value="ISBN内部重复">ISBN内部重复</el-radio-button>
             </el-radio-group>
           </div>
         </div>
@@ -607,7 +644,7 @@ const TextbookList = {
           <el-table :data="filteredErrors" border size="small" class="batch-table batch-fail-table" show-overflow-tooltip>
             <el-table-column prop="file" label="文件名称" width="150" show-overflow-tooltip />
             <el-table-column prop="row" label="所在行" width="100" show-overflow-tooltip/>
-            <el-table-column prop="reason" label="失败原因" min-width="220" show-overflow-tooltip/>
+            <el-table-column prop="reason" label="失败原因" min-width="220" :show-overflow-tooltip="false" />
           </el-table>
         </div>
         <template #footer>
@@ -654,7 +691,7 @@ const TextbookDetail = {
         })
         .catch(() => {});
     };
-    const onImport = () => { importOpen.value = true; };
+    const onImport = () => { importFile.value = ''; dirErrors.value = []; importOpen.value = true; };
     /* 导入目录弹窗 */
     const importOpen = ref(false);
     const importMode = ref('append');
@@ -662,10 +699,35 @@ const TextbookDetail = {
       ? '保留现有目录，在目录末尾追加导入的章节'
       : '清空现有目录，使用导入文件重新生成目录'));
     const importFile = ref('');
-    const onFileChange = (f) => { importFile.value = (f && f.name) || ''; };
-    const onFileRemove = () => { importFile.value = ''; };
+    const onFileChange = (f) => { importFile.value = (f && f.name) || ''; dirErrors.value = []; };
+    const onFileRemove = () => { importFile.value = ''; dirErrors.value = []; };
+    /* 导入目录演示模式：正常 / 文件与模板不一致 / 文件为空 / 目录层级断层 */
+    const dirDemo = ref('正常');
+    /* 导入失败明细（所在行 / 失败原因） */
+    const dirErrors = ref([]);
     const onImportConfirm = () => {
       if (!importFile.value) { ElMsg.warning('请先选择导入文件'); return; }
+      /* 校验类演示：导入失败，弹窗保留 */
+      if (dirDemo.value !== '正常') {
+        const file = importFile.value || '教材目录.xlsx';
+        /* 切换模式后重试：先清空上一轮的明细 */
+        dirErrors.value = [];
+        /* 仅「层级断层」展示失败明细表格；模板不一致 / 文件为空 只给顶部提示 */
+        if (dirDemo.value === '模板不一致') {
+          ElMsg.error('导入失败');
+          return;
+        }
+        if (dirDemo.value === '文件为空') {
+          ElMsg.error('导入失败');
+          return;
+        }
+        dirErrors.value = [
+          { file, row: '第3行', reason: '目录层级断层：第4级章节有值，但第1、2、3级为空' },
+          { file, row: '第5行', reason: '目录层级断层：第3级章节有值，但第2级为空' },
+        ];
+        ElMsg.error('导入失败');
+        return;
+      }
       const demo = () => [
         { id: 'i' + dirSeq++, name: '导入章节_1', level: '一级章节', children: [
           { id: 'i' + dirSeq++, name: '导入章节_1_1', level: '二级章节' },
@@ -678,6 +740,7 @@ const TextbookDetail = {
         tree.value.push(...demo());
       }
       refresh();
+      dirErrors.value = [];
       importOpen.value = false;
       ElMsg.success('目录导入成功');
     };
@@ -719,6 +782,7 @@ const TextbookDetail = {
       title, meta, tabs, activeTab, tree, icons,
       onAdd, onImport, onTemplate, onExport, onAddChild, onRename, onDelete, onBack, onSave,
       importOpen, importMode, modeTip, importFile, onFileChange, onFileRemove, onImportConfirm,
+      dirDemo, dirErrors,
     };
   },
   template: `
@@ -746,7 +810,18 @@ const TextbookDetail = {
             <el-button type="primary" @click="onAdd"><span class="bico" v-html="icons.plus" />添加章节</el-button>
             <el-button @click="onImport"><span class="bico" v-html="icons.upload" />导入目录</el-button>
             <el-button @click="onTemplate"><span class="bico" v-html="icons.download" />下载导入模板</el-button>
-            <el-button class="grow" @click="onExport"><span class="bico" v-html="icons.upload" />导出目录</el-button>
+            <div class="dtoolbar-right">
+              <div class="demo-mode">
+                <span class="demo-label">演示模式</span>
+                <el-radio-group v-model="dirDemo">
+                  <el-radio-button value="正常">正常</el-radio-button>
+                  <el-radio-button value="模板不一致">模板不一致</el-radio-button>
+                  <el-radio-button value="文件为空">文件为空</el-radio-button>
+                  <el-radio-button value="层级断层">层级断层</el-radio-button>
+                </el-radio-group>
+              </div>
+              <el-button @click="onExport"><span class="bico" v-html="icons.upload" />导出目录</el-button>
+            </div>
           </div>
 
           <div class="dtable-wrap">
@@ -779,7 +854,7 @@ const TextbookDetail = {
         </div>
       </div>
 
-      <el-dialog v-model="importOpen" title="导入目录" width="520px" align-center class="import-dialog" :close-on-click-modal="false">
+      <el-dialog v-model="importOpen" title="导入目录" width="720px" align-center class="import-dialog" :close-on-click-modal="false">
         <el-form label-width="84px">
           <el-form-item label="导入方式" required>
             <el-radio-group v-model="importMode">
@@ -797,6 +872,16 @@ const TextbookDetail = {
             </div>
           </el-form-item>
         </el-form>
+        <!-- 导入失败明细：所在行 / 失败原因 -->
+        <div v-if="dirErrors.length" class="batch-fail">
+          <div class="batch-fail-head">
+            <span class="batch-fail-title">失败明细<span class="batch-fail-count">（共 {{ dirErrors.length }} 条明细）</span></span>
+          </div>
+          <el-table :data="dirErrors" border size="small" class="batch-table batch-fail-table" show-overflow-tooltip>
+            <el-table-column prop="row" label="所在行" width="120" show-overflow-tooltip />
+            <el-table-column prop="reason" label="失败原因" min-width="320" :show-overflow-tooltip="false" />
+          </el-table>
+        </div>
         <template #footer>
           <el-button @click="importOpen = false">取消</el-button>
           <el-button type="primary" @click="onImportConfirm">确定</el-button>
