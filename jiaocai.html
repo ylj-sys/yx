@@ -295,6 +295,16 @@ const ElBox = ElementPlus.ElMessageBox;
 const MAX_IMPORT_SIZE = 20 * 1024 * 1024;
 /* 弹窗展示文件名时转义，避免文件名里的 HTML 字符影响渲染 */
 const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+/* 下载模板：直接使用与页面同目录的模板文件 */
+const downloadTemplate = (file) => {
+  const a = document.createElement('a');
+  a.href = './' + encodeURIComponent(file);
+  a.download = file;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  ElMsg.success('模板已下载');
+};
 
 /* ---------------- 图标 ---------------- */
 const svg = (inner, opt) => {
@@ -654,17 +664,8 @@ const TextbookList = {
       batchOpen.value = false;
       ElMsg.success('导入成功 ' + added.length + ' 个，失败 0 个');
     };
-    /* 下载导入模板：用 SheetJS 真实生成 xlsx，表头与解析映射一致 */
-    const onTemplate = () => {
-      const ws = XLSX.utils.aoa_to_sheet([
-        ['教材名称', '版本', '学制', '学段', '学科', '年级', '册次', '版本号', 'ISBN', '状态', '改版时间', '期数', '线上版本', '中台版本', 'ID', '创建时间', '创建人', '更新时间', '更新人'],
-        ['示例教材', '人教版', '六三制', '初中', '语文', '七年级', '上册', '2024', '978-7-107-12345-6', '已上架', '2026-01-01', '第1期', '2.5', '2.4', '2118173240886046700', '2026-01-01 08:00:00', '易丽娟', '2026-01-01 08:00:00', '易丽娟'],
-      ]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '教材导入模板');
-      XLSX.writeFile(wb, '教材导入模板.xlsx');
-      ElMsg.success('模板已下载');
-    };
+    /* 下载批量导入模板：使用项目目录下的教材导入模板.xlsx */
+    const onTemplate = () => downloadTemplate('教材导入模板.xlsx');
     const onPreview = (row) => { if (row.canPreview !== false) ElMsg.info('预览：' + row.name); };
     const onEdit = (row) => router.push({ path: '/textbook/edit', query: { name: row.name } });
     const onUpdate = (row) => { if (row.canUpdate) ElMsg.success('已更新：' + row.name); };
@@ -962,7 +963,8 @@ const TextbookDetail = {
       importOpen.value = false;
       ElMsg.success('目录导入成功');
     };
-    const onTemplate = () => ElMsg.info('下载导入模板');
+    /* 下载目录导入模板：使用项目目录下的教材章节导入模板.xlsx */
+    const onTemplate = () => downloadTemplate('教材章节导入模板.xlsx');
     const onExport = () => ElMsg.info('导出目录');
     const onAddChild = (row) => {
       ElBox.prompt('请输入子章节名称', '添加子章节', { inputPlaceholder: '如 ' + row.name + '_1' })
