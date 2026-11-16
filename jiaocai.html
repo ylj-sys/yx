@@ -212,6 +212,15 @@
   .batch-count{margin-left:auto;flex:0 0 auto;white-space:nowrap;font-size:14px;color:#5a6478;}
   .batch-count b{color:#2f7cf6;font-weight:600;}
   .batch-count .link{font-size:14px;margin-left:4px;}
+  /* 文件无法导入提示弹窗：加宽避免文案折行；警告图标置于标题前，正文逐行展示原因 */
+  .invalid-import-box.el-message-box{width:500px;max-width:50vw;}
+  .invalid-import-box .el-message-box__title{display:flex;align-items:center;gap:8px;}
+  .invalid-import-box .el-message-box__title::before{
+    content:'!';display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 20px;width:20px;height:20px;border-radius:50%;
+    background:#e6a23c;color:#fff;font-size:14px;font-weight:700;line-height:1;
+  }
+  .invalid-import-box .el-message-box__message{line-height:1.9;}
   /* 批量导入：表头固定，滚动交给 el-table 自身的 body 区域 */
   .file-list-wrap{overflow:visible;}
   .ops-cell{display:inline-flex;align-items:center;gap:12px;}
@@ -282,6 +291,10 @@ const { createApp, ref, reactive, computed } = Vue;
 const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
 const ElMsg = ElementPlus.ElMessage;
 const ElBox = ElementPlus.ElMessageBox;
+/* 导入文件限制：单个文件不超过 20MB */
+const MAX_IMPORT_SIZE = 20 * 1024 * 1024;
+/* 弹窗展示文件名时转义，避免文件名里的 HTML 字符影响渲染 */
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 /* ---------------- 图标 ---------------- */
 const svg = (inner, opt) => {
@@ -421,8 +434,7 @@ const TextbookList = {
 
     const onAdd = () => ElMsg.info('新增教材');
     /* 批量导入弹窗：仅支持 xls/xlsx 文件；导入成功后固定追加两条教材数据（内容来自教材2/教材3.xlsx） */
-    /* 批量导入限制：单个文件不超过 50MB，最多同时导入 100 个文件 */
-    const MAX_BATCH_SIZE = 50 * 1024 * 1024;
+    /* 批量导入限制：单个文件不超过 20MB，最多同时导入 100 个文件 */
     const MAX_BATCH_COUNT = 100;
     const batchOpen = ref(false);
     /* 支持多选文件：batchFiles 保存已选文件名列表 */
@@ -435,15 +447,80 @@ const TextbookList = {
       failedFiles.value = [];
       batchSummary.value = { total: 0, ok: 0, fail: 0 };
     };
-    const onImport = () => { batchFiles.value = []; resetBatchResult(); batchTab.value = 'pending'; batchOpen.value = true; };
+    /* 演示模式「文件为空/模板不一致」：每 5 个文件中 2 个为空、2 个模板不一致，仅 1 个可导入 */
+    const INVALID_DEMO_REASONS = [
+      '导入文件内容为空',
+      '导入文件内容为空',
+      '文件与模板不一致，缺少必填列【学段】',
+      '文件与模板不一致，列名【期数】重复',
+    ];
+    let invalidDemoSeq = 0;
+    let invalidDemoRows = [];
+    let invalidDemoTimer = null;
+    const showInvalidDemo = () => {
+      if (!invalidDemoRows.length) return;
+      const rows = invalidDemoRows;
+      invalidDemoRows = [];
+      const html = '存在 <b>' + rows.length + '</b> 个文件校验失败，无法进入待导入列表，请修改后重新上传：<br/>' +
+        rows.map((r) => escapeHtml(r.name) + '：' + r.reason).join('<br/>');
+      ElBox.alert(html, '警告', {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: '知道了',
+        customClass: 'invalid-import-box',
+      }).catch(() => {});
+    };
+    /* 超出 100 个上限：按一次多选批次统计，批次结束后统一计算，避免数字被拆分 */
+    let pickedCount = 0;
+    let overLimitCount = 0;
+    let overLimitTimer = null;
+    const showOverLimit = () => {
+      const count = overLimitCount;
+      const picked = pickedCount;
+      pickedCount = 0;
+      overLimitCount = 0;
+      if (count) {
+        ElMsg.warning('最多支持同时导入 100 个文件，已忽略超出的 ' + count + ' 个文件');
+      }
+    };
+    const resetInvalidDemo = () => {
+      invalidDemoSeq = 0;
+      invalidDemoRows = [];
+      clearTimeout(invalidDemoTimer);
+      invalidDemoTimer = null;
+      pickedCount = 0;
+      overLimitCount = 0;
+      clearTimeout(overLimitTimer);
+      overLimitTimer = null;
+    };
+    const onImport = () => { batchFiles.value = []; resetBatchResult(); resetInvalidDemo(); batchTab.value = 'pending'; batchOpen.value = true; };
     const onBatchFile = (f) => {
       if (!f || !f.name) return;
       if (!/\.(xls|xlsx)$/i.test(f.name)) { ElMsg.warning('仅支持 xls、xlsx 文件格式'); return; }
       const size = Number(f.size) || (f.raw && f.raw.size) || 0;
-      if (size > MAX_BATCH_SIZE) { ElMsg.warning('单个文件大小不能超过 50MB'); return; }
+      if (size > MAX_IMPORT_SIZE) { ElMsg.warning('单个文件大小不能超过 20MB'); return; }
+      /* 演示：按 5 个一组，前 2 个判为文件为空、后 2 个判为模板不一致，仅第 5 个进入待导入表格 */
+      if (batchMode.value === '文件为空/模板不一致') {
+        const pos = invalidDemoSeq++ % 5;
+        if (pos < 4) {
+          invalidDemoRows.push({
+            name: f.name,
+            reason: INVALID_DEMO_REASONS[pos],
+          });
+          clearTimeout(invalidDemoTimer);
+          invalidDemoTimer = setTimeout(showInvalidDemo, 150);
+          return;
+        }
+      }
       /* 再次上传不清理上一轮的失败结果，失败文件保留「下载」入口 */
       if (batchFiles.value.includes(f.name)) return;
-      if (batchFiles.value.length >= MAX_BATCH_COUNT) { ElMsg.warning('最多支持同时导入 100 个文件'); return; }
+      /* 每个候选文件都刷新批次窗口，全部回调结束后再一次性统计超出个数 */
+      pickedCount++;
+      clearTimeout(overLimitTimer);
+      overLimitTimer = setTimeout(showOverLimit, 800);
+      if (batchFiles.value.length >= MAX_BATCH_COUNT) {
+        overLimitCount++;
+        return;
+      }
       batchFiles.value = [...batchFiles.value, f.name];
     };
     const onBatchRemove = (row) => {
@@ -458,7 +535,7 @@ const TextbookList = {
         if (!fail) batchTab.value = 'pending';
       }
     };
-    /* 导入结果演示模式：成功 / 失败（失败时按文件顺序展示三类失败原因） */
+    /* 导入结果演示模式：成功 / 失败 / 文件为空/模板不一致 */
     const batchMode = ref('成功');
     /* 失败明细数据（供失败文件下载明细使用） */
     const batchErrors = ref([]);
@@ -559,8 +636,10 @@ const TextbookList = {
         }));
         return;
       }
-      /* 成功：固定追加两条导入的教材数据 */
-      const okRows = FIXED_IMPORT_ROWS;
+      /* 成功：追加导入的教材数据；拦截演示模式按表格中保留的文件数追加 */
+      const okRows = batchMode.value === '文件为空/模板不一致'
+        ? Array.from({ length: selected.length }, (_, i) => FIXED_IMPORT_ROWS[i % FIXED_IMPORT_ROWS.length])
+        : FIXED_IMPORT_ROWS;
       const now = new Date();
       const pad = (n) => String(n).padStart(2, '0');
       const ts = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
@@ -599,7 +678,7 @@ const TextbookList = {
       filters, keyword, rows, total, page, pageSize, icons,
       onAdd, onImport, onTemplate, onPreview, onEdit, onUpdate, onOffline,
       batchOpen, batchFiles, batchTab, batchMode, batchErrors, failedFiles, failedRows, batchSummary, onDownloadFail, onDownloadAllFail,
-      onBatchFile, onBatchRemove, onBatchConfirm,
+      onBatchFile, onBatchRemove, onBatchConfirm, resetInvalidDemo,
     };
   },
   template: `
@@ -623,9 +702,10 @@ const TextbookList = {
           </el-button>
           <div class="demo-mode">
             <span class="demo-label">演示模式</span>
-            <el-radio-group v-model="batchMode" size="small">
+            <el-radio-group v-model="batchMode" size="small" @change="resetInvalidDemo">
               <el-radio-button value="成功">成功</el-radio-button>
               <el-radio-button value="失败">失败</el-radio-button>
+              <el-radio-button value="文件为空/模板不一致">文件为空/模板不一致</el-radio-button>
             </el-radio-group>
           </div>
         </div>
@@ -706,7 +786,7 @@ const TextbookList = {
                   <el-upload :multiple="true" :auto-upload="false" :show-file-list="false" accept=".xls,.xlsx" :on-change="onBatchFile">
                     <el-button type="primary"><span class="bico" v-html="icons.plus" />选择文件</el-button>
                   </el-upload>
-                  <span class="file-tip">仅限 xls / xlsx 文件格式，单个文件≤50MB，最多100个</span>
+                  <span class="file-tip">仅限 xls / xlsx 文件格式，单个文件≤20MB，最多100个</span>
                   <span class="batch-count">已选 <b>{{ batchFiles.length }}</b> 个</span>
                 </div>
               </el-form-item>
@@ -790,9 +870,30 @@ const TextbookDetail = {
     /* 导入目录弹窗：仅支持追加方式 */
     const importOpen = ref(false);
     const importFile = ref('');
-    const onFileChange = (f) => { importFile.value = (f && f.name) || ''; dirErrors.value = []; dirAlert.value = ''; };
+    /* 演示模式「文件为空 / 模板不一致」：弹窗直接提示原因，文件不进入列表 */
+    const DIR_INVALID_MESSAGES = {
+      '文件为空': '文件内容为空，无法导入，请修改后重新上传！',
+      '模板不一致': '文件与模板不一致，缺少必填列【一级章节名称】，请修改后重新上传！',
+    };
+    const onFileChange = (f) => {
+      if (!f || !f.name) return;
+      const size = Number(f.size) || (f.raw && f.raw.size) || 0;
+      if (size > MAX_IMPORT_SIZE) { ElMsg.warning('单个文件大小不能超过 20MB'); return; }
+      dirErrors.value = [];
+      dirAlert.value = '';
+      const message = DIR_INVALID_MESSAGES[dirDemo.value];
+      if (message) {
+        importFile.value = '';
+        ElBox.alert(message, '警告', {
+          confirmButtonText: '知道了',
+          customClass: 'invalid-import-box',
+        }).catch(() => {});
+        return;
+      }
+      importFile.value = f.name;
+    };
     const onFileRemove = () => { importFile.value = ''; dirErrors.value = []; dirAlert.value = ''; };
-    /* 导入目录演示模式：成功 / 失败（失败时展示字段校验失败明细） */
+    /* 导入目录演示模式：成功 / 失败 / 文件为空 / 模板不一致 */
     const dirDemo = ref('成功');
     /* 导入失败明细数据：供「下载明细」导出使用 */
     const dirErrors = ref([]);
@@ -933,6 +1034,8 @@ const TextbookDetail = {
                 <el-radio-group v-model="dirDemo">
                   <el-radio-button value="成功">成功</el-radio-button>
                   <el-radio-button value="失败">失败</el-radio-button>
+                  <el-radio-button value="文件为空">文件为空</el-radio-button>
+                  <el-radio-button value="模板不一致">模板不一致</el-radio-button>
                 </el-radio-group>
               </div>
               <el-button @click="onExport"><span class="bico" v-html="icons.upload" />导出目录</el-button>
@@ -982,7 +1085,7 @@ const TextbookDetail = {
               <el-upload :auto-upload="false" :show-file-list="false" accept=".xls,.xlsx" :on-change="onFileChange">
                 <el-button type="primary">选择文件</el-button>
               </el-upload>
-              <span class="file-tip">仅限 xls / xlsx 文件格式，文件≤50MB</span>
+              <span class="file-tip">仅限 xls / xlsx 文件格式，文件≤20MB</span>
             </div>
           </el-form-item>
         </el-form>
@@ -1000,7 +1103,7 @@ const TextbookDetail = {
             </el-table-column>
           </el-table>
         </div>
-        <!-- 文件为空 / 模板不一致：只显示提示条，具体原因写在提示条里 -->
+        <!-- 失败提示条：展示文件级失败原因；文件为空 / 模板不一致已改为弹窗提示 -->
         <el-alert v-if="dirAlert" :title="dirAlert" type="error" :closable="false" show-icon class="dir-fail-alert" />
         <template #footer>
           <el-button @click="importOpen = false">取消</el-button>
